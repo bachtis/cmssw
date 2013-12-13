@@ -46,20 +46,10 @@ using namespace edm;
 using namespace std;
 using namespace reco;
 
-DynamicTruncation::DynamicTruncation(const edm::Event& event, const MuonServiceProxy& theService):
-  DTThr(0), CSCThr(0), useAPE(false) 
-{
-  theEvent = &event;
-  theSetup = &theService.eventSetup();
-  propagator = theService.propagator("SmartPropagator");
-  propagatorCompatibleDet = theService.propagator("SteppingHelixPropagatorAny");
-  theG = theService.trackingGeometry();
-  theService.eventSetup().get<TransientRecHitRecord>().get("MuonRecHitBuilder",theMuonRecHitBuilder);
-  theService.eventSetup().get<TrackingComponentsRecord>().get("KFUpdator",updatorHandle);
-  theService.eventSetup().get<MuonGeometryRecord>().get(cscGeom);
-  theService.eventSetup().get<MuonRecoGeometryRecord>().get(navMuon);
-  theService.eventSetup().get<IdealMagneticFieldRecord>().get(magfield);
-  navigation = new DirectMuonNavigation(theService.detLayerGeometry());
+DynamicTruncation::DynamicTruncation() {
+  DTThr = 0;
+  CSCThr = 0;
+  useAPE = false;
 }
 
 
@@ -110,7 +100,6 @@ TransientTrackingRecHit::ConstRecHitContainer DynamicTruncation::filter(const Tr
 	  > lastTKm.forwardPredictedState().globalPosition().mag()) lastTKm = *imT;
     }
   }
-
   // get the last (forward) predicted state for the tracker
   currentState = lastTKm.forwardPredictedState();
   
@@ -125,6 +114,22 @@ TransientTrackingRecHit::ConstRecHitContainer DynamicTruncation::filter(const Tr
   filteringAlgo(detMap);
   
   return result;
+}
+
+
+
+void DynamicTruncation::initializeObjects(const edm::Event& event, const MuonServiceProxy& theService) {
+  theEvent = &event;
+  theSetup = &theService.eventSetup();
+  propagator = theService.propagator("SmartPropagator");
+  propagatorCompatibleDet = theService.propagator("SteppingHelixPropagatorAny");
+  theG = theService.trackingGeometry();
+  navigation = new DirectMuonNavigation(theService.detLayerGeometry());
+  theService.eventSetup().get<TransientRecHitRecord>().get("MuonRecHitBuilder",theMuonRecHitBuilder);
+  theService.eventSetup().get<TrackingComponentsRecord>().get("KFUpdator",updatorHandle);
+  theService.eventSetup().get<MuonGeometryRecord>().get(cscGeom);
+  theService.eventSetup().get<MuonRecoGeometryRecord>().get(navMuon);
+  theService.eventSetup().get<IdealMagneticFieldRecord>().get(magfield);
 }
 
 
