@@ -36,8 +36,8 @@ class ChamberSegmentUtility {
 
  public:
 
-  ChamberSegmentUtility(const edm::Event&, const edm::EventSetup&);
-
+  void initialize(const edm::Event&, const edm::EventSetup&);
+  
   // Get the 4D segments in a CSC chamber
   std::vector<CSCSegment> getCSCSegmentsInChamber(CSCDetId);
 

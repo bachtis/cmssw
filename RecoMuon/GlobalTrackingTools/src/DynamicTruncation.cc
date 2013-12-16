@@ -210,7 +210,8 @@ void DynamicTruncation::compatibleDets(TrajectoryStateOnSurface& tsos, map<int, 
 
 
 void DynamicTruncation::filteringAlgo(map<int, std::vector<DetId> >& detMap) {
-  ChamberSegmentUtility getSegs(*theEvent, *theSetup);
+  ChamberSegmentUtility getSegs;
+  getSegs.initialize(*theEvent, *theSetup);
   for (unsigned int iDet = 0; iDet < detMap.size(); ++iDet) {
     double bestLayerValue = MAX_THR;
     bool isDTorCSC = false;
