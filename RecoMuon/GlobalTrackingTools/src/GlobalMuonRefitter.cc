@@ -237,22 +237,21 @@ vector<Trajectory> GlobalMuonRefitter::refit(const reco::Track& globalTrack,
 
     if (theMuonHitsOption == 4 ) {
       // here we use the single thr per subdetector (better performance can be obtained using thr as function of eta)
-	
-      DynamicTruncation dytRefit(*theEvent,*theService);
-      dytRefit.setThr(theDYTthrs.at(0),theDYTthrs.at(1),theDYTthrs.at(2));                                
+      DynamicTruncation dytRefit;
+      dytRefit.initializeObjects(*theEvent,*theService);
+      dytRefit.setThr(theDYTthrs.at(0),theDYTthrs.at(1),theDYTthrs.at(2));
       DYTRecHits = dytRefit.filter(globalTraj.front());
-      //vector<double> est = dytRefit.getEstimators();
       if ((DYTRecHits.size() > 1) && (DYTRecHits.front()->globalPosition().mag() > DYTRecHits.back()->globalPosition().mag()))
-        stable_sort(DYTRecHits.begin(),DYTRecHits.end(),RecHitLessByDet(alongMomentum));
-      outputTraj = transform(globalTrack, track, DYTRecHits);
+	stable_sort(DYTRecHits.begin(),DYTRecHits.end(),RecHitLessByDet(alongMomentum));                               
+      outputTraj = transform(globalTrack, track, DYTRecHits);    
     }
-
+    
   } else if (theMuonHitsOption == 2 )  {
-      getFirstHits(globalTrack, allRecHits, fmsRecHits);
-      outputTraj = transform(globalTrack, track, fmsRecHits);
-    } 
-
-
+    getFirstHits(globalTrack, allRecHits, fmsRecHits);
+    outputTraj = transform(globalTrack, track, fmsRecHits);
+  } 
+  
+  
   if (outputTraj.size()) {
     LogTrace(theCategory) << "Refitted pt: " << outputTraj.front().firstMeasurement().updatedState().globalParameters().momentum().perp() << endl;
     return outputTraj;

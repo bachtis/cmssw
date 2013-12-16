@@ -33,7 +33,7 @@ using namespace edm;
 using namespace std;
 using namespace reco;
 
-ChamberSegmentUtility::ChamberSegmentUtility(const edm::Event& Event, const edm::EventSetup& Setup)
+void ChamberSegmentUtility::initialize(const edm::Event& Event, const edm::EventSetup& Setup)
 {
 
   Setup.get<MuonGeometryRecord>().get(cscGeometry);

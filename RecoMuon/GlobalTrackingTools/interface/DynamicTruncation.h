@@ -49,12 +49,13 @@ class DynamicTruncation {
   typedef TransientTrackingRecHit::ConstRecHitPointer ConstRecHitPointer;
   typedef TransientTrackingRecHit::ConstRecHitContainer ConstRecHitContainer;
 
-  DynamicTruncation(const edm::Event&, const MuonServiceProxy&);
-
+  DynamicTruncation();
   ~DynamicTruncation();
 
   // Just one thr for DT and one for CSC
   void setThr(int, int, int);
+
+  void initializeObjects(const edm::Event&, const MuonServiceProxy&);
   
   // Return the vector with the tracker plus the selected muon hits
   TransientTrackingRecHit::ConstRecHitContainer filter(const Trajectory&);
