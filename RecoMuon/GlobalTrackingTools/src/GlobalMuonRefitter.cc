@@ -57,7 +57,6 @@
 #include "RecoMuon/TransientTrackingRecHit/interface/MuonTransientTrackingRecHit.h"
 #include "RecoMuon/TrackingTools/interface/MuonCandidate.h"
 #include "RecoMuon/TrackingTools/interface/MuonServiceProxy.h"
-#include "RecoMuon/GlobalTrackingTools/interface/DynamicTruncation.h"
 
 using namespace std;
 using namespace edm;
@@ -67,7 +66,8 @@ using namespace edm;
 //----------------
 
 GlobalMuonRefitter::GlobalMuonRefitter(const edm::ParameterSet& par,
-				       const MuonServiceProxy* service) : 
+				       const MuonServiceProxy* service,
+				       edm::ConsumesCollector& iC) : 
   theCosmicFlag(par.getParameter<bool>("PropDirForCosmics")),
   theDTRecHitLabel(par.getParameter<InputTag>("DTRecSegmentLabel")),
   theCSCRecHitLabel(par.getParameter<InputTag>("CSCRecSegmentLabel")),
@@ -117,6 +117,12 @@ GlobalMuonRefitter::GlobalMuonRefitter(const edm::ParameterSet& par,
 
   theCacheId_TRH = 0;
 
+
+  theDTRecHitsToken = iC.consumes<DTRecHitCollection>(theDTRecHitLabel);
+  theCSCRecHitsToken = iC.consumes<CSCRecHit2DCollection>(theCSCRecHitLabel);
+
+
+  dytRefit = new DynamicTruncation(iC);
 }
 
 //--------------
@@ -124,6 +130,8 @@ GlobalMuonRefitter::GlobalMuonRefitter(const edm::ParameterSet& par,
 //--------------
 
 GlobalMuonRefitter::~GlobalMuonRefitter() {
+  if(dytRefit) delete dytRefit;
+  
 }
 
 
@@ -133,8 +141,8 @@ GlobalMuonRefitter::~GlobalMuonRefitter() {
 void GlobalMuonRefitter::setEvent(const edm::Event& event) {
 
   theEvent = &event;
-  event.getByLabel(theDTRecHitLabel, theDTRecHits);
-  event.getByLabel(theCSCRecHitLabel, theCSCRecHits);
+  event.getByToken(theDTRecHitsToken, theDTRecHits);
+  event.getByToken(theCSCRecHitsToken, theCSCRecHits);
 }
 
 
@@ -237,10 +245,10 @@ vector<Trajectory> GlobalMuonRefitter::refit(const reco::Track& globalTrack,
 
     if (theMuonHitsOption == 4 ) {
       // here we use the single thr per subdetector (better performance can be obtained using thr as function of eta)
-      DynamicTruncation dytRefit;
-      dytRefit.initializeObjects(*theEvent,*theService);
-      dytRefit.setThr(theDYTthrs.at(0),theDYTthrs.at(1),theDYTthrs.at(2));
-      DYTRecHits = dytRefit.filter(globalTraj.front());
+
+      dytRefit->initializeObjects(*theEvent,*theService);
+      dytRefit->setThr(theDYTthrs.at(0),theDYTthrs.at(1),theDYTthrs.at(2));
+      DYTRecHits = dytRefit->filter(globalTraj.front());
       if ((DYTRecHits.size() > 1) && (DYTRecHits.front()->globalPosition().mag() > DYTRecHits.back()->globalPosition().mag()))
 	stable_sort(DYTRecHits.begin(),DYTRecHits.end(),RecHitLessByDet(alongMomentum));                               
       outputTraj = transform(globalTrack, track, DYTRecHits);    

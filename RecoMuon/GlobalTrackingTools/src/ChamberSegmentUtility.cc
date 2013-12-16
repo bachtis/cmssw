@@ -33,13 +33,19 @@ using namespace edm;
 using namespace std;
 using namespace reco;
 
+ChamberSegmentUtility::ChamberSegmentUtility(edm::ConsumesCollector& iC) {
+  CSCSegmentsToken = iC.consumes<CSCSegmentCollection>(edm::InputTag("cscSegments"));
+  all4DSegmentsToken = iC.consumes<DTRecSegment4DCollection>(edm::InputTag("dt4DSegments"));
+}
+
+
 void ChamberSegmentUtility::initialize(const edm::Event& Event, const edm::EventSetup& Setup)
 {
 
   Setup.get<MuonGeometryRecord>().get(cscGeometry);
-  Event.getByLabel("cscSegments", CSCSegments);
+  Event.getByToken(CSCSegmentsToken, CSCSegments);
   Setup.get<MuonGeometryRecord>().get(dtGeom);
-  Event.getByLabel("dt4DSegments", all4DSegments);
+  Event.getByToken(all4DSegmentsToken, all4DSegments);
 
   unsigned int index = 0;
   for (  CSCSegmentCollection::id_iterator chamberId = CSCSegments->id_begin();

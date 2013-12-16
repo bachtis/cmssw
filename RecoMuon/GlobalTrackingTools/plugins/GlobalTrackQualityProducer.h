@@ -20,6 +20,8 @@
 
 #include "TrackingTools/DetLayers/interface/MeasurementEstimator.h"
 #include "TrackingTools/KalmanUpdators/interface/Chi2MeasurementEstimator.h"
+#include "DataFormats/MuonReco/interface/MuonTrackLinks.h"
+#include "DataFormats/MuonReco/interface/MuonFwd.h"
 
 class GlobalMuonRefitter;
 
@@ -37,6 +39,10 @@ class GlobalTrackQualityProducer : public edm::EDProducer {
  
   edm::InputTag inputCollection_;
   edm::InputTag inputLinksCollection_;
+  edm::EDGetTokenT<reco::TrackCollection> trackToken_;
+  edm::EDGetTokenT<reco::MuonTrackLinksCollection> linksToken_;
+
+
   MuonServiceProxy* theService;
   GlobalMuonRefitter* theGlbRefitter;
   GlobalMuonTrackMatcher* theGlbMatcher;

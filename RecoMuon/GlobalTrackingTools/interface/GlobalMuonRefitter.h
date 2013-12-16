@@ -22,6 +22,8 @@
 #include "TrackingTools/TrackRefitter/interface/TrackTransformer.h"
 #include "DataFormats/DTRecHit/interface/DTRecHitCollection.h"
 #include "DataFormats/CSCRecHit/interface/CSCSegmentCollection.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+#include "RecoMuon/GlobalTrackingTools/interface/DynamicTruncation.h"
 
 namespace edm {class Event;}
 namespace reco {class TransientTrack;}
@@ -57,7 +59,7 @@ class GlobalMuonRefitter {
   public:
 
     /// constructor with Parameter Set and MuonServiceProxy
-    GlobalMuonRefitter(const edm::ParameterSet&, const MuonServiceProxy*);
+    GlobalMuonRefitter(const edm::ParameterSet&, const MuonServiceProxy*,edm::ConsumesCollector&);
           
     /// destructor
     virtual ~GlobalMuonRefitter();
@@ -131,6 +133,8 @@ class GlobalMuonRefitter {
     edm::InputTag theCSCRecHitLabel;
     edm::Handle<DTRecHitCollection>    theDTRecHits;
     edm::Handle<CSCRecHit2DCollection> theCSCRecHits;
+    edm::EDGetTokenT<DTRecHitCollection>    theDTRecHitsToken;
+    edm::EDGetTokenT<CSCRecHit2DCollection> theCSCRecHitsToken;
 
     int	  theSkipStation;
     int   theTrackerSkipSystem;
@@ -159,5 +163,6 @@ class GlobalMuonRefitter {
 
     const MuonServiceProxy* theService;
     const edm::Event* theEvent;
+    DynamicTruncation *dytRefit;
 };
 #endif

@@ -15,7 +15,6 @@
 #include "RecoMuon/GlobalTrackingTools/interface/DynamicTruncation.h"
 #include "DataFormats/MuonDetId/interface/RPCDetId.h"
 #include "TrackingTools/TrackFitters/interface/RecHitLessByDet.h"
-#include "RecoMuon/GlobalTrackingTools/interface/ChamberSegmentUtility.h"
 #include "TrackingTools/Records/interface/TransientRecHitRecord.h"
 #include "RecoMuon/DetLayers/interface/MuonDetLayerGeometry.h"
 #include "RecoMuon/Records/interface/MuonRecoGeometryRecord.h"
@@ -44,16 +43,19 @@ using namespace edm;
 using namespace std;
 using namespace reco;
 
-DynamicTruncation::DynamicTruncation() {
+DynamicTruncation::DynamicTruncation(edm::ConsumesCollector& iC) {
   DTThr = 0;
   CSCThr = 0;
   useAPE = false;
+  getSegs = new ChamberSegmentUtility(iC);
+ 
 }
 
 
  
 DynamicTruncation::~DynamicTruncation() {
   if (navigation) delete navigation;
+  if (getSegs) delete getSegs;
 }
 
 
@@ -208,8 +210,7 @@ void DynamicTruncation::compatibleDets(TrajectoryStateOnSurface& tsos, map<int, 
 
 
 void DynamicTruncation::filteringAlgo(map<int, std::vector<DetId> >& detMap) {
-  ChamberSegmentUtility getSegs;
-  getSegs.initialize(*theEvent, *theSetup);
+  getSegs->initialize(*theEvent, *theSetup);
   for (unsigned int iDet = 0; iDet < detMap.size(); ++iDet) {
     double bestLayerValue = MAX_THR;
     bool isDTorCSC = false;
@@ -224,8 +225,8 @@ void DynamicTruncation::filteringAlgo(map<int, std::vector<DetId> >& detMap) {
 	DTChamberId DTid(id);
 
 	std::vector<DTRecSegment4D> allDTsegs;
-	std::map<int, std::vector<DTRecSegment4D> >::const_iterator dtIter = getSegs.getDTlist().find(DTid.station());
-	if (dtIter != getSegs.getDTlist().end()){
+	std::map<int, std::vector<DTRecSegment4D> >::const_iterator dtIter = getSegs->getDTlist().find(DTid.station());
+	if (dtIter != getSegs->getDTlist().end()){
 	  allDTsegs = dtIter->second;
 	}
 	std::vector<DTRecSegment4D>::size_type sz = allDTsegs.size();
@@ -247,7 +248,7 @@ void DynamicTruncation::filteringAlgo(map<int, std::vector<DetId> >& detMap) {
 	  if (bestChamberValue >= DTThr || bestChamberValue > bestLayerValue) continue; 
 	  layerRH.clear(); layerSEG.clear();
 	  layerSEG.push_back(theMuonRecHitBuilder->build(&bestDTSeg));
-	  std::vector<DTRecHit1D> DTrh = getSegs.getDTRHmap(bestDTSeg);
+	  std::vector<DTRecHit1D> DTrh = getSegs->getDTRHmap(bestDTSeg);
 	  for (std::vector<DTRecHit1D>::iterator it = DTrh.begin(); it != DTrh.end(); it++) {
 	    layerRH.push_back(theMuonRecHitBuilder->build(&*it));
 	  }
@@ -258,8 +259,8 @@ void DynamicTruncation::filteringAlgo(map<int, std::vector<DetId> >& detMap) {
         CSCDetId CSCid(id);
 	
 	std::vector<CSCSegment> allCSCsegs;
-	std::map<int, std::vector<CSCSegment> >::const_iterator cscIter = getSegs.getCSClist().find(CSCid.station()); 
-	if (cscIter != getSegs.getCSClist().end()){
+	std::map<int, std::vector<CSCSegment> >::const_iterator cscIter = getSegs->getCSClist().find(CSCid.station()); 
+	if (cscIter != getSegs->getCSClist().end()){
 	  allCSCsegs = cscIter->second;
 	}
 	
@@ -282,7 +283,7 @@ void DynamicTruncation::filteringAlgo(map<int, std::vector<DetId> >& detMap) {
 	  if (bestChamberValue >= CSCThr || bestChamberValue > bestLayerValue) continue;
 	  layerRH.clear(); layerSEG.clear();
 	  layerSEG.push_back(theMuonRecHitBuilder->build(&bestCSCSeg));
-	  std::vector<CSCRecHit2D> CSCrh = getSegs.getCSCRHmap(bestCSCSeg);
+	  std::vector<CSCRecHit2D> CSCrh = getSegs->getCSCRHmap(bestCSCSeg);
 	  for (std::vector<CSCRecHit2D>::iterator it = CSCrh.begin(); it != CSCrh.end(); ++it) {
 	    layerRH.push_back(theMuonRecHitBuilder->build(&*it));
 	  }
