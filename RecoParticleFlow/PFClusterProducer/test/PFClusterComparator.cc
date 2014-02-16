@@ -79,13 +79,15 @@ void PFClusterComparator::analyze(const Event& iEvent,
 	foundmatch = true;
 	const double denergy = std::abs(cluster.energy() - 
 					clustercomp.energy());
+	const double dcenergy = std::abs(cluster.correctedEnergy() - 
+					clustercomp.correctedEnergy());
 	const double dx = std::abs(cluster.position().x() - 
 				     clustercomp.position().x());
 	const double dy = std::abs(cluster.position().y() - 
 				     clustercomp.position().y());
 	const double dz = std::abs(cluster.position().z() - 
 				     clustercomp.position().z());
-	if( denergy >  1e-5 ) {
+	if( denergy/std::abs(cluster.energy()) >  1e-5 ) {
 	  std::cout << "   " << cluster.seed() 
 		    << " Energies different by larger than tolerance! "
 		    << "( "<< denergy << " )"
@@ -93,8 +95,16 @@ void PFClusterComparator::analyze(const Event& iEvent,
 		    << cluster.energy() << " GeV , New: "
 		    << clustercomp.energy() << " GeV" << std::endl;	  
 	}
+	if( dcenergy/std::abs(cluster.correctedEnergy()) >  1e-5 ) {
+	  std::cout << "   " << cluster.seed() 
+		    << " Corrected energies different by larger than tolerance! "
+		    << "( "<< denergy << " )"
+		    << " Old: " << std::setprecision(7) 
+		    << cluster.correctedEnergy() << " GeV , New: "
+		    << clustercomp.correctedEnergy() << " GeV" << std::endl;	  
+	}
 	std::cout << std::flush;
-	if( dx > 1e-5 ) {
+	if( dx/std::abs(cluster.position().x()) > 1e-5 ) {
 	  std::cout << "***" << cluster.seed() 
 		    << " X's different by larger than tolerance! "
 		    << "( "<< dx << " )"
@@ -103,7 +113,7 @@ void PFClusterComparator::analyze(const Event& iEvent,
 		    << clustercomp.position().x() << std::endl;
 	}
 	std::cout << std::flush;
-	if( dy > 1e-5 ) {
+	if( dy/std::abs(cluster.position().y()) > 1e-5 ) {
 	  std::cout << "---" << cluster.seed() 
 		    << " Y's different by larger than tolerance! "
 		    << "( "<< dy << " )"
@@ -112,7 +122,7 @@ void PFClusterComparator::analyze(const Event& iEvent,
 		    << clustercomp.position().y() << std::endl;
 	}
 	std::cout << std::flush;
-	if( dz > 1e-5 ) {
+	if( dz/std::abs(cluster.position().z()) > 1e-5 ) {
 	  std::cout << "+++" << cluster.seed() 
 		    << " Z's different by larger than tolerance! "
 		    << "( "<< dz << " )"
