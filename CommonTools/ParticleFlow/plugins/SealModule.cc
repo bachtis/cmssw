@@ -6,8 +6,7 @@
 #include "CommonTools/ParticleFlow/plugins/Type1PFMET.h"
 #include "CommonTools/ParticleFlow/plugins/PFPileUp.h"
 #include "CommonTools/ParticleFlow/plugins/TopProjector.cc"
-
-
+#include "CommonTools/ParticleFlow/plugins/DeltaBetaWeights.h"
 
 DEFINE_FWK_MODULE(PFMET);
 DEFINE_FWK_MODULE(Type1PFMET);
@@ -17,3 +16,4 @@ DEFINE_FWK_MODULE(TPPFCandidatesOnPileUpPFCandidates);
 DEFINE_FWK_MODULE(TPIsolatedPFCandidatesOnPFCandidates);
 DEFINE_FWK_MODULE(TPPFJetsOnPFCandidates);
 DEFINE_FWK_MODULE(TPPFTausOnPFJets);
+DEFINE_FWK_MODULE(DeltaBetaWeights);
