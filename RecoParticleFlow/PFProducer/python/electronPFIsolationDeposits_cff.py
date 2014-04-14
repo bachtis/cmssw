@@ -5,8 +5,8 @@ from CommonTools.ParticleFlow.Isolation.tools_cfi import *
 #Now prepare the iso deposits
 elPFIsoDepositCharged=isoDepositReplace('pfSelectedElectrons','pfAllChargedHadrons')
 elPFIsoDepositChargedAll=isoDepositReplace('pfSelectedElectrons','pfAllChargedParticles')
-elPFIsoDepositNeutral=isoDepositReplace('pfSelectedElectrons','pfAllNeutralHadrons')
-elPFIsoDepositGamma=isoDepositReplace('pfSelectedElectrons','pfAllPhotons')
+elPFIsoDepositNeutral=isoDepositReplace('pfSelectedElectrons','pfWeightedNeutralHadrons')
+elPFIsoDepositGamma=isoDepositReplace('pfSelectedElectrons','pfWeightedPhotons')
 elPFIsoDepositPU=isoDepositReplace('pfSelectedElectrons','pfPileUpAllChargedParticles')
 
 electronPFIsolationDepositsSequence = cms.Sequence(
