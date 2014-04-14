@@ -95,6 +95,7 @@ def usePFIso(process, postfix = "PFIso"):
     adaptPFIsoElectrons( process, applyPostfix(process,"patElectrons",""), postfix)
     getattr(process,'patDefaultSequence').replace( getattr(process,"patCandidates"),
                                                    process.pfParticleSelectionSequence +
+                                                   process.pfDeltaBetaWeightingSequence+
                                                    process.eleIsoSequence +
                                                    process.muIsoSequence +
                                                    getattr(process,"patCandidates") )
