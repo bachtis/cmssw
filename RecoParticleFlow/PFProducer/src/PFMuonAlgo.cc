@@ -686,9 +686,20 @@ bool PFMuonAlgo::reconstructMuon(reco::PFCandidate& candidate, const reco::MuonR
     using namespace std;
     using namespace reco;
 
-    if (!muon.isNonnull())
-      return false;
+      //bug fix.. If the particle is not a muon do not allow it to contribute 
+      //energy to the event if the inner track is not a high purity track
 
+
+    bool badTrack = false;
+    if (!candidate.trackRef()->quality(trackQuality_))
+      badTrack=true;
+
+
+    if (!muon.isNonnull()) {
+      if (badTrack)
+	candidate.rescaleMomentum(1e-19);
+      return false;
+    }
     
 
     bool isMu=false;
@@ -698,9 +709,11 @@ bool PFMuonAlgo::reconstructMuon(reco::PFCandidate& candidate, const reco::MuonR
     else
       isMu = isMuon(muon);
 
-    if( !isMu)
+    if( !isMu) {
+      if (badTrack)
+	candidate.rescaleMomentum(1e-19);
       return false;
-
+    }
     //get the valid tracks(without standalone except we allow loose muons)
     //MIKE: Here we need to be careful. If we have a muon inside a dense 
     //jet environment often the track is badly measured. In this case 
