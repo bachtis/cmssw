@@ -3,18 +3,16 @@ from RecoParticleFlow.PFClusterProducer.particleFlowCaloResolution_cfi import _t
 
 particleFlowRecHitHBHE = cms.EDProducer("PFRecHitProducer",
     navigator = cms.PSet(
-            name = cms.string("PFRecHitHCALNavigatorWithTime"),
-            sigmaCut = cms.double(5.0),
-            timeResolutionCalc = _timeResolutionHCALMaxSample
+            name = cms.string("PFRecHitHCALNavigator")
     ),
     producers = cms.VPSet(
            cms.PSet(
-             name = cms.string("PFHBHERecHitCreatorMaxSample"),
+             name = cms.string("PFHBHERecHitCreator"),
              src  = cms.InputTag("hbhereco",""),
              qualityTests = cms.VPSet(
                   cms.PSet(
                   name = cms.string("PFRecHitQTestThreshold"),
-                  threshold = cms.double(0.4)
+                  threshold = cms.double(0.4) 
                   ),
                   cms.PSet(
                       name = cms.string("PFRecHitQTestHCALChannel"),
