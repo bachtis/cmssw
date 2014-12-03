@@ -25,6 +25,7 @@
 <use   name="DataFormats/RecoCandidate"/>
 <use   name="DataFormats/TrackReco"/>
 <use   name="DataFormats/VertexReco"/>
+<use   name="DataFormats/BeamSpot"/>
 <use   name="DataFormats/MuonReco"/>
 <use   name="EventFilter/HcalRawToDigi"/>
 <use   name="FWCore/Framework"/>
