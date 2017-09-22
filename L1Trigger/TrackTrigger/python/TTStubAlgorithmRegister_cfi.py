@@ -6,36 +6,42 @@ import FWCore.ParameterSet.Config as cms
 #
 # http://sviret.web.cern.ch/sviret/docs/CMS/SLHC/L1TT_XX1215.pdf
 #
-# Extension to the tilted geometry is discused here:
+# Extension to the tilted geometry is discussed here:
 #
 # https://indico.cern.ch/event/536881/contributions/2219856/
 #
+# This script is adapted to the very last Tilted Tracker geometry to date (D11)
+#
+# 
 
-# Tab2013 hit matching algorithm
+# Tab2013 hit matching algorithm 
+#
+# ===>>> the stub window tuning is here the one used for the tracker TDR, this is OK for T3 tracker geometry !!!
+#
 TTStubAlgorithm_official_Phase2TrackerDigi_ = cms.ESProducer("TTStubAlgorithm_official_Phase2TrackerDigi_",
-   zMatchingPS = cms.bool(False),
+   zMatchingPS = cms.bool(True),
    zMatching2S = cms.bool(True),
-   BarrelCut = cms.vdouble( 0, 1.5, 1.5, 2.5, 4.0, 5.0, 6.5), #Use 0 as dummy to have direct access using DetId to the correct element 
-   NTiltedRings = cms.vdouble( 0., 11., 12., 13., 0., 0., 0.), #Number of tilted rings per side in barrel layers (for tilted geom only)
+   BarrelCut = cms.vdouble( 0, 2.0, 2.0, 3, 4.5, 5.5, 6.5), #Use 0 as dummy to have direct access using DetId to the correct element 
+   NTiltedRings = cms.vdouble( 0., 12., 12., 12., 0., 0., 0.), #Number of tilted rings per side in barrel layers (for tilted geom only)
    TiltedBarrelCutSet = cms.VPSet(
-	cms.PSet( TiltedCut = cms.vdouble( 0 ) ),
-	cms.PSet( TiltedCut = cms.vdouble( 0, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1, 1, 1, 1, 1) ), #TBPS L1 rings
-	cms.PSet( TiltedCut = cms.vdouble( 0, 2, 2, 2, 2, 2, 1.5, 1.5, 2, 2, 1.5, 1.5, 1.5) ), #TBPS L2 rings
-	cms.PSet( TiltedCut = cms.vdouble( 0, 2.5, 2.5, 2.5, 2.5, 2, 2, 2, 2, 2, 2, 2, 2, 1.5) ), #TBPS L3 rings
-	),
-   EndcapCutSet = cms.VPSet(
+       cms.PSet( TiltedCut = cms.vdouble( 0 ) ),
+       cms.PSet( TiltedCut = cms.vdouble( 0, 2, 2, 2, 2, 2, 2, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5) ),     #TBPS L1 rings
+       cms.PSet( TiltedCut = cms.vdouble( 0, 2.5, 2.5, 2.5, 2, 2, 2, 2, 2.5, 2, 2, 2, 2) ),         #TBPS L2 rings
+       cms.PSet( TiltedCut = cms.vdouble( 0, 3, 3, 3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5) ), #TBPS L3 rings
+    ),
+    EndcapCutSet = cms.VPSet(
         cms.PSet( EndcapCut = cms.vdouble( 0 ) ),
-        cms.PSet( EndcapCut = cms.vdouble( 0, 1, 1, 1.5, 1.5, 2, 2, 2.5, 2.5, 3, 4, 2.5, 3, 3.5, 4, 5) ),
-        cms.PSet( EndcapCut = cms.vdouble( 0, 1, 1, 1, 1.5, 1.5, 2, 2, 2.5, 2.5, 3.5, 2, 2.5, 3, 3.5, 4) ),  #D1
-        cms.PSet( EndcapCut = cms.vdouble( 0, 1, 1, 1, 1.5, 1.5, 1.5, 2, 2, 2, 3, 3.5, 2, 2.5, 3, 3.5) ),  #D2 ...
-        cms.PSet( EndcapCut = cms.vdouble( 0, 1, 1, 1, 1, 1, 1.5, 2, 2, 2, 2.5, 3, 2, 2, 2.5, 3) ),
-        cms.PSet( EndcapCut = cms.vdouble( 0, 1, 1, 1, 1, 1, 1.5, 1.5, 2, 2, 2, 3, 3, 2, 2, 2.5) ),
-        )
+        cms.PSet( EndcapCut = cms.vdouble( 0, 1.5, 1.5, 2, 2, 2.5, 2.5, 2.5, 3, 3.5, 4.5, 2.5, 3.5, 4, 4.5, 5.5) ), #D1
+        cms.PSet( EndcapCut = cms.vdouble( 0, 1.5, 1.5, 2, 2, 2, 2.5, 2.5, 3, 3, 4, 2.5, 3, 3.5, 4.5, 5) ),         #D2 etc. 
+        cms.PSet( EndcapCut = cms.vdouble( 0, 1.5, 2, 2, 2, 2.5, 2.5, 2.5, 3.5, 4, 2.5, 3.5, 3.5, 4.5) ),
+        cms.PSet( EndcapCut = cms.vdouble( 0, 1.5, 1.5, 1.5, 2, 2, 2.5, 2.5, 3, 3.5, 2.5, 2.5, 3.5, 4) ),
+        cms.PSet( EndcapCut = cms.vdouble( 0, 1.5, 1.5, 1.5, 1.5, 2, 2, 2.5, 2.5, 3, 3.5, 2.5, 4.5, 4) ),
+    )
 )
 
 # CBC3 hit matching algorithm
 TTStubAlgorithm_cbc3_Phase2TrackerDigi_ = cms.ESProducer("TTStubAlgorithm_cbc3_Phase2TrackerDigi_",
-   zMatchingPS = cms.bool(False),
+   zMatchingPS = cms.bool(True),
    zMatching2S = cms.bool(True),
 )
 
