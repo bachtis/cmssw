@@ -5,6 +5,7 @@
 #include <DataFormats/L1DTTrackFinder/interface/L1MuDTChambThContainer.h>
 #include <DataFormats/L1DTTrackFinder/interface/L1MuDTTrackContainer.h>
 #include <DataFormats/Common/interface/Wrapper.h>
+#include "DataFormats/Common/interface/Ref.h"
 
 namespace DataFormats_L1DTTrackFinder {
   struct dictionary {
@@ -19,6 +20,8 @@ namespace DataFormats_L1DTTrackFinder {
     L1MuDTChambPhContainer ph_K;
     L1MuDTChambThContainer th_K;
     L1MuDTTrackContainer   tr_K;
+
+    edm::Ref<std::vector<L1MuDTChambPhDigi> > ph_Ref;
 
     edm::Wrapper<L1MuDTChambPhContainer> ph_W;
     edm::Wrapper<L1MuDTChambThContainer> th_W;
