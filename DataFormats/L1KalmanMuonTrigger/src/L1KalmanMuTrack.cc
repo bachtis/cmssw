@@ -54,7 +54,7 @@ int L1KalmanMuTrack::approxChi2() const{
    return approxChi2_;
 }
 
-int L1KalmanMuTrack::phiPattern() const{
+nt L1KalmanMuTrack::phiPattern() const{
    return hitPattern_;
 }
 
