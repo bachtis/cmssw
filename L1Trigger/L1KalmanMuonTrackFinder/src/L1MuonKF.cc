@@ -2,7 +2,10 @@
 #include "L1Trigger/L1KalmanMuonTrackFinder/interface/L1MuonKF.h"
 
 
+
+
 L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
+  verbose_(settings.getParameter<bool>("verbose")),
   eLoss_(settings.getParameter<std::vector<int> >("eLoss")),
   aPhi_(settings.getParameter<std::vector<int> >("aPhi")),
   bPhi_(settings.getParameter<std::vector<int> >("bPhi")),
@@ -22,9 +25,6 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
 }
 
 
-L1MuonKF::~L1MuonKF() {
-
-}
 
 int L1MuonKF::correctedPhi(const StubRef& stub,int sector) {
   if (stub->scNum()==sector)
@@ -199,7 +199,17 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     int phiBNew  = round(trackPhiB+Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
 
     track.setCoordinates(track.step(),KNew,phiNew,phiBNew);
-    track.covariance = track.covariance - Gain*(H*track.covariance);
+    Matrix33 cov = track.covariance - Gain*(H*track.covariance);
+    track.covariance(0,0)=cov(0,0); 
+    track.covariance(0,1)=cov(0,1); 
+    track.covariance(0,2)=cov(0,2); 
+    track.covariance(1,0)=cov(1,0); 
+    track.covariance(1,1)=cov(1,1); 
+    track.covariance(1,2)=cov(1,2); 
+    track.covariance(2,0)=cov(2,0); 
+    track.covariance(2,1)=cov(2,1); 
+    track.covariance(2,2)=cov(2,2); 
+
     track.addStub(stub);
     return true;
 }
@@ -225,7 +235,19 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
   int KNew = round(track.curvature()+Gain(0,1)*residual);
   int phiNew = round(track.positionAngle()+Gain(1,1)*residual);
   track.setCoordinatesAtVertex(KNew,phiNew,track.dxy());
-  track.covariance = track.covariance - Gain*H*track.covariance;
+  Matrix33 cov = track.covariance - Gain*(H*track.covariance);
+  track.covariance(0,0)=cov(0,0); 
+  track.covariance(0,1)=cov(0,1); 
+  track.covariance(0,2)=cov(0,2); 
+  track.covariance(1,0)=cov(1,0); 
+  track.covariance(1,1)=cov(1,1); 
+  track.covariance(1,2)=cov(1,2); 
+  track.covariance(2,0)=cov(2,0); 
+  track.covariance(2,1)=cov(2,1); 
+  track.covariance(2,2)=cov(2,2); 
+
+    //  track.covariance = track.covariance - Gain*H*track.covariance;
+
 }
 
 
@@ -254,6 +276,18 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 
   for( const auto& mask : combinatorics) {
     L1KalmanMuTrack track(seed);
+    if (verbose_) {
+      printf("New Kalman fit staring at station = %d, phi=%d,phiB=%d\n",seed->stNum(),correctedPhi(seed,seed->scNum()),seed->phiB());
+      printf("------------------------------------------------------\n");
+      printf("------------------------------------------------------\n");
+      printf("------------------------------------------------------\n");
+      printf("stubs:\n");
+      for (const auto& stub: stubs) 
+	printf("station=%d phi=%d phiB=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),stub->phiB()); 
+      printf("------------------------------------------------------\n");
+      printf("------------------------------------------------------\n");
+
+    }
     while(track.step()>0) {
       if (track.step()==1) {
 	track.setHitPattern(phiBitmask(track));
@@ -261,6 +295,9 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	setFloatingPointValues(track,false);
       }
       propagate(track);
+      if (verbose_)
+	printf("propagated Coordinates step:%d,phi=%d,phiB=%d,K=%d\n",track.step(),track.positionAngle(),track.bendingAngle(),track.curvature());
+
       if (track.step()>0)
 	if (getBit(mask,track.step()-1))
 	  if (!update(track,stubs,seed->scNum()))
@@ -268,6 +305,11 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
       if (track.step()==0) {
 	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),track.bendingAngle());
 	vertexConstraint(track);
+	if (verbose_) {
+	  printf(" Coordinates after vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
+	  printf("------------------------------------------------------\n");
+	  printf("------------------------------------------------------\n");
+	}
 	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),track.dxy());
 	setFloatingPointValues(track,true);
 	output.push_back(track);

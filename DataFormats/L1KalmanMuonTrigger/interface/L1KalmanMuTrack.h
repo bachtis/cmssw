@@ -18,6 +18,7 @@ public:
   typedef edm::Ref<std::vector<L1MuDTChambPhDigi> > StubRef;
   typedef std::vector<StubRef> StubRefVector;
 
+
   L1KalmanMuTrack();
   ~L1KalmanMuTrack();
   L1KalmanMuTrack(const StubRef&);

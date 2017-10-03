@@ -54,7 +54,7 @@ int L1KalmanMuTrack::approxChi2() const{
    return approxChi2_;
 }
 
-nt L1KalmanMuTrack::phiPattern() const{
+int L1KalmanMuTrack::phiPattern() const{
    return hitPattern_;
 }
 
@@ -75,9 +75,6 @@ const L1KalmanMuTrack::StubRefVector& L1KalmanMuTrack::stubs() const {
 }
 
 
-const L1KalmanMuTrack::CovarianceMatrix& covariance() const {
-  return covariance_;
-} 
 
 
 void L1KalmanMuTrack::setCoordinates(int step,int curv,int phi,int phiB) {

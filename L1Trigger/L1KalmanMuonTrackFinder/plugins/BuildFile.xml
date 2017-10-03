@@ -3,5 +3,6 @@
 <use name="FWCore/ParameterSet"/>
 <use name="L1Trigger/L1KalmanMuonTrackFinder"/>
 <use name="DataFormats/L1DTTrackFinder"/>
+<use name="DataFormats/L1KalmanMuonTrigger"/>
 
 <flags EDM_PLUGIN="1"/>

@@ -25,6 +25,7 @@ class L1BarrelStubSelector : public edm::stream::EDProducer<> {
       virtual void beginStream(edm::StreamID) override;
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       virtual void endStream() override;
+  edm::InputTag src_;
   bool onlyBX0_;
   
 
@@ -43,7 +44,8 @@ class L1BarrelStubSelector : public edm::stream::EDProducer<> {
 // constructors and destructor
 //
 L1BarrelStubSelector::L1BarrelStubSelector(const edm::ParameterSet& iConfig):
-onlyBX0_(iConfig.getParameter<bool>("onlyBX0"))
+  src_(iConfig.getParameter<edm::InputTag>("src")),
+  onlyBX0_(iConfig.getParameter<bool>("onlyBX0"))
 {
   produces <std::vector<L1MuDTChambPhDigi>>();
 }
@@ -68,12 +70,16 @@ L1BarrelStubSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
    Handle<L1MuDTChambPhContainer> phiIn;
-   iEvent.getByLabel("example",phiIn);
+   iEvent.getByLabel(src_,phiIn);
 
    std::vector<L1MuDTChambPhDigi> out;
 
    for (const auto& seg : *(phiIn.product()->getContainer())) {
      if ((seg.bxNum()==0 && onlyBX0_) || (!onlyBX0_)) {
+
+       //we also do not want stubs at st = 1 and wheel +=2 due to overlap
+       if (abs(seg.whNum())==2 && seg.stNum()==1)
+	 continue;
        out.push_back(seg);
      }
    }

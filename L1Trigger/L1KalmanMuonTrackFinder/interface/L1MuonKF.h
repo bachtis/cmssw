@@ -1,7 +1,9 @@
+
 /*
 Kalman Filter L1 Muon algorithm
 Michalis Bachtis (UCLA)
 Sep. 2017
+
 */
 
 #ifndef L1MuonKF_H
@@ -22,13 +24,15 @@ class L1MuonKF {
   typedef ROOT::Math::SMatrix<double,2,3> Matrix23;
   typedef ROOT::Math::SMatrix<double,1,3> Matrix13;
   typedef ROOT::Math::SMatrix<double,3,1> Matrix31;
+  typedef ROOT::Math::SMatrix<double,3,3> Matrix33;
 
   L1MuonKF(const edm::ParameterSet& settings);
-  ~L1MuonKF();
+
   TrackVector  process(const StubRef&, const StubRefVector&);  
  
 
  private:
+  bool verbose_;
   int correctedPhi(const StubRef&,int);
   void propagate(L1KalmanMuTrack&);
   bool update(L1KalmanMuTrack&,const StubRefVector&,int);
@@ -41,6 +45,8 @@ class L1MuonKF {
   int customBitmask(bool,bool,bool,bool);
   bool getBit(int,int);
   void setFloatingPointValues(L1KalmanMuTrack&,bool);
+
+
   //propagation coefficients
   const std::vector<int>& eLoss_;
   const std::vector<int>& aPhi_;
