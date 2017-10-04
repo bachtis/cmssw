@@ -28,6 +28,7 @@
  </class>
 
  <class name="edm::Ref<std::vector<L1MuDTChambPhDigi> >" splitLevel="0"/>
+ <class name="edm::Wrapper<std::vector<L1MuDTChambPhDigi>>" splitLevel="0"/>
  <class name="edm::Wrapper<L1MuDTChambPhContainer>" splitLevel="0"/>
  <class name="edm::Wrapper<L1MuDTChambThContainer>" splitLevel="0"/>
  <class name="edm::Wrapper<L1MuDTTrackContainer>"/>

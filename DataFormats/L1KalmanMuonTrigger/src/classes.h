@@ -2,6 +2,7 @@
 #include <DataFormats/Common/interface/Wrapper.h>
 #include "DataFormats/Common/interface/Ref.h"
 
+
 namespace DataFormats_L1KalmanMuonTrigger {
   struct dictionary {
     L1KalmanMuTrack kf_trk;

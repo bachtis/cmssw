@@ -34,6 +34,7 @@ class L1MuonKF {
  private:
   bool verbose_;
   int correctedPhi(const StubRef&,int);
+  int correctedPhiB(const StubRef&);
   void propagate(L1KalmanMuTrack&);
   bool update(L1KalmanMuTrack&,const StubRefVector&,int);
   bool updateOffline(L1KalmanMuTrack&,const StubRefVector&,int);
@@ -42,17 +43,17 @@ class L1MuonKF {
   int etaBitmask(const L1KalmanMuTrack&);
   int etaLookup(const L1KalmanMuTrack&);
   int phiBitmask(const L1KalmanMuTrack&);
-  int customBitmask(bool,bool,bool,bool);
+  int customBitmask(unsigned int,unsigned int,unsigned int,unsigned int);
   bool getBit(int,int);
   void setFloatingPointValues(L1KalmanMuTrack&,bool);
 
 
   //propagation coefficients
-  const std::vector<int>& eLoss_;
-  const std::vector<int>& aPhi_;
-  const std::vector<int>& bPhi_;
-  const std::vector<int>& aPhiB_;
-  const std::vector<int>& bPhiB_;
+  std::vector<int> eLoss_;
+  std::vector<int> aPhi_;
+  std::vector<int> bPhi_;
+  std::vector<int> aPhiB_;
+  std::vector<int> bPhiB_;
   //Denominator for the precision used
   int denominator_;
 
@@ -61,14 +62,14 @@ class L1MuonKF {
   ///////////////////////////////////////////////////////
 
   bool useOfflineAlgo_;
-  const std::vector<int>& mScatteringPhi_;
-  const std::vector<int>& mScatteringPhiB_;
+  std::vector<double> mScatteringPhi_;
+  std::vector<double> mScatteringPhiB_;
   //point resolution for phi
-  int pointResolutionPhi_;
+  double pointResolutionPhi_;
   //point resolution for phiB
-  int pointResolutionPhiB_;
+  double pointResolutionPhiB_;
   //point resolution for vertex
-  int pointResolutionVertex_;
+  double pointResolutionVertex_;
 
  
 

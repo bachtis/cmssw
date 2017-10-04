@@ -10,14 +10,14 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   aPhi_(settings.getParameter<std::vector<int> >("aPhi")),
   bPhi_(settings.getParameter<std::vector<int> >("bPhi")),
   aPhiB_(settings.getParameter<std::vector<int> >("aPhiB")),
-  bPhiB_(settings.getParameter<std::vector<int> >("aPhiB")),
+  bPhiB_(settings.getParameter<std::vector<int> >("bPhiB")),
   denominator_(settings.getParameter<int>("denominator")),
   useOfflineAlgo_(settings.getParameter<bool>("useOfflineAlgo")),
-  mScatteringPhi_(settings.getParameter<std::vector<int> >("mScatteringPhi")),
-  mScatteringPhiB_(settings.getParameter<std::vector<int> >("mScatteringPhiB")),
-  pointResolutionPhi_(settings.getParameter<int>("pointResolutionPhi")),
-  pointResolutionPhiB_(settings.getParameter<int>("pointResolutionPhiB")),
-  pointResolutionVertex_(settings.getParameter<int>("pointResolutionVertex"))
+  mScatteringPhi_(settings.getParameter<std::vector<double> >("mScatteringPhi")),
+  mScatteringPhiB_(settings.getParameter<std::vector<double> >("mScatteringPhiB")),
+  pointResolutionPhi_(settings.getParameter<double>("pointResolutionPhi")),
+  pointResolutionPhiB_(settings.getParameter<double>("pointResolutionPhiB")),
+  pointResolutionVertex_(settings.getParameter<double>("pointResolutionVertex"))
 {
 
 
@@ -25,6 +25,11 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
 }
 
 
+int L1MuonKF::correctedPhiB(const StubRef& stub) {
+  //place holder
+  return stub->phiB();
+
+}
 
 int L1MuonKF::correctedPhi(const StubRef& stub,int sector) {
   if (stub->scNum()==sector)
@@ -61,13 +66,13 @@ int L1MuonKF::etaBitmask(const L1KalmanMuTrack& track)  {
 }
 
 
-int etaLookup(const L1KalmanMuTrack& track) {
+int L1MuonKF::etaLookup(const L1KalmanMuTrack& track) {
   return 0;
 }
 
 
-int L1MuonKF::customBitmask(bool bit1,bool bit2,bool bit3,bool bit4)  {
-  return bit1*1+bit2*2+bit3*4*bit4*8;
+int L1MuonKF::customBitmask(unsigned int bit1,unsigned int bit2,unsigned int bit3,unsigned int bit4)  {
+  return bit1*1+bit2*2+bit3*4+bit4*8;
 }
 
 bool L1MuonKF::getBit(int bitmask,int pos)  {
@@ -82,19 +87,19 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   int phiB = track.bendingAngle();
   unsigned int step = track.step();
 
-  int charge=1;
+
+  int charge=0;
   if (K!=0) 
     charge = K/abs(K);
 
 
+  
   //energy loss
-  int KNew = K+charge*eLoss_[step-1]*K*K/denominator_;
+  int KNew = K+charge*eLoss_[step-1]*K*K/(4*denominator_);
   //phi propagation
-  int phiNew = phi+aPhi_[step-1]*K/denominator_-bPhi_[step-1]*phiB/denominator_;
+  int phiNew = phi+(aPhi_[step-1]*K+bPhi_[step-1]*phiB*8)/denominator_;
   //phiB propagation
-  int phiBNew = +aPhiB_[step-1]*K/denominator_ +bPhiB_[step-1]*phiB/denominator_;
-  track.setCoordinates(step-1,KNew,phiNew,phiBNew);
-
+  int phiBNew = (aPhiB_[step-1]*K+bPhiB_[step-1]*phiB*8)/denominator_;
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
   //where we want to check what is happening in the covariaznce matrix 
@@ -105,21 +110,21 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   a[0] = 1;
   a[1] = 0;
   a[2] = 0;
-  a[3] = aPhi_[step-1];
+  a[3] = aPhi_[step-1]*1.0/float(denominator_);
   a[4] = 1;
-  a[5] = bPhi_[step-1];
-  a[6] = aPhiB_[step-1];
+  a[5] = bPhi_[step-1]*8.0/float(denominator_);
+  a[6] = aPhiB_[step-1]*1.0/float(denominator_);
   a[7] = 0;
-  a[8] = bPhiB_[step-1];
+  a[8] = bPhiB_[step-1]*8.0/float(denominator_);
 
 
   ROOT::Math::SMatrix<double,3> P(a,9);
-  
+ 
   track.covariance = ROOT::Math::Similarity(P,track.covariance);
 
   //Add the multiple scattering
   int phiRMS = mScatteringPhi_[step-1]*K*K;
-  int phiBRMS = mScatteringPhi_[step-1]*K*K;
+  int phiBRMS = mScatteringPhiB_[step-1]*K*K;
   int crossTerm=0.5*sqrt(phiRMS*phiBRMS);
 
   std::vector<double> b(6);
@@ -132,6 +137,8 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
 
   reco::Candidate::CovarianceMatrix MS(b.begin(),b.end());
   track.covariance = track.covariance+MS;
+  track.setCoordinates(step-1,KNew,phiNew,phiBNew);
+
 }
 
 bool L1MuonKF::update(L1KalmanMuTrack& track,const StubRefVector& stubs,int sector) {
@@ -153,6 +160,8 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     int distance = 100000;
 
     for( unsigned int i=0;i<stubs.size();++i) {
+      if (stubs[i]->stNum()!=track.step())
+	continue;
       int phi = correctedPhi(stubs[i],sector);
       int d = abs(phi-trackPhi);
       if (d<distance) {
@@ -167,12 +176,12 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     
     StubRef stub = stubs[bestStub];
     int phi  = correctedPhi(stub,sector);
-    int phiB = stub->phiB();
+    int phiB = correctedPhiB(stub);
 
 
     Vector2 residual;
-    residual[0] = trackPhi-phi;
-    residual[1] = trackPhiB-phiB;
+    residual[0] = phi-trackPhi;
+    residual[1] = phiB-trackPhiB;
     
     Matrix23 H;
     H(0,0)=0.0;
@@ -191,7 +200,6 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     CovarianceMatrix2 S = ROOT::Math::Similarity(H,track.covariance)+R;
     if (!S.Invert())
       return false;
-    
     Matrix32 Gain = track.covariance*ROOT::Math::Transpose(H)*S;
    
     int KNew  = round(trackK+Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
@@ -227,13 +235,13 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
   H(0,1)=0;
   H(0,2)=1;
   
-  double S = ROOT::Math::Similarity(H,track.covariance)(0,0)+pointResolutionVertex_;
+  double S = (ROOT::Math::Similarity(H,track.covariance))(0,0)+pointResolutionVertex_;
   S=1.0/S;
   
   Matrix31 Gain = track.covariance*(ROOT::Math::Transpose(H))*S;
   
-  int KNew = round(track.curvature()+Gain(0,1)*residual);
-  int phiNew = round(track.positionAngle()+Gain(1,1)*residual);
+  int KNew = round(track.curvature()+Gain(0,0)*residual);
+  int phiNew = round(track.positionAngle()+Gain(1,0)*residual);
   track.setCoordinatesAtVertex(KNew,phiNew,track.dxy());
   Matrix33 cov = track.covariance - Gain*(H*track.covariance);
   track.covariance(0,0)=cov(0,0); 
@@ -252,6 +260,12 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
 
 
 
+void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
+
+}
+
+
+
 L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector& stubs) {
   TrackVector output;
   std::vector<int> combinatorics;
@@ -264,26 +278,44 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
     combinatorics.push_back(customBitmask(1,0,1,1));
     combinatorics.push_back(customBitmask(1,1,0,1));
     combinatorics.push_back(customBitmask(1,1,1,1));
+    break;
   case 3:
     combinatorics.push_back(customBitmask(0,1,1,0));
     combinatorics.push_back(customBitmask(1,0,1,0));
     combinatorics.push_back(customBitmask(1,1,1,0));
+    break;
   case 2:
     combinatorics.push_back(customBitmask(1,1,0,0));    
+    break;
   default:
     return output;
   }
 
   for( const auto& mask : combinatorics) {
     L1KalmanMuTrack track(seed);
+    //set covariance
+    track.covariance(0,0)=4096*4096;
+    track.covariance(0,1)=0;
+    track.covariance(0,2)=0;
+    track.covariance(1,0)=0;
+    track.covariance(1,1)=pointResolutionPhi_;
+    track.covariance(1,2)=0;
+    track.covariance(2,0)=0;
+    track.covariance(2,1)=0;
+    track.covariance(2,2)=pointResolutionPhiB_;
+    //
     if (verbose_) {
-      printf("New Kalman fit staring at station = %d, phi=%d,phiB=%d\n",seed->stNum(),correctedPhi(seed,seed->scNum()),seed->phiB());
+      printf("New Kalman fit staring at step=%d station = %d, phi=%d,phiB=%d\n",track.step(),seed->stNum(),track.positionAngle(),track.bendingAngle());
+      printf("BITMASK:");
+      for (unsigned int i=0;i<4;++i)
+	printf("%d",getBit(mask,i));
+      printf("\n");
       printf("------------------------------------------------------\n");
       printf("------------------------------------------------------\n");
       printf("------------------------------------------------------\n");
       printf("stubs:\n");
       for (const auto& stub: stubs) 
-	printf("station=%d phi=%d phiB=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),stub->phiB()); 
+	printf("station=%d phi=%d phiB=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub)); 
       printf("------------------------------------------------------\n");
       printf("------------------------------------------------------\n");
 
@@ -298,12 +330,16 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
       if (verbose_)
 	printf("propagated Coordinates step:%d,phi=%d,phiB=%d,K=%d\n",track.step(),track.positionAngle(),track.bendingAngle(),track.curvature());
 
-      if (track.step()>0)
-	if (getBit(mask,track.step()-1))
+      if (track.step()>0) 
+	if (getBit(mask,track.step()-1)) {
 	  if (!update(track,stubs,seed->scNum()))
 	    break;
+	  if (verbose_)
+	    printf("updated Coordinates step:%d,phi=%d,phiB=%d,K=%d\n",track.step(),track.positionAngle(),track.bendingAngle(),track.curvature());
+	}
       if (track.step()==0) {
 	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),track.bendingAngle());
+	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	vertexConstraint(track);
 	if (verbose_) {
 	  printf(" Coordinates after vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());

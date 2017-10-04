@@ -25,14 +25,14 @@ class L1KalmanMuonTrackProducer : public edm::stream::EDProducer<> {
       virtual void beginStream(edm::StreamID) override;
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       virtual void endStream() override;
-  edm::InputTag src_;
+  edm::EDGetTokenT<std::vector<L1MuDTChambPhDigi> > src_;
   L1MuonKF *kalmanFilter_;
   L1MuonKF::StubRefVector collect(const L1MuonKF::StubRefVector&,L1MuonKF::StubRefVector&, int, int );
   
 
 };
 L1KalmanMuonTrackProducer::L1KalmanMuonTrackProducer(const edm::ParameterSet& iConfig):
-  src_(iConfig.getParameter<edm::InputTag>("src")),
+  src_(consumes<std::vector<L1MuDTChambPhDigi> >(iConfig.getParameter<edm::InputTag>("src"))),
   kalmanFilter_(new L1MuonKF(iConfig.getParameter<edm::ParameterSet>("algo")))
 {
   produces <std::vector<L1KalmanMuTrack> >();
@@ -52,11 +52,12 @@ L1KalmanMuonTrackProducer::~L1KalmanMuonTrackProducer()
 
 
 
-L1MuonKF::StubRefVector L1KalmanMuonTrackProducer::collect(const L1MuonKF::StubRefVector& input,L1MuonKF::StubRefVector& seeds,int sector,int wheel ){
+L1MuonKF::StubRefVector L1KalmanMuonTrackProducer::collect(const L1MuonKF::StubRefVector& in,L1MuonKF::StubRefVector& seeds,int sector,int wheel ){
   L1MuonKF::StubRefVector output;
-  for (const auto& stub : input) {
-    if (stub->scNum()==sector && stub->whNum()==wheel) {
-      seeds.push_back(stub);
+  for (const auto& stub : in) {
+     
+    if ((stub->scNum()==sector) && (stub->whNum()==wheel) && (stub->stNum() !=1)) {
+     seeds.push_back(stub);
     }
     if ( (abs(stub->scNum()-sector)<=1) ||(stub->scNum()==0 && sector==11) || (stub->scNum()==11 && sector==0)) {
       if (abs(stub->whNum()-wheel)<=1) {
@@ -79,20 +80,21 @@ L1KalmanMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 {
    using namespace edm;
    Handle<std::vector<L1MuDTChambPhDigi> >stubHandle;
-   iEvent.getByLabel(src_,stubHandle);
+   iEvent.getByToken(src_,stubHandle);
 
    L1MuonKF::StubRefVector stubs;
    for (unsigned int i=0;i<stubHandle->size();++i) {
      L1MuonKF::StubRef r(stubHandle,i);
      stubs.push_back(r);
    }
+   if (stubs.size()==0)
+     return;
 
-   L1MuonKF::StubRefVector seeds(8);
    std::vector<L1KalmanMuTrack> out;
    
-   for (unsigned int sector=0;sector<12;++sector) {
-     for (unsigned int wheel=-2;wheel<3;++wheel) {
-       seeds.clear();
+   for (int sector=0;sector<12;++sector) {
+     for (int wheel=-2;wheel<3;++wheel) {
+       L1MuonKF::StubRefVector seeds;
        L1MuonKF::StubRefVector inputs = collect(stubs,seeds,sector,wheel);
        for (const auto& seed: seeds) {
 	 L1MuonKF::TrackVector tracks = kalmanFilter_->process(seed,inputs);
