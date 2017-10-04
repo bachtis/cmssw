@@ -41,7 +41,7 @@ class L1MuonKF {
   void vertexConstraint(L1KalmanMuTrack&);
   void vertexConstraintOffline(L1KalmanMuTrack&);
   int etaBitmask(const L1KalmanMuTrack&);
-  int etaLookup(const L1KalmanMuTrack&);
+  bool etaLookup(L1KalmanMuTrack&);
   int phiBitmask(const L1KalmanMuTrack&);
   int customBitmask(unsigned int,unsigned int,unsigned int,unsigned int);
   bool getBit(int,int);
@@ -54,6 +54,16 @@ class L1MuonKF {
   std::vector<int> bPhi_;
   std::vector<int> aPhiB_;
   std::vector<int> bPhiB_;
+
+
+  //coarse eta LUT
+  std::vector<int> etaLUTAddr_;
+  std::vector<int> etaLUTVal_;
+
+  //Bits used for the phi,phiB and K
+  std::vector<int> bitWidth_;
+
+
   //Denominator for the precision used
   int denominator_;
 

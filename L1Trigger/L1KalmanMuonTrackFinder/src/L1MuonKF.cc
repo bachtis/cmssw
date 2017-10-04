@@ -11,6 +11,9 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   bPhi_(settings.getParameter<std::vector<int> >("bPhi")),
   aPhiB_(settings.getParameter<std::vector<int> >("aPhiB")),
   bPhiB_(settings.getParameter<std::vector<int> >("bPhiB")),
+  etaLUTAddr_(settings.getParameter<std::vector<int> >("etaLUTAddr")),
+  etaLUTVal_(settings.getParameter<std::vector<int> >("etaLUTValue")),
+  bitWidth_(settings.getParameter<std::vector<int> >("wordSize")),
   denominator_(settings.getParameter<int>("denominator")),
   useOfflineAlgo_(settings.getParameter<bool>("useOfflineAlgo")),
   mScatteringPhi_(settings.getParameter<std::vector<double> >("mScatteringPhi")),
@@ -66,8 +69,35 @@ int L1MuonKF::etaBitmask(const L1KalmanMuTrack& track)  {
 }
 
 
-int L1MuonKF::etaLookup(const L1KalmanMuTrack& track) {
-  return 0;
+bool L1MuonKF::etaLookup(L1KalmanMuTrack& track) {
+  int etaMask = etaBitmask(track);
+ 
+  int sign=0;
+  for (const auto& stub :track.stubs()) {
+    if (stub->whNum()!=0)
+      sign=sign+stub->whNum()/abs(stub->whNum());
+  }
+
+
+  for (unsigned int i=0;i<etaLUTAddr_.size();++i) {
+    int addr = etaLUTAddr_[i];
+    if (etaMask==addr) {
+      if (sign>0) {
+	track.setCoarseEta(etaMask,etaLUTVal_[i]);
+	return true;
+      }
+      else if (sign<0) {
+	track.setCoarseEta(etaMask,-etaLUTVal_[i]);
+	return true;
+      }
+      else {
+	track.setCoarseEta(etaMask,0);
+	return true;
+      }
+
+    }
+  }
+  return false;
 }
 
 
@@ -97,7 +127,7 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   //energy loss
   int KNew = K+charge*eLoss_[step-1]*K*K/(4*denominator_);
   //phi propagation
-  int phiNew = phi+(aPhi_[step-1]*K+bPhi_[step-1]*phiB*8)/denominator_;
+  int phiNew = phi+(aPhi_[step-1]*K+bPhi_[step-1]*8*phiB)/denominator_;
   //phiB propagation
   int phiBNew = phiB+(aPhiB_[step-1]*K+bPhiB_[step-1]*phiB)/denominator_;
   ///////////////////////////////////////////////////////
@@ -125,7 +155,7 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   //Add the multiple scattering
   int phiRMS = mScatteringPhi_[step-1]*K*K;
   int phiBRMS = mScatteringPhiB_[step-1]*K*K;
-  int crossTerm=0.5*sqrt(phiRMS*phiBRMS);
+  int crossTerm=sqrt(phiRMS*phiBRMS);
 
   std::vector<double> b(6);
   b[0] = 0;
@@ -270,18 +300,19 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
   std::vector<int> combinatorics;
   switch(seed->stNum()) {
   case 4:
-    combinatorics.push_back(customBitmask(0,0,1,1));
-    combinatorics.push_back(customBitmask(0,1,0,1));
-    combinatorics.push_back(customBitmask(1,0,0,1));
+    combinatorics.push_back(customBitmask(1,1,1,1));
     combinatorics.push_back(customBitmask(0,1,1,1));
     combinatorics.push_back(customBitmask(1,0,1,1));
     combinatorics.push_back(customBitmask(1,1,0,1));
-    combinatorics.push_back(customBitmask(1,1,1,1));
+    combinatorics.push_back(customBitmask(0,0,1,1));
+    combinatorics.push_back(customBitmask(0,1,0,1));
+    combinatorics.push_back(customBitmask(1,0,0,1));
     break;
   case 3:
-    combinatorics.push_back(customBitmask(0,1,1,0));
-    combinatorics.push_back(customBitmask(1,0,1,0));
     combinatorics.push_back(customBitmask(1,1,1,0));
+    combinatorics.push_back(customBitmask(1,0,1,0));
+    combinatorics.push_back(customBitmask(0,1,1,0));
+
     break;
   case 2:
     combinatorics.push_back(customBitmask(1,1,0,0));    
@@ -322,7 +353,12 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
     while(track.step()>0) {
       if (track.step()==1) {
 	track.setHitPattern(phiBitmask(track));
-	track.setCoarseEta(etaLookup(track),etaBitmask(track));
+	if(!etaLookup(track)) {
+	  if (verbose_)
+	    printf("Failed to assign coarse eta\n");
+	  break;
+
+	}
 	setFloatingPointValues(track,false);
       }
       propagate(track);
