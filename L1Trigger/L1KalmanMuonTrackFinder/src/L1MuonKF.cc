@@ -99,7 +99,7 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   //phi propagation
   int phiNew = phi+(aPhi_[step-1]*K+bPhi_[step-1]*phiB*8)/denominator_;
   //phiB propagation
-  int phiBNew = (aPhiB_[step-1]*K+bPhiB_[step-1]*phiB*8)/denominator_;
+  int phiBNew = phiB+(aPhiB_[step-1]*K+bPhiB_[step-1]*phiB)/denominator_;
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
   //where we want to check what is happening in the covariaznce matrix 
@@ -107,15 +107,15 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
 
   //Create the transformation matrix
   double a[9];
-  a[0] = 1;
-  a[1] = 0;
-  a[2] = 0;
+  a[0] = 1.0;
+  a[1] = 0.0;
+  a[2] = 0.0;
   a[3] = aPhi_[step-1]*1.0/float(denominator_);
-  a[4] = 1;
+  a[4] = 1.0;
   a[5] = bPhi_[step-1]*8.0/float(denominator_);
   a[6] = aPhiB_[step-1]*1.0/float(denominator_);
-  a[7] = 0;
-  a[8] = bPhiB_[step-1]*8.0/float(denominator_);
+  a[7] = 0.0;
+  a[8] = 1.0+bPhiB_[step-1]/float(denominator_);
 
 
   ROOT::Math::SMatrix<double,3> P(a,9);
@@ -201,7 +201,6 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     if (!S.Invert())
       return false;
     Matrix32 Gain = track.covariance*ROOT::Math::Transpose(H)*S;
-   
     int KNew  = round(trackK+Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
     int phiNew  = round(trackPhi+Gain(1,0)*residual(0)+Gain(1,1)*residual(1));
     int phiBNew  = round(trackPhiB+Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
@@ -239,7 +238,7 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
   S=1.0/S;
   
   Matrix31 Gain = track.covariance*(ROOT::Math::Transpose(H))*S;
-  
+  std::cout << Gain <<std::endl;
   int KNew = round(track.curvature()+Gain(0,0)*residual);
   int phiNew = round(track.positionAngle()+Gain(1,0)*residual);
   track.setCoordinatesAtVertex(KNew,phiNew,track.dxy());
