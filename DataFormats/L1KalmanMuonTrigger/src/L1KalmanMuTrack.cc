@@ -11,6 +11,7 @@ L1KalmanMuTrack::~L1KalmanMuTrack() {
 
 L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
   LeafCandidate(),
+  covariance_(std::vector<double>(6,0.0)),
   curv_(0),
   phi_(stub->phi()),
   phiB_(stub->phiB()),
@@ -20,7 +21,7 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
   etaCoarsePattern_(0),
   step_(stub->stNum())
 {
-  
+
   stubs_.push_back(stub);
 }
 
@@ -165,7 +166,7 @@ void L1KalmanMuTrack::setKalmanGain(unsigned int step,float a1, float a2,float a
 }
 
 
-std::vector<float> L1KalmanMuTrack::kalmanGain(unsigned int step) {
+const std::vector<float>&  L1KalmanMuTrack::kalmanGain(unsigned int step) const{
   switch(step) {
   case 3: 
     return kalmanGain3_;
@@ -175,15 +176,17 @@ std::vector<float> L1KalmanMuTrack::kalmanGain(unsigned int step) {
     return kalmanGain1_;
   case 0:
     return kalmanGain0_;
-  default:
-   return std::vector<float>();
   }
+  return kalmanGain0_;
+}
+
+const std::vector<double>& L1KalmanMuTrack::covariance() const {
+  return covariance_;
 }
 
 
 
-
-bool L1KalmanMuTrack::overlap(const L1KalmanMuTrack& other) {
+bool L1KalmanMuTrack::overlap( const L1KalmanMuTrack& other) const{
  
   for (const auto& s1 : stubs_) {
     for (const auto& s2 : other.stubs()) {
@@ -195,4 +198,15 @@ bool L1KalmanMuTrack::overlap(const L1KalmanMuTrack& other) {
     }
   }
   return false;
+}
+
+
+
+void L1KalmanMuTrack::setCovariance(const CovarianceMatrix& c) {
+  covariance_[0] = c(0,0);
+  covariance_[1] = c(0,1);
+  covariance_[2] = c(1,1);
+  covariance_[3] = c(0,2);
+  covariance_[4] = c(1,2);
+  covariance_[5] = c(2,2);
 }

@@ -153,8 +153,10 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
 
 
   ROOT::Math::SMatrix<double,3> P(a,9);
- 
-  track.covariance = ROOT::Math::Similarity(P,track.covariance);
+
+  const std::vector<double>& covLine = track.covariance();
+  L1KalmanMuTrack::CovarianceMatrix cov(covLine.begin(),covLine.end());
+  cov = ROOT::Math::Similarity(P,cov);
 
   //Add the multiple scattering
   int phiRMS = mScatteringPhi_[step-1]*K*K;
@@ -170,7 +172,8 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   b[5] = phiBRMS;
 
   reco::Candidate::CovarianceMatrix MS(b.begin(),b.end());
-  track.covariance = track.covariance+MS;
+  cov = cov+MS;
+  track.setCovariance(cov);
   track.setCoordinates(step-1,KNew,phiNew,phiBNew);
 
 }
@@ -231,27 +234,33 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     R(0,1) = 0.0;
     R(1,0) = 0.0;
     R(1,1) = pointResolutionPhiB_;
-    CovarianceMatrix2 S = ROOT::Math::Similarity(H,track.covariance)+R;
+
+  const std::vector<double>& covLine = track.covariance();
+  L1KalmanMuTrack::CovarianceMatrix cov(covLine.begin(),covLine.end());
+
+    CovarianceMatrix2 S = ROOT::Math::Similarity(H,cov)+R;
     if (!S.Invert())
       return false;
-    Matrix32 Gain = track.covariance*ROOT::Math::Transpose(H)*S;
+    Matrix32 Gain = cov*ROOT::Math::Transpose(H)*S;
     track.setKalmanGain(track.step(),Gain(0,0),Gain(0,1),Gain(1,0),Gain(1,1),Gain(2,0),Gain(2,1));
     int KNew  = round(trackK+Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
     int phiNew  = round(trackPhi+Gain(1,0)*residual(0)+Gain(1,1)*residual(1));
     int phiBNew  = round(trackPhiB+Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
 
     track.setCoordinates(track.step(),KNew,phiNew,phiBNew);
-    Matrix33 cov = track.covariance - Gain*(H*track.covariance);
-    track.covariance(0,0)=cov(0,0); 
-    track.covariance(0,1)=cov(0,1); 
-    track.covariance(0,2)=cov(0,2); 
-    track.covariance(1,0)=cov(1,0); 
-    track.covariance(1,1)=cov(1,1); 
-    track.covariance(1,2)=cov(1,2); 
-    track.covariance(2,0)=cov(2,0); 
-    track.covariance(2,1)=cov(2,1); 
-    track.covariance(2,2)=cov(2,2); 
-
+    Matrix33 covNew = cov - Gain*(H*cov);
+    L1KalmanMuTrack::CovarianceMatrix c;
+ 
+    c(0,0)=covNew(0,0); 
+    c(0,1)=covNew(0,1); 
+    c(0,2)=covNew(0,2); 
+    c(1,0)=covNew(1,0); 
+    c(1,1)=covNew(1,1); 
+    c(1,2)=covNew(1,2); 
+    c(2,0)=covNew(2,0); 
+    c(2,1)=covNew(2,1); 
+    c(2,2)=covNew(2,2); 
+    track.setCovariance(c);
     track.addStub(stub);
     return true;
 }
@@ -268,29 +277,32 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
   H(0,0)=0;
   H(0,1)=0;
   H(0,2)=1;
+
+  const std::vector<double>& covLine = track.covariance();
+  L1KalmanMuTrack::CovarianceMatrix cov(covLine.begin(),covLine.end());
   
-  double S = (ROOT::Math::Similarity(H,track.covariance))(0,0)+pointResolutionVertex_;
+  double S = (ROOT::Math::Similarity(H,cov))(0,0)+pointResolutionVertex_;
   S=1.0/S;
   
-  Matrix31 Gain = track.covariance*(ROOT::Math::Transpose(H))*S;
+  Matrix31 Gain = cov*(ROOT::Math::Transpose(H))*S;
   track.setKalmanGain(track.step(),Gain(0,0),Gain(1,0),Gain(2,0));
 
   int KNew = round(track.curvature()+Gain(0,0)*residual);
   int phiNew = round(track.positionAngle()+Gain(1,0)*residual);
   track.setCoordinatesAtVertex(KNew,phiNew,track.dxy());
-  Matrix33 cov = track.covariance - Gain*(H*track.covariance);
-  track.covariance(0,0)=cov(0,0); 
-  track.covariance(0,1)=cov(0,1); 
-  track.covariance(0,2)=cov(0,2); 
-  track.covariance(1,0)=cov(1,0); 
-  track.covariance(1,1)=cov(1,1); 
-  track.covariance(1,2)=cov(1,2); 
-  track.covariance(2,0)=cov(2,0); 
-  track.covariance(2,1)=cov(2,1); 
-  track.covariance(2,2)=cov(2,2); 
-
-    //  track.covariance = track.covariance - Gain*H*track.covariance;
-
+  Matrix33 covNew = cov - Gain*(H*cov);
+  L1KalmanMuTrack::CovarianceMatrix c;
+  c(0,0)=covNew(0,0); 
+  c(0,1)=covNew(0,1); 
+  c(0,2)=covNew(0,2); 
+  c(1,0)=covNew(1,0); 
+  c(1,1)=covNew(1,1); 
+  c(1,2)=covNew(1,2); 
+  c(2,0)=covNew(2,0); 
+  c(2,1)=covNew(2,1); 
+  c(2,2)=covNew(2,2); 
+  track.setCovariance(c);
+  //  track.covariance = track.covariance - Gain*H*track.covariance;
 }
 
 
@@ -302,6 +314,10 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
   if (vertex) {
     K  = track.curvatureAtVertex();
     phiINT = track.phiAtVertex();
+    if (K==0)
+      track.setCharge(0);
+    else
+      track.setCharge(K/abs(K));
   }
   else {
     K=track.curvature();
@@ -352,15 +368,17 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
   for( const auto& mask : combinatorics) {
     L1KalmanMuTrack track(seed);
     //set covariance
-    track.covariance(0,0)=4096*4096;
-    track.covariance(0,1)=0;
-    track.covariance(0,2)=0;
-    track.covariance(1,0)=0;
-    track.covariance(1,1)=pointResolutionPhi_;
-    track.covariance(1,2)=0;
-    track.covariance(2,0)=0;
-    track.covariance(2,1)=0;
-    track.covariance(2,2)=pointResolutionPhiB_;
+    L1KalmanMuTrack::CovarianceMatrix covariance;  
+    covariance(0,0)=4096*4096;
+    covariance(0,1)=0;
+    covariance(0,2)=0;
+    covariance(1,0)=0;
+    covariance(1,1)=pointResolutionPhi_;
+    covariance(1,2)=0;
+    covariance(2,0)=0;
+    covariance(2,1)=0;
+    covariance(2,2)=pointResolutionPhiB_;
+    track.setCovariance(covariance);
     //
     if (verbose_) {
       printf("New Kalman fit staring at step=%d station = %d, phi=%d,phiB=%d\n",track.step(),seed->stNum(),track.positionAngle(),track.bendingAngle());

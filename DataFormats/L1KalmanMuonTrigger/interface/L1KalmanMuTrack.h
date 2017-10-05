@@ -57,6 +57,33 @@ public:
   //Associated stubs
   const StubRefVector& stubs() const;
 
+  //get Kalman gain
+  const std::vector<float>& kalmanGain(unsigned int) const;
+
+  //get covariance
+  const std::vector<double>& covariance() const;
+
+  //check ogverlap
+  bool overlap(const L1KalmanMuTrack&) const; 
+
+
+  bool operator==(const L1KalmanMuTrack& t2) const{   
+    if (this->stubs().size()!=t2.stubs().size())
+      return false;
+    for (unsigned int i=0;i<this->stubs().size();++i)  {
+      const StubRef& s1 = this->stubs()[i];
+      const StubRef& s2 = t2.stubs()[i];
+      if (s1->scNum()!= s2->scNum() ||
+	  s1->whNum()!=s2->whNum() ||
+	  s1->stNum()!=s2->stNum() ||
+	  s1->Ts2Tag()!=s2->Ts2Tag())
+	return false;
+    }
+    return true;
+  }
+
+
+
   //Set coordinates in muon system
   void setCoordinates(int,int,int,int );
 
@@ -80,18 +107,17 @@ public:
 
   //kalman gain management
   void setKalmanGain(unsigned int step, float a1 ,float a2,float a3,float a4=0 ,float a5=0,float a6=0);
-  std::vector<float> kalmanGain(unsigned int);
-  
-  //For offline usage
-  CovarianceMatrix covariance;
+ 
+  void setCovariance(const CovarianceMatrix&);
 
-  bool overlap(const L1KalmanMuTrack&);
 
  private:
   //Floating point coordinates for studies
   PolarLorentzVector unconstrainedP4_;
 
-
+  //Covariance matrix for studies
+  std::vector<double> covariance_;
+  
   StubRefVector stubs_;
 
   //vertex coordinates
