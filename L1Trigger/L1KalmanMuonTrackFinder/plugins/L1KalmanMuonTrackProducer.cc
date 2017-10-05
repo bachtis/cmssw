@@ -80,6 +80,7 @@ L1KalmanMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 {
    using namespace edm;
    Handle<std::vector<L1MuDTChambPhDigi> >stubHandle;
+   std::unique_ptr<std::vector<L1KalmanMuTrack> > out(new std::vector<L1KalmanMuTrack>);
    iEvent.getByToken(src_,stubHandle);
 
    L1MuonKF::StubRefVector stubs;
@@ -87,11 +88,7 @@ L1KalmanMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
      L1MuonKF::StubRef r(stubHandle,i);
      stubs.push_back(r);
    }
-   if (stubs.size()==0)
-     return;
-
-   std::vector<L1KalmanMuTrack> out;
-   
+  
    for (int sector=0;sector<12;++sector) {
      for (int wheel=-2;wheel<3;++wheel) {
        L1MuonKF::StubRefVector seeds;
@@ -99,11 +96,12 @@ L1KalmanMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
        for (const auto& seed: seeds) {
 	 L1MuonKF::TrackVector tracks = kalmanFilter_->process(seed,inputs);
 	 for (const auto& t : tracks) 
-	   out.push_back(t);
+	   out->push_back(t);
        }
      }
    }
-   iEvent.put(std::make_unique<std::vector<L1KalmanMuTrack> >(out));
+   iEvent.put(std::move(out));
+
 }
 
 // ------------ method called once each stream before processing any runs, lumis or events  ------------

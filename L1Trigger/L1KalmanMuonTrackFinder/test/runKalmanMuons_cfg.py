@@ -24,3 +24,4 @@ process.out = cms.OutputModule("PoolOutputModule",
   
 process.p = cms.Path(process.l1KalmanMuons)
 process.e = cms.EndPath(process.out)
+process.schedule = cms.Schedule(process.p,process.e)
