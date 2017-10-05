@@ -77,6 +77,10 @@ public:
 
   //Add a stub
   void addStub(const StubRef&); 
+
+  //kalman gain management
+  void setKalmanGain(unsigned int step, float a1 ,float a2,float a3,float a4=0 ,float a5=0,float a6=0);
+  std::vector<float> kalmanGain(unsigned int);
   
   //For offline usage
   CovarianceMatrix covariance;
@@ -111,6 +115,13 @@ public:
 
   //propagation step
   int step_;
+
+
+  //Kalman Gain for making LUTs
+  std::vector<float> kalmanGain0_;
+  std::vector<float> kalmanGain1_;
+  std::vector<float> kalmanGain2_;
+  std::vector<float> kalmanGain3_;
 
   
 }; 

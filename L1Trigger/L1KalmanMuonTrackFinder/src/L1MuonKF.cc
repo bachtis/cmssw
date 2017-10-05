@@ -231,6 +231,7 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     if (!S.Invert())
       return false;
     Matrix32 Gain = track.covariance*ROOT::Math::Transpose(H)*S;
+    track.setKalmanGain(track.step(),Gain(0,0),Gain(0,1),Gain(1,0),Gain(1,1),Gain(2,0),Gain(2,1));
     int KNew  = round(trackK+Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
     int phiNew  = round(trackPhi+Gain(1,0)*residual(0)+Gain(1,1)*residual(1));
     int phiBNew  = round(trackPhiB+Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
@@ -268,6 +269,7 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
   S=1.0/S;
   
   Matrix31 Gain = track.covariance*(ROOT::Math::Transpose(H))*S;
+  track.setKalmanGain(track.step(),Gain(0,0),Gain(1,0),Gain(2,0));
 
   int KNew = round(track.curvature()+Gain(0,0)*residual);
   int phiNew = round(track.positionAngle()+Gain(1,0)*residual);

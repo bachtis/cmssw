@@ -18,6 +18,7 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
   etaCoarsePattern_(0),
   step_(stub->stNum())
 {
+  
   stubs_.push_back(stub);
 }
 
@@ -121,4 +122,58 @@ void L1KalmanMuTrack::setPtEtaPhi(double pt ,double eta, double phi,bool atVerte
 
 void L1KalmanMuTrack::addStub(const L1KalmanMuTrack::StubRef& stub) {
   stubs_.push_back(stub);
+}
+
+
+void L1KalmanMuTrack::setKalmanGain(unsigned int step,float a1, float a2,float a3,float a4,float a5,float a6) {
+  switch(step) {
+  case 3: 
+    kalmanGain3_.push_back(a1);
+    kalmanGain3_.push_back(a2);
+    kalmanGain3_.push_back(a3);
+    kalmanGain3_.push_back(a4);
+    kalmanGain3_.push_back(a5);
+    kalmanGain3_.push_back(a6);
+    break;
+  case 2: 
+    kalmanGain2_.push_back(a1);
+    kalmanGain2_.push_back(a2);
+    kalmanGain2_.push_back(a3);
+    kalmanGain2_.push_back(a4);
+    kalmanGain2_.push_back(a5);
+    kalmanGain2_.push_back(a6);
+    break;
+  case 1: 
+    kalmanGain1_.push_back(a1);
+    kalmanGain1_.push_back(a2);
+    kalmanGain1_.push_back(a3);
+    kalmanGain1_.push_back(a4);
+    kalmanGain1_.push_back(a5);
+    kalmanGain1_.push_back(a6);
+    break;
+  case 0:
+    kalmanGain0_.push_back(a1);
+    kalmanGain0_.push_back(a2);
+    kalmanGain0_.push_back(a3);
+    break;
+
+ default:
+   printf("Critical ERROR on setting the Klamn gain\n"); 
+  }
+}
+
+
+std::vector<float> L1KalmanMuTrack::kalmanGain(unsigned int step) {
+  switch(step) {
+  case 3: 
+    return kalmanGain3_;
+  case 2: 
+    return kalmanGain2_;
+  case 1: 
+    return kalmanGain1_;
+  case 0:
+    return kalmanGain0_;
+  default:
+   return std::vector<float>();
+  }
 }
