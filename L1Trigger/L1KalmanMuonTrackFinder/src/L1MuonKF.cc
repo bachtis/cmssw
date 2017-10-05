@@ -57,13 +57,13 @@ int L1MuonKF::etaBitmask(const L1KalmanMuTrack& track)  {
   int bitmask = 0;
   for (const auto& stub : track.stubs()) {
     if (stub->stNum()==1)
-      bitmask+=pow(2,abs(stub->whNum()));
+      bitmask+= (1<<abs(stub->whNum()));
     if (stub->stNum()==2)
-      bitmask+=pow(2,3+abs(stub->whNum()));
+      bitmask+= (1<<(3+abs(stub->whNum())));
     if (stub->stNum()==3)
-      bitmask+=pow(2,6+abs(stub->whNum()));
+      bitmask+= (1<<(6+abs(stub->whNum())));
     if (stub->stNum()==4)
-      bitmask+=pow(2,9+abs(stub->whNum()));
+      bitmask+=(1<<(9+abs(stub->whNum())));
   }
   return bitmask;
 }
@@ -83,15 +83,15 @@ bool L1MuonKF::etaLookup(L1KalmanMuTrack& track) {
     int addr = etaLUTAddr_[i];
     if (etaMask==addr) {
       if (sign>0) {
-	track.setCoarseEta(etaMask,etaLUTVal_[i]);
+	track.setCoarseEta(etaLUTVal_[i],etaMask);
 	return true;
       }
       else if (sign<0) {
-	track.setCoarseEta(etaMask,-etaLUTVal_[i]);
+	track.setCoarseEta(-etaLUTVal_[i],etaMask);
 	return true;
       }
       else {
-	track.setCoarseEta(etaMask,0);
+	track.setCoarseEta(0,etaMask);
 	return true;
       }
 
@@ -268,7 +268,7 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
   S=1.0/S;
   
   Matrix31 Gain = track.covariance*(ROOT::Math::Transpose(H))*S;
-  std::cout << Gain <<std::endl;
+
   int KNew = round(track.curvature()+Gain(0,0)*residual);
   int phiNew = round(track.positionAngle()+Gain(1,0)*residual);
   track.setCoordinatesAtVertex(KNew,phiNew,track.dxy());
@@ -290,7 +290,29 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
 
 
 void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
+  int K,phiINT;
 
+  int coarseEta=track.coarseEta();
+  if (vertex) {
+    K  = track.curvatureAtVertex();
+    phiINT = track.phiAtVertex();
+  }
+  else {
+    K=track.curvature();
+    phiINT=track.positionAngle();
+  }
+
+  double lsb = 1.25/float(1 << bitWidth_[2]);
+  double pt = 1.0/(lsb*K); 
+  double eta = float(coarseEta)/256.0;
+
+  double phi= -M_PI+track.stubs()[0]->scNum()*M_PI/6.0+phiINT*M_PI/(12.0*2048.);
+  if (phi<-M_PI)
+    phi=phi+2*M_PI;
+
+  if (phi>M_PI)
+    phi=phi-2*M_PI;
+  track.setPtEtaPhi(pt,eta,phi,vertex);
 }
 
 
@@ -360,6 +382,8 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 
 	}
 	setFloatingPointValues(track,false);
+	if (verbose_) 
+	  printf ("Floating point coordinates in Muon System: pt=%f, eta=%f phi=%f\n",track.unconstrainedP4().pt(),track.unconstrainedP4().eta(),track.unconstrainedP4().phi());
       }
       propagate(track);
       if (verbose_)
@@ -374,6 +398,7 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	}
       if (track.step()==0) {
 	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),track.bendingAngle());
+	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	vertexConstraint(track);
 	if (verbose_) {
@@ -381,8 +406,11 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	  printf("------------------------------------------------------\n");
 	  printf("------------------------------------------------------\n");
 	}
-	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),track.dxy());
 	setFloatingPointValues(track,true);
+	if (verbose_)
+	  printf ("Floating point coordinates at vertex: pt=%f, eta=%f phi=%f\n",track.pt(),track.eta(),track.phi());
+
+	
 	output.push_back(track);
       }
     }

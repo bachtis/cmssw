@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 l1MuonKalmanFilterSettings =  cms.PSet(
-    verbose = cms.bool(True),
+    verbose = cms.bool(False),
     eLoss = cms.vint32(-21,-8,-9,-8), #divide this by 16384
     aPhi  = cms.vint32(-29556,-286,-332,-245),   #divide this by 4096
     bPhi  = cms.vint32(4096,-631,-709,-602),         # divide this by 512 
@@ -15,7 +15,7 @@ l1MuonKalmanFilterSettings =  cms.PSet(
     mScatteringPhiB = cms.vdouble(2.0e-3,0.5e-4,0.75e-3,0.75e-3),
     pointResolutionPhi = cms.double(6),
     pointResolutionPhiB = cms.double(15),
-    pointResolutionVertex = cms.double(10),
+    pointResolutionVertex = cms.double(1),
 
     #coarse eta look up table
     etaLUTAddr=cms.vint32(2176,1168,584,36,144,272,130,2194,65,1026,2322,
