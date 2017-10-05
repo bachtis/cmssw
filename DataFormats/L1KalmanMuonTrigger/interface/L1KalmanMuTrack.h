@@ -85,6 +85,8 @@ public:
   //For offline usage
   CovarianceMatrix covariance;
 
+  bool overlap(const L1KalmanMuTrack&);
+
  private:
   //Floating point coordinates for studies
   PolarLorentzVector unconstrainedP4_;

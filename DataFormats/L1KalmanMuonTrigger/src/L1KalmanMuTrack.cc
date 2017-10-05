@@ -177,3 +177,20 @@ std::vector<float> L1KalmanMuTrack::kalmanGain(unsigned int step) {
    return std::vector<float>();
   }
 }
+
+
+
+
+bool L1KalmanMuTrack::overlap(const L1KalmanMuTrack& other) {
+ 
+  for (const auto& s1 : stubs_) {
+    for (const auto& s2 : other.stubs()) {
+      if (s1->scNum()== s2->scNum() && 
+	  s1->whNum()==s2->whNum() &&
+	  s1->stNum()==s2->stNum() &&
+	  s1->Ts2Tag()==s2->Ts2Tag())
+	return true;
+    }
+  }
+  return false;
+}
