@@ -20,11 +20,11 @@ namespace DataFormats_L1DTTrackFinder {
     L1MuDTChambPhContainer ph_K;
     L1MuDTChambThContainer th_K;
     L1MuDTTrackContainer   tr_K;
-
-    edm::Ref<std::vector<L1MuDTChambPhDigi> > ph_Ref;
-
+    edm::Wrapper<std::vector<L1MuDTChambPhDigi> > ph_WR_new;
     edm::Wrapper<L1MuDTChambPhContainer> ph_W;
     edm::Wrapper<L1MuDTChambThContainer> th_W;
     edm::Wrapper<L1MuDTTrackContainer>   tr_W;
+    edm::Ref<std::vector<L1MuDTChambPhDigi> > ph_Ref;
+    edm::Wrapper<std::vector<edm::Ref<std::vector<L1MuDTChambPhDigi> > > > ph_WVECTRef;
   };
 }

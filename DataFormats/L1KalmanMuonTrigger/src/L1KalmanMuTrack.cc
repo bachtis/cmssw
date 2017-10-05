@@ -1,7 +1,8 @@
 #include "DataFormats/L1KalmanMuonTrigger/interface/L1KalmanMuTrack.h"
 
-L1KalmanMuTrack::L1KalmanMuTrack() {
-
+L1KalmanMuTrack::L1KalmanMuTrack(): 
+  LeafCandidate()
+{
 }
 
 L1KalmanMuTrack::~L1KalmanMuTrack() {
@@ -9,6 +10,7 @@ L1KalmanMuTrack::~L1KalmanMuTrack() {
 }
 
 L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
+  LeafCandidate(),
   curv_(0),
   phi_(stub->phi()),
   phiB_(stub->phiB()),

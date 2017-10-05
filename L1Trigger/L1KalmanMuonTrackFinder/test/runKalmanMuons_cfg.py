@@ -4,7 +4,7 @@ process = cms.Process("L1MUONKF")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(3) )
 
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
@@ -18,7 +18,7 @@ process.load("L1Trigger.L1KalmanMuonTrackFinder.l1KalmanMuons_cff")
 
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('output.root')
+    fileName = cms.untracked.string('singleMuon140.root')
 )
 
   
