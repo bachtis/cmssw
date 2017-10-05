@@ -15,6 +15,10 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   etaLUTVal_(settings.getParameter<std::vector<int> >("etaLUTValue")),
   bitWidth_(settings.getParameter<std::vector<int> >("wordSize")),
   denominator_(settings.getParameter<int>("denominator")),
+  chiSquareVertexA_(settings.getParameter<std::vector<int> >("chiSquareVertexA")),
+  chiSquareVertexB_(settings.getParameter<std::vector<int> >("chiSquareVertexB")),
+  chiSquareVertexC_(settings.getParameter<std::vector<int> >("chiSquareVertexC")),
+  chiSquareVertexDenominator_(settings.getParameter<int>("chiSquareVertexDenominator")),
   useOfflineAlgo_(settings.getParameter<bool>("useOfflineAlgo")),
   mScatteringPhi_(settings.getParameter<std::vector<double> >("mScatteringPhi")),
   mScatteringPhiB_(settings.getParameter<std::vector<double> >("mScatteringPhiB")),
@@ -403,8 +407,9 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	vertexConstraint(track);
+	estimateChiSquareVertex(track);
 	if (verbose_) {
-	  printf(" Coordinates after vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
+	  printf(" Coordinates after vertex constraint step:%d,phi=%d,dxy=%d,K=%d  maximum local chi2=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex(),track.approxChi2());
 	  printf("------------------------------------------------------\n");
 	  printf("------------------------------------------------------\n");
 	}
@@ -423,4 +428,20 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 
 
 
+
+
+void L1MuonKF::estimateChiSquareVertex(L1KalmanMuTrack& track) {
+  //here we have a simplification of the algorithm for the sake of the emulator - rsult is identical
+  // we apply cuts on the firmware as |u -u'|^2 < a+b *K^2 
+  int phi = track.phiAtVertex();
+  int K = track.curvatureAtVertex();
+  float maxChi2 = 0;
+  for (const auto& stub: track.stubs()) {
+    float p = correctedPhi(stub,track.stubs()[0]->scNum())+8*stub->phiB()-phi-chiSquareVertexA_[stub->stNum()-1]*2*K/chiSquareVertexDenominator_;
+    p = p*p/(chiSquareVertexB_[stub->stNum()-1]+chiSquareVertexC_[stub->stNum()-1]*K*K/chiSquareVertexDenominator_);
+    if (p>maxChi2)
+      maxChi2=p;     
+  }
+  track.setApproxChi2(int(maxChi2*128));
+}
 

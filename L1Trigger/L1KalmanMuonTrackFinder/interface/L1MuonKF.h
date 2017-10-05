@@ -46,6 +46,8 @@ class L1MuonKF {
   int customBitmask(unsigned int,unsigned int,unsigned int,unsigned int);
   bool getBit(int,int);
   void setFloatingPointValues(L1KalmanMuTrack&,bool);
+  void estimateChiSquareVertex(L1KalmanMuTrack&);
+
 
 
   //propagation coefficients
@@ -67,6 +69,13 @@ class L1MuonKF {
   //Denominator for the precision used
   int denominator_;
 
+  //Chi Square estimator input
+  std::vector<int> chiSquareVertexA_;
+  std::vector<int> chiSquareVertexB_;
+  std::vector<int> chiSquareVertexC_;
+  int chiSquareVertexDenominator_;
+
+
 
   //STUFF NOT USED IN THE FIRMWARE BUT ONLY FOR DEBUGGING
   ///////////////////////////////////////////////////////
@@ -81,6 +90,8 @@ class L1MuonKF {
   //point resolution for vertex
   double pointResolutionVertex_;
 
+  
+  
  
 
 

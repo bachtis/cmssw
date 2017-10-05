@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 l1MuonKalmanFilterSettings =  cms.PSet(
-    verbose = cms.bool(False),
+    verbose = cms.bool(True),
     eLoss = cms.vint32(-21,-8,-9,-8), #divide this by 16384
     aPhi  = cms.vint32(-29556,-286,-332,-245),   #divide this by 4096
     bPhi  = cms.vint32(4096,-631,-709,-602),         # divide this by 512 
@@ -9,6 +9,10 @@ l1MuonKalmanFilterSettings =  cms.PSet(
     bPhiB =  cms.vint32(-8192,631,709,602), #divide this by 4096
     wordSize =  cms.vint32(11,8,11), #one for phi one for phiB and one for K
     denominator =  cms.int32(4096), #common denominator for precision
+    chiSquareVertexA = cms.vint32(585,532,479,428),   #divide this by 64
+    chiSquareVertexB = cms.vint32(715,2000,2300,2700),
+    chiSquareVertexC = cms.vint32(133,187,184,177), #dvide this by 128
+    chiSquareVertexDenominator =  cms.int32(128), #common denominator for precision on Chi2 calculations
     useOfflineAlgo = cms.bool(True),
     ###Only for the offline algo -not in firmware -floating point 
     mScatteringPhi = cms.vdouble(1.5e-3,0.5e-4,4.4e-4,2.2e-4),
@@ -36,4 +40,3 @@ l1MuonKalmanFilterSettings =  cms.PSet(
                            224,169,155)
 
 )
-
