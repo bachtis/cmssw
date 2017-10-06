@@ -1,7 +1,7 @@
 #include "DataFormats/L1KalmanMuonTrigger/interface/L1KalmanMuTrack.h"
 
 L1KalmanMuTrack::L1KalmanMuTrack(): 
-  LeafCandidate()
+  reco::LeafCandidate(-1,reco::LeafCandidate::PolarLorentzVector(0.1,0.0,0.0,0.105))
 {
 }
 
@@ -10,7 +10,7 @@ L1KalmanMuTrack::~L1KalmanMuTrack() {
 }
 
 L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
-  LeafCandidate(),
+  reco::LeafCandidate(-1,reco::LeafCandidate::PolarLorentzVector(0.1,0.0,0.0,0.105)),
   covariance_(std::vector<double>(6,0.0)),
   curv_(0),
   phi_(stub->phi()),

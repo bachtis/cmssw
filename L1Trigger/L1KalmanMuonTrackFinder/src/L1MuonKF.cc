@@ -87,11 +87,11 @@ bool L1MuonKF::etaLookup(L1KalmanMuTrack& track) {
     int addr = etaLUTAddr_[i];
     if (etaMask==addr) {
       if (sign>0) {
-	track.setCoarseEta(etaLUTVal_[i],etaMask);
+	track.setCoarseEta(-etaLUTVal_[i],etaMask);
 	return true;
       }
       else if (sign<0) {
-	track.setCoarseEta(-etaLUTVal_[i],etaMask);
+	track.setCoarseEta(etaLUTVal_[i],etaMask);
 	return true;
       }
       else {
@@ -315,7 +315,7 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
     K  = track.curvatureAtVertex();
     phiINT = track.phiAtVertex();
     if (K==0)
-      track.setCharge(0);
+      track.setCharge(-1);
     else
       track.setCharge(K/abs(K));
   }
@@ -325,7 +325,7 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
   }
 
   double lsb = 1.25/float(1 << bitWidth_[2]);
-  double pt = 1.0/(lsb*K); 
+  double pt = 1.0/(lsb*abs(K))/1.146;  //1.146 is a digitization calib factor
   double eta = float(coarseEta)/256.0;
 
   double phi= -M_PI+track.stubs()[0]->scNum()*M_PI/6.0+phiINT*M_PI/(12.0*2048.);
@@ -431,10 +431,20 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	  printf("------------------------------------------------------\n");
 	  printf("------------------------------------------------------\n");
 	}
+	//Apply saturation
+	if (track.curvature()==0)
+	  track.setCoordinates(track.step(),-11,track.positionAngle(),track.bendingAngle());
+	else if (abs(track.curvature())<11)
+	  track.setCoordinates(track.step(),track.charge()*11,track.positionAngle(),track.bendingAngle());
+
+	if (track.curvatureAtVertex()==0)
+	  track.setCoordinatesAtVertex(-11,track.positionAngle(),track.bendingAngle());
+	else if (abs(track.curvatureAtVertex())<11)
+	  track.setCoordinatesAtVertex(track.charge()*11,track.phiAtVertex(),track.dxy());
+	///////
 	setFloatingPointValues(track,true);
 	if (verbose_)
 	  printf ("Floating point coordinates at vertex: pt=%f, eta=%f phi=%f\n",track.pt(),track.eta(),track.phi());
-
 	
 	output.push_back(track);
       }
