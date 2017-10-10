@@ -62,7 +62,7 @@ L1KalmanMuonTrackSelector::~L1KalmanMuonTrackSelector()
 bool
 L1KalmanMuonTrackSelector::preselect(const L1KalmanMuTrack& track)
 {
-  if (track.approxChi2()>maxLocalChi2_ && abs(track.curvatureAtVertex())>maxCurvature_)
+  if (track.approxChi2()>maxLocalChi2_ || abs(track.curvatureAtVertex())>maxCurvature_)
     return false;
   return true;
 }
@@ -73,13 +73,17 @@ L1KalmanMuonTrackSelector::keep(const L1KalmanMuTrack& track1,const L1KalmanMuTr
 {
   unsigned int stubs1 = track1.stubs().size();
   unsigned int stubs2 = track2.stubs().size();
-  if ((stubs1>stubs2) && (track1.approxChi2()-track2.approxChi2()>chiSquareOffset_))
+  if ((stubs1>stubs2) && (track1.approxChi2()-track2.approxChi2()>chiSquareOffset_)) {
     return false;
-  if ((stubs1<stubs2) && (track2.approxChi2()-track1.approxChi2()<chiSquareOffset_))
+  }
+  else if ((stubs1<stubs2) && (track2.approxChi2()-track1.approxChi2()<=chiSquareOffset_))
     return false;
-  if ((stubs1==stubs2) && (track1.approxChi2()>track2.approxChi2()))
+  else if ((stubs1==stubs2) && (track1.approxChi2()>track2.approxChi2()))
     return false;
-  return true;
+  else {
+    return true;
+
+  }
 }
 
 
@@ -94,13 +98,18 @@ L1KalmanMuonTrackSelector::clean(std::vector<L1KalmanMuTrack>& coll1, const std:
 	continue;
       if (!t1.overlap(t2))
 	continue;  
-      save=keep(t1,t2);
-
+      if(!keep(t1,t2)) {
+	save=false;
+	break;
+      }
+	
     }
     if (save)
       cleaned.push_back(t1);   
   }
-  coll1=cleaned;
+  coll1.clear();
+  for (const auto& track :cleaned)
+    coll1.push_back(track);
 
 }
 
@@ -147,9 +156,8 @@ L1KalmanMuonTrackSelector::produce(edm::Event& iEvent, const edm::EventSetup& iS
      printf("-----------------------------------\n");
    }
 
-   
-   clean(tracks4,tracks4);
-   clean(tracks4,tracks3);
+   clean(tracks4,tracks4);  
+   clean(tracks4,tracks3);  
 
    clean(tracks3,tracks3);
    clean(tracks3,tracks4);

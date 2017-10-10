@@ -9,7 +9,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10000) )
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-        'file:/scratch3/MTF/data/singleMu140.root'
+        'file:/scratch3/MTF/data/singleNu140.root'
     )
 )
 
@@ -18,7 +18,7 @@ process.load("L1Trigger.L1KalmanMuonTrackFinder.l1KalmanMuons_cff")
 
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('singleMuon140.root')
+    fileName = cms.untracked.string('singleNeutrino140.root')
 )
 
   

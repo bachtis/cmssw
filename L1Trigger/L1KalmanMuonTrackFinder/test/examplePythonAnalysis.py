@@ -107,7 +107,7 @@ genEtaBMTF=ROOT.TH1F("genEtaBMTF","genEta",40,-0.8,0.8)
 
 
 chiBestKMTF = ROOT.TH1F("chiBestKMTF","chiBest",512,0,8192)
-chiKMTF = ROOT.TH1F("chiKMTF","chiBest",512,0,8192)
+chiKMTF = ROOT.TH1F("chiKMTF","chiBest",512,0,8192*4)
 
 dxyBestKMTF = ROOT.TH1F("dxyBestKMTF","chiBest",512,0,512)
 dxyKMTF = ROOT.TH1F("dxyKMTF","chiBest",512,0,512)
@@ -120,8 +120,8 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 ##############################
 
-verbose=False
-tag='singleMuon140'
+verbose=True
+tag='singleNeutrino140'
 
 
 events=Events([tag+'.root'])
@@ -141,7 +141,7 @@ for event in events:
     bmtf = fetchBMTF(event)
 
     #printout
-    if verbose:
+    if verbose and (len(bmtf)>0 or len(kmtf)>0):
         log(stubs,gen,kmtfAll,kmtf,bmtf)
 
 
@@ -249,25 +249,32 @@ bmtfEffEta.Write("efficiencyVsEtaBMTF")
 
 chiBestKMTF.Write()  
 c = chiBestKMTF.GetCumulative()
-c.Scale(1.0/c.GetMaximum())
-c.Write("efficiencyVsBestChi2")
+if c.GetMaximum()!=0.0:
+    c.Scale(1.0/c.GetMaximum())
+    c.Write("efficiencyVsBestChi2")
 
+chiKMTF.Write()
 c = chiKMTF.GetCumulative()
-c.Scale(1.0/c.GetMaximum())
-c.Write("efficiencyVsChi2")
+if (c.GetMaximum())>0:
+    c.Scale(1.0/c.GetMaximum())
+    c.Write("efficiencyVsChi2")
 
 dxyBestKMTF.Write()  
 dxyKMTF.Write()
-      
+
+rateBMTF.Write()      
 c = rateBMTF.GetCumulative(False)
 c.Write("normRateBMTF")     
 
+rateKMTF.Write()      
 c = rateKMTF.GetCumulative(False)
 c.Write("normRateKMTF")     
 
+rateBMTFp7.Write()      
 c = rateBMTFp7.GetCumulative(False)
 c.Write("normRateBMTFEtaP7")     
 
+rateKMTFp7.Write()      
 c = rateKMTFp7.GetCumulative(False)
 c.Write("normRateKMTFEtaP7")     
 
