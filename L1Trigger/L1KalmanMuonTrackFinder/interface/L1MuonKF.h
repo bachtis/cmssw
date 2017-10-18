@@ -51,7 +51,7 @@ class L1MuonKF {
 
 
   //propagation coefficients
-  std::vector<int> eLoss_;
+  std::vector<double> eLoss_;
   std::vector<int> aPhi_;
   std::vector<int> bPhi_;
   std::vector<int> aPhiB_;

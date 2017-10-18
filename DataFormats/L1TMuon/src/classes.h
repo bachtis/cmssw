@@ -13,7 +13,7 @@
 
 #include <vector>
 
-namespace {
+namespace DataFormats_L1TMuon{
   struct dictionary {
     l1t::MuonCaloSumBxCollection caloSum;
     edm::Wrapper<l1t::MuonCaloSumBxCollection> caloSumWrap;

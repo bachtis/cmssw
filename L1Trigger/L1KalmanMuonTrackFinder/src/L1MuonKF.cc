@@ -6,7 +6,7 @@
 
 L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   verbose_(settings.getParameter<bool>("verbose")),
-  eLoss_(settings.getParameter<std::vector<int> >("eLoss")),
+  eLoss_(settings.getParameter<std::vector<double> >("eLoss")),
   aPhi_(settings.getParameter<std::vector<int> >("aPhi")),
   bPhi_(settings.getParameter<std::vector<int> >("bPhi")),
   aPhiB_(settings.getParameter<std::vector<int> >("aPhiB")),
@@ -98,7 +98,6 @@ bool L1MuonKF::etaLookup(L1KalmanMuTrack& track) {
 	track.setCoarseEta(0,etaMask);
 	return true;
       }
-
     }
   }
   return false;
@@ -122,18 +121,21 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   unsigned int step = track.step();
 
 
-  int charge=0;
+  int charge=1;
   if (K!=0) 
     charge = K/abs(K);
 
 
   
-  //energy loss
-  int KNew = K+charge*eLoss_[step-1]*K*K/(4*denominator_);
+  //energy loss term is a lookup table that takes as input K/4 -> so fits within one BRAM
+  int KNew = K +int(charge*eLoss_[step-1]*16.0*(K*K/16));
   //phi propagation
   int phiNew = phi+(aPhi_[step-1]*K+bPhi_[step-1]*8*phiB)/denominator_;
   //phiB propagation
+
+  //Only for the propagation to vertex we use the LUT for better precision 
   int phiBNew = phiB+(aPhiB_[step-1]*K+bPhiB_[step-1]*phiB)/denominator_;
+
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
   //where we want to check what is happening in the covariaznce matrix 
@@ -315,7 +317,7 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
     K  = track.curvatureAtVertex();
     phiINT = track.phiAtVertex();
     if (K==0)
-      track.setCharge(-1);
+      track.setCharge(1);
     else
       track.setCharge(K/abs(K));
   }
@@ -325,8 +327,8 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
   }
 
   double lsb = 1.25/float(1 << bitWidth_[2]);
-  double pt = 1.0/(lsb*abs(K))/1.146;  //1.146 is a digitization calib factor
-  double eta = float(coarseEta)/256.0;
+  double pt = 1.0/(lsb*abs(K));
+  double eta = float(coarseEta)/100.0;
 
   double phi= -M_PI+track.stubs()[0]->scNum()*M_PI/6.0+phiINT*M_PI/(12.0*2048.);
   if (phi<-M_PI)
@@ -461,15 +463,20 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 void L1MuonKF::estimateChiSquareVertex(L1KalmanMuTrack& track) {
   //here we have a simplification of the algorithm for the sake of the emulator - rsult is identical
   // we apply cuts on the firmware as |u -u'|^2 < a+b *K^2 
-  int phi = track.phiAtVertex();
-  int K = track.curvatureAtVertex();
-  float maxChi2 = 0;
-  for (const auto& stub: track.stubs()) {
-    float p = correctedPhi(stub,track.stubs()[0]->scNum())+8*stub->phiB()-phi-chiSquareVertexA_[stub->stNum()-1]*2*K/chiSquareVertexDenominator_;
-    p = p*p/(chiSquareVertexB_[stub->stNum()-1]+chiSquareVertexC_[stub->stNum()-1]*K*K/chiSquareVertexDenominator_);
-    if (p>maxChi2)
-      maxChi2=p;     
-  }
+   int phi = track.phiAtVertex();
+   int K = track.curvatureAtVertex();
+   float maxChi2 = 0;
+   for (const auto& stub: track.stubs()) {
+     float p = correctedPhi(stub,track.stubs()[0]->scNum())+8*stub->phiB()-phi-chiSquareVertexA_[stub->stNum()-1]*2*K/chiSquareVertexDenominator_;
+     p = p*p/(chiSquareVertexB_[stub->stNum()-1]+chiSquareVertexC_[stub->stNum()-1]*K*K/chiSquareVertexDenominator_);
+     if (p>maxChi2)
+       maxChi2=p;     
+   }
+
+
+
+
+
   track.setApproxChi2(int(maxChi2*128));
 }
 
