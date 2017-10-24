@@ -6,19 +6,15 @@
 
 L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   verbose_(settings.getParameter<bool>("verbose")),
-  eLoss_(settings.getParameter<std::vector<double> >("eLoss")),
+  eLoss_(settings.getParameter<std::vector<int> >("eLoss")),
   aPhi_(settings.getParameter<std::vector<int> >("aPhi")),
   bPhi_(settings.getParameter<std::vector<int> >("bPhi")),
   aPhiB_(settings.getParameter<std::vector<int> >("aPhiB")),
+  aPhiBNLO_(settings.getParameter<std::vector<int> >("aPhiBNLO")),
   bPhiB_(settings.getParameter<std::vector<int> >("bPhiB")),
   etaLUTAddr_(settings.getParameter<std::vector<int> >("etaLUTAddr")),
   etaLUTVal_(settings.getParameter<std::vector<int> >("etaLUTValue")),
-  bitWidth_(settings.getParameter<std::vector<int> >("wordSize")),
-  denominator_(settings.getParameter<int>("denominator")),
-  chiSquareVertexA_(settings.getParameter<std::vector<int> >("chiSquareVertexA")),
-  chiSquareVertexB_(settings.getParameter<std::vector<int> >("chiSquareVertexB")),
-  chiSquareVertexC_(settings.getParameter<std::vector<int> >("chiSquareVertexC")),
-  chiSquareVertexDenominator_(settings.getParameter<int>("chiSquareVertexDenominator")),
+  chiSquareA_(settings.getParameter<std::vector<int> >("chiSquareA")),
   useOfflineAlgo_(settings.getParameter<bool>("useOfflineAlgo")),
   mScatteringPhi_(settings.getParameter<std::vector<double> >("mScatteringPhi")),
   mScatteringPhiB_(settings.getParameter<std::vector<double> >("mScatteringPhiB")),
@@ -34,7 +30,7 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
 
 int L1MuonKF::correctedPhiB(const StubRef& stub) {
   //place holder
-  return stub->phiB();
+  return 8*stub->phiB();
 
 }
 
@@ -87,11 +83,11 @@ bool L1MuonKF::etaLookup(L1KalmanMuTrack& track) {
     int addr = etaLUTAddr_[i];
     if (etaMask==addr) {
       if (sign>0) {
-	track.setCoarseEta(-etaLUTVal_[i],etaMask);
+	track.setCoarseEta(etaLUTVal_[i],etaMask);
 	return true;
       }
       else if (sign<0) {
-	track.setCoarseEta(etaLUTVal_[i],etaMask);
+	track.setCoarseEta(-etaLUTVal_[i],etaMask);
 	return true;
       }
       else {
@@ -126,15 +122,18 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
     charge = K/abs(K);
 
 
-  
-  //energy loss term is a lookup table that takes as input K/4 -> so fits within one BRAM
-  int KNew = K +int(charge*eLoss_[step-1]*16.0*(K*K/16));
+
+  //energy loss term only for MU->VERTEX
+  int KNew =K+int(charge*float(eLoss_[step-1]*K*K)/65536.0);
+
+
   //phi propagation
-  int phiNew = phi+(aPhi_[step-1]*K+bPhi_[step-1]*8*phiB)/denominator_;
+  int phiNew =phi+int(float(aPhi_[step-1]*K)/8192.-float(bPhi_[step-1]*phiB)/4096.);
   //phiB propagation
 
-  //Only for the propagation to vertex we use the LUT for better precision 
-  int phiBNew = phiB+(aPhiB_[step-1]*K+bPhiB_[step-1]*phiB)/denominator_;
+  //Only for the propagation to vertex we use the LUT for better precision
+  int phiBNew = int(float(aPhiB_[step-1]*K)/8192.+float(bPhiB_[step-1]*phiB)/4096.);
+  phiBNew = phiBNew+int(float(charge*aPhiBNLO_[step-1]*K*K)/65536.0);
 
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
@@ -146,12 +145,12 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   a[0] = 1.0;
   a[1] = 0.0;
   a[2] = 0.0;
-  a[3] = aPhi_[step-1]*1.0/float(denominator_);
+  a[3] = double(aPhi_[step-1])/8192.;
   a[4] = 1.0;
-  a[5] = bPhi_[step-1]*8.0/float(denominator_);
-  a[6] = aPhiB_[step-1]*1.0/float(denominator_);
+  a[5] = -double(bPhi_[step-1])/4096.;
+  a[6] = double(aPhiB_[step-1])/8192.;
   a[7] = 0.0;
-  a[8] = 1.0+bPhiB_[step-1]/float(denominator_);
+  a[8] = double(bPhiB_[step-1])/4096.;
 
 
   ROOT::Math::SMatrix<double,3> P(a,9);
@@ -160,20 +159,24 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   L1KalmanMuTrack::CovarianceMatrix cov(covLine.begin(),covLine.end());
   cov = ROOT::Math::Similarity(P,cov);
 
+  
   //Add the multiple scattering
-  int phiRMS = mScatteringPhi_[step-1]*K*K;
-  int phiBRMS = mScatteringPhiB_[step-1]*K*K;
-  int crossTerm=sqrt(phiRMS*phiBRMS);
+  double phiRMS = mScatteringPhi_[step-1]*K*K;
+  double phiBRMS = mScatteringPhiB_[step-1]*K*K;
+
 
   std::vector<double> b(6);
   b[0] = 0;
   b[1] = 0;
   b[2] =phiRMS;
   b[3] =0;
-  b[4] = crossTerm;
+  b[4] = 0;
   b[5] = phiBRMS;
 
   reco::Candidate::CovarianceMatrix MS(b.begin(),b.end());
+
+
+
   cov = cov+MS;
   track.setCovariance(cov);
   track.setCoordinates(step-1,KNew,phiNew,phiBNew);
@@ -201,8 +204,8 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     for( unsigned int i=0;i<stubs.size();++i) {
       if (stubs[i]->stNum()!=track.step())
 	continue;
-      int phi = correctedPhi(stubs[i],sector);
-      int d = abs(phi-trackPhi);
+      int phi = correctedPhi(stubs[i],sector)+correctedPhiB(stubs[i]);
+      int d = abs(phi-trackPhi-trackPhiB);
       if (d<distance) {
         distance = d;
         bestStub=i;
@@ -237,17 +240,19 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     R(1,0) = 0.0;
     R(1,1) = pointResolutionPhiB_;
 
-  const std::vector<double>& covLine = track.covariance();
-  L1KalmanMuTrack::CovarianceMatrix cov(covLine.begin(),covLine.end());
+    const std::vector<double>& covLine = track.covariance();
+    L1KalmanMuTrack::CovarianceMatrix cov(covLine.begin(),covLine.end());
+
 
     CovarianceMatrix2 S = ROOT::Math::Similarity(H,cov)+R;
     if (!S.Invert())
       return false;
     Matrix32 Gain = cov*ROOT::Math::Transpose(H)*S;
+
     track.setKalmanGain(track.step(),Gain(0,0),Gain(0,1),Gain(1,0),Gain(1,1),Gain(2,0),Gain(2,1));
-    int KNew  = round(trackK+Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
-    int phiNew  = round(trackPhi+Gain(1,0)*residual(0)+Gain(1,1)*residual(1));
-    int phiBNew  = round(trackPhiB+Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
+    int KNew  = int(trackK+Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
+    int phiNew  = int(trackPhi+residual(0));
+    int phiBNew = int(trackPhiB+Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
 
     track.setCoordinates(track.step(),KNew,phiNew,phiBNew);
     Matrix33 covNew = cov - Gain*(H*cov);
@@ -289,8 +294,8 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
   Matrix31 Gain = cov*(ROOT::Math::Transpose(H))*S;
   track.setKalmanGain(track.step(),Gain(0,0),Gain(1,0),Gain(2,0));
 
-  int KNew = round(track.curvature()+Gain(0,0)*residual);
-  int phiNew = round(track.positionAngle()+Gain(1,0)*residual);
+  int KNew = int(track.curvature()+Gain(0,0)*residual);
+  int phiNew = int(track.positionAngle()+Gain(1,0)*residual);
   track.setCoordinatesAtVertex(KNew,phiNew,track.dxy());
   Matrix33 covNew = cov - Gain*(H*cov);
   L1KalmanMuTrack::CovarianceMatrix c;
@@ -326,16 +331,13 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
     phiINT=track.positionAngle();
   }
 
-  double lsb = 1.25/float(1 << bitWidth_[2]);
+  double lsb = 1.25/float(1 << 13);
   double pt = 1.0/(lsb*abs(K));
   double eta = float(coarseEta)/100.0;
 
-  double phi= -M_PI+track.stubs()[0]->scNum()*M_PI/6.0+phiINT*M_PI/(12.0*2048.);
+  double phi= track.sector()*M_PI/6.0+phiINT*M_PI/(12*2048.)-2*M_PI;
   if (phi<-M_PI)
     phi=phi+2*M_PI;
-
-  if (phi>M_PI)
-    phi=phi-2*M_PI;
   track.setPtEtaPhi(pt,eta,phi,vertex);
 }
 
@@ -383,7 +385,7 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
     track.setCovariance(covariance);
     //
     if (verbose_) {
-      printf("New Kalman fit staring at step=%d station = %d, phi=%d,phiB=%d\n",track.step(),seed->stNum(),track.positionAngle(),track.bendingAngle());
+      printf("New Kalman fit staring at step=%d station = %d, phi=%d,phiB=%d with curvature=%d\n",track.step(),seed->stNum(),track.positionAngle(),track.bendingAngle(),track.curvature());
       printf("BITMASK:");
       for (unsigned int i=0;i<4;++i)
 	printf("%d",getBit(mask,i));
@@ -399,15 +401,24 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 
     }
     while(track.step()>0) {
+
+
+      // muon station 1 
       if (track.step()==1) {
 	track.setHitPattern(phiBitmask(track));
 	if(!etaLookup(track)) {
 	  if (verbose_)
 	    printf("Failed to assign coarse eta\n");
 	  break;
-
 	}
 	setFloatingPointValues(track,false);
+	track.setCoordinatesAtMuon(track.curvature(),track.positionAngle(),track.bendingAngle());
+	estimateChiSquare(track);
+	//Apply saturation
+	if (track.curvatureAtMuon()==0)
+	  track.setCoordinatesAtMuon(46,track.phiAtMuon(),track.phiBAtMuon());
+	else if (abs(track.curvatureAtMuon())<46)
+	  track.setCoordinatesAtMuon(track.charge()*46,track.phiAtMuon(),track.phiBAtMuon());
 	if (verbose_) 
 	  printf ("Floating point coordinates in Muon System: pt=%f, eta=%f phi=%f\n",track.unconstrainedP4().pt(),track.unconstrainedP4().eta(),track.unconstrainedP4().phi());
       }
@@ -427,22 +438,16 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	vertexConstraint(track);
-	estimateChiSquareVertex(track);
 	if (verbose_) {
 	  printf(" Coordinates after vertex constraint step:%d,phi=%d,dxy=%d,K=%d  maximum local chi2=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex(),track.approxChi2());
 	  printf("------------------------------------------------------\n");
 	  printf("------------------------------------------------------\n");
 	}
-	//Apply saturation
-	if (track.curvature()==0)
-	  track.setCoordinates(track.step(),-11,track.positionAngle(),track.bendingAngle());
-	else if (abs(track.curvature())<11)
-	  track.setCoordinates(track.step(),track.charge()*11,track.positionAngle(),track.bendingAngle());
-
+	//Saturation
 	if (track.curvatureAtVertex()==0)
-	  track.setCoordinatesAtVertex(-11,track.positionAngle(),track.bendingAngle());
-	else if (abs(track.curvatureAtVertex())<11)
-	  track.setCoordinatesAtVertex(track.charge()*11,track.phiAtVertex(),track.dxy());
+	  track.setCoordinatesAtVertex(-46,track.positionAngle(),track.bendingAngle());
+	else if (abs(track.curvatureAtVertex())<46)
+	  track.setCoordinatesAtVertex(track.charge()*46,track.phiAtVertex(),track.dxy());
 	///////
 	setFloatingPointValues(track,true);
 	if (verbose_)
@@ -460,23 +465,26 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 
 
 
-void L1MuonKF::estimateChiSquareVertex(L1KalmanMuTrack& track) {
+void L1MuonKF::estimateChiSquare(L1KalmanMuTrack& track) {
   //here we have a simplification of the algorithm for the sake of the emulator - rsult is identical
   // we apply cuts on the firmware as |u -u'|^2 < a+b *K^2 
-   int phi = track.phiAtVertex();
-   int K = track.curvatureAtVertex();
-   float maxChi2 = 0;
+
+  int phi = track.phiAtMuon()+track.phiBAtMuon();
+  int K = track.curvatureAtMuon();
+  int chi=0;
+  int N=0;
    for (const auto& stub: track.stubs()) {
-     float p = correctedPhi(stub,track.stubs()[0]->scNum())+8*stub->phiB()-phi-chiSquareVertexA_[stub->stNum()-1]*2*K/chiSquareVertexDenominator_;
-     p = p*p/(chiSquareVertexB_[stub->stNum()-1]+chiSquareVertexC_[stub->stNum()-1]*K*K/chiSquareVertexDenominator_);
-     if (p>maxChi2)
-       maxChi2=p;     
+     int delta = int(float(4*correctedPhi(stub,track.sector())+4*correctedPhiB(stub)-4*phi)-float(chiSquareA_[stub->stNum()-1]*K/256));
+     chi=chi+abs(delta);
+     N=N+1;
    }
+   if (N==4)
+     chi=chi/4;
+   if (N==3)
+     chi=chi*170/512;
+   if (N==2)    
+     chi=chi/2;
 
-
-
-
-
-  track.setApproxChi2(int(maxChi2*128));
+  track.setApproxChi2(chi);
 }
 

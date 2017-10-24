@@ -73,15 +73,12 @@ L1KalmanMuonTrackSelector::keep(const L1KalmanMuTrack& track1,const L1KalmanMuTr
 {
   int stubs1 = track1.stubs().size();
   int stubs2 = track2.stubs().size();
-  if ((stubs1>stubs2) && (track1.approxChi2()-track2.approxChi2()>chiSquareOffset_*(stubs1-stubs2))) {
-     return false;
-   }
-  else if ((stubs1<stubs2) && (track2.approxChi2()-track1.approxChi2()<=chiSquareOffset_*(stubs2-stubs1))) {
+  if ((stubs1>stubs2) && track1.approxChi2()>chiSquareOffset_*track2.approxChi2())
     return false;
-  }
-  else if ((stubs1==stubs2) && (track1.approxChi2()>track2.approxChi2())) {
+  else if ((stubs1<stubs2) && track1.approxChi2()*chiSquareOffset_>track2.approxChi2())
     return false;
-  }
+  else if ((stubs1==stubs2) && (track1.approxChi2()>track2.approxChi2())) 
+    return false;
   return true;
 }
 

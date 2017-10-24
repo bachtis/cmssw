@@ -1,4 +1,3 @@
-
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("L1MUONKF")
@@ -10,7 +9,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2) )
 
 
 

@@ -23,6 +23,15 @@ public:
   ~L1KalmanMuTrack();
   L1KalmanMuTrack(const StubRef&);
 
+
+  //UnConstrained curvature at station 1
+  int curvatureAtMuon() const; 
+  //unconstrained phi at station 1
+  int phiAtMuon() const;
+  //unconstrained phiB at station 1
+  int phiBAtMuon() const;
+
+
   //Constrained curvature at vertex
   int curvatureAtVertex() const; 
   //constrained phi at the vertex
@@ -50,6 +59,8 @@ public:
   //step;
   int step() const;
 
+  //step;
+  int sector() const;
 
   //Four vector for displaced particles
   const PolarLorentzVector& unconstrainedP4() const;
@@ -90,6 +101,9 @@ public:
   //Set coordinates at vertex
   void setCoordinatesAtVertex(int,int,int );
 
+  //Set coordinates at muon
+  void setCoordinatesAtMuon(int,int,int );
+
   //Set eta coarse and pattern
   void setCoarseEta(int,int);
 
@@ -126,6 +140,12 @@ public:
   int dxy_;
 
   //muon coordinates
+  int curvMuon_;
+  int phiMuon_;
+  int phiBMuon_;
+
+
+  //generic coordinates
   int curv_;
   int phi_;
   int phiB_; 
@@ -144,6 +164,8 @@ public:
   //propagation step
   int step_;
 
+  //propagation step
+  int sector_;
 
   //Kalman Gain for making LUTs
   std::vector<float> kalmanGain0_;

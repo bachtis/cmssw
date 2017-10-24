@@ -14,13 +14,36 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
   covariance_(std::vector<double>(6,0.0)),
   curv_(0),
   phi_(stub->phi()),
-  phiB_(stub->phiB()),
+  phiB_(8*stub->phiB()),
   coarseEta_(0),
   approxChi2_(0),
   hitPattern_(0),
   etaCoarsePattern_(0),
-  step_(stub->stNum())
+  step_(stub->stNum()),
+  sector_(stub->scNum())
 {
+
+
+
+  switch(stub->stNum()) {
+  case 1:
+    curv_ = -238*phiB_/512;
+    break;
+  case 2:
+    curv_ = -865*phiB_/512;
+    break;
+  case 3:
+    curv_ = -1254*phiB_/512;
+    break;
+  case 4:
+    curv_ = -1823*phiB_/512;
+    break;
+  default:
+    curv_ = 0;
+    break;
+    
+  }
+
 
   stubs_.push_back(stub);
 }
@@ -30,10 +53,20 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
 int L1KalmanMuTrack::curvatureAtVertex() const {
   return curvVertex_;
 }
+int L1KalmanMuTrack::curvatureAtMuon() const {
+  return curvMuon_;
+}
 
 int L1KalmanMuTrack::phiAtVertex() const {
   return phiVertex_;
 }
+int L1KalmanMuTrack::phiAtMuon() const {
+  return phiMuon_;
+}
+int L1KalmanMuTrack::phiBAtMuon() const {
+  return phiBMuon_;
+}
+
 int L1KalmanMuTrack::dxy() const{
    return dxy_;
 }
@@ -69,6 +102,9 @@ int L1KalmanMuTrack::etaCoarsePattern() const{
 int L1KalmanMuTrack::step() const{
    return step_;
 } 
+int L1KalmanMuTrack::sector() const{
+   return sector_;
+} 
 
 const  L1KalmanMuTrack::PolarLorentzVector& L1KalmanMuTrack::unconstrainedP4() const{
    return unconstrainedP4_;
@@ -94,6 +130,13 @@ void L1KalmanMuTrack::setCoordinatesAtVertex(int curv,int phi,int dxy) {
   phiVertex_  = phi;
   dxy_ = dxy;
 }
+
+void L1KalmanMuTrack::setCoordinatesAtMuon(int curv,int phi,int phiB) {
+  curvMuon_ = curv;
+  phiMuon_  = phi;
+  phiBMuon_ = phiB;
+}
+
 
 void L1KalmanMuTrack::setCoarseEta(int eta,int pattern) {
   coarseEta_ = eta;

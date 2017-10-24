@@ -46,15 +46,16 @@ class L1MuonKF {
   int customBitmask(unsigned int,unsigned int,unsigned int,unsigned int);
   bool getBit(int,int);
   void setFloatingPointValues(L1KalmanMuTrack&,bool);
-  void estimateChiSquareVertex(L1KalmanMuTrack&);
+  void estimateChiSquare(L1KalmanMuTrack&);
 
 
 
   //propagation coefficients
-  std::vector<double> eLoss_;
+  std::vector<int> eLoss_;
   std::vector<int> aPhi_;
   std::vector<int> bPhi_;
   std::vector<int> aPhiB_;
+  std::vector<int> aPhiBNLO_;
   std::vector<int> bPhiB_;
 
 
@@ -62,21 +63,12 @@ class L1MuonKF {
   std::vector<int> etaLUTAddr_;
   std::vector<int> etaLUTVal_;
 
-  //Bits used for the phi,phiB and K
-  std::vector<int> bitWidth_;
-
 
   //Denominator for the precision used
   int denominator_;
 
   //Chi Square estimator input
-  std::vector<int> chiSquareVertexA_;
-  std::vector<int> chiSquareVertexB_;
-  std::vector<int> chiSquareVertexC_;
-  int chiSquareVertexDenominator_;
-
-
-
+  std::vector<int> chiSquareA_;
   //STUFF NOT USED IN THE FIRMWARE BUT ONLY FOR DEBUGGING
   ///////////////////////////////////////////////////////
 

@@ -59,12 +59,27 @@ def fetchBMTF(event,etaMax=1.2,calib=1.169):
         for j in range(0,bmtf.size(bx)):
             mu = bmtf.at(bx,j)
             pt = mu.hwPt()*0.5
+            #calibration
+#            K=1.0/pt
+#            K = 1.10*K+6.19e-4+5.81e-6/K
+#            pt=1.0/K
+            pt=(0.813*pt+3.1-17.3/pt)
+            ####
             phi=globalBMTFPhi(mu)
             eta = mu.hwEta()*0.010875           
             if abs(eta)<=etaMax:
                 bmtfMuons.append(BMTFMuon(mu,pt,eta,phi))
     return sorted(bmtfMuons,key=lambda x: x.pt(),reverse=True)
 
+def qPTInt(qPT,bits=14):
+    lsb = lsBIT(bits)
+    floatbinary = int(math.floor(abs(qPT)/lsb))
+    return int((qPT/abs(qPT))*floatbinary)
+
+def lsBIT(bits=14):
+    maximum=1.25
+    lsb = 1.25/pow(2,bits-1)
+    return lsb
 
 
 
@@ -79,7 +94,10 @@ def curvResidual(a,b):
 
 def curvResidualSTA(a,b):
     charge=a.curvature()/abs(a.curvature()+0.5)
-    charge=charge/abs(charge)
+    if charge==0:
+        charge=1
+    else:
+        charge=charge/abs(charge)
     return (charge/a.unconstrainedP4().pt()-b.charge()/b.pt())*b.pt()/b.charge()
 
 
@@ -130,6 +148,8 @@ def log(counter,stubs,gen,kmtfAll,kmtf,bmtf):
 #residual vs gen pt
 etaLUT = ROOT.TH2D("etaLUT","etaLUT",4096,0,4096,128,0,128)
 
+bmtfCalib = ROOT.TH2D("bmtfCalib","resKF",50,1.0/120.,1.0/6.,100,0,10)
+kfCalib = ROOT.TH2D("kfCalib","resKF",489,46,1024,100,0,10)
 
 
 resKMTF = ROOT.TH2D("resKMTF","resKF",10,8,100,60,-2,2)
@@ -180,7 +200,7 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 ##############################
 
-verbose=False
+verbose=True
 tag='singleMuon140'
 
 
@@ -196,7 +216,7 @@ for event in events:
     kmtfAll = fetchKMTF(event,'l1KalmanMuonTracks',1.2)
 
     #fetch kalman (prompt)
-    kmtf = fetchKMTF(event,'l1PromptKalmanMuonTracks',1.2)
+    kmtf = fetchKMTF(event,'l1SelectedKalmanMuonTracks',1.2)
 #    kmtf = customCleaning(kmtfAll)
     #fetch BMTF
     bmtf = fetchBMTF(event,1.2)
@@ -251,9 +271,7 @@ for event in events:
             genEta.Fill(g.eta())
 
         #match *(loosely because we still use coarse eta)
-#        matchedBMTF = filter(lambda x: deltaR(g.eta(),g.phi(),x.eta(),x.phi())<2.5,bmtf) 
-#        matchedKMTFAll = filter(lambda x: deltaR(g.eta(),g.phi(),x.eta(),x.phi())<2.5,kmtfAll) 
-#        matchedKMTF = filter(lambda x: deltaR(g.eta(),g.phi(),x.eta(),x.phi())<2.5,kmtf)
+
         matchedBMTF = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<1 and abs(g.eta()-x.eta())<0.5,bmtf) 
         matchedKMTFAll = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<1 and abs(g.eta()-x.eta())<0.5,kmtfAll) 
         matchedKMTF = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<1 and abs(g.eta()-x.eta())<0.5,kmtf)
@@ -269,6 +287,7 @@ for event in events:
             resEtaBMTF.Fill(bestBMTF.eta()-g.eta())
             resPhiBMTF.Fill(bestBMTF.phi()-g.phi())
             resRBMTF.Fill(deltaR(g.eta(),g.phi(),bestBMTF.eta(),bestBMTF.phi()))
+            bmtfCalib.Fill(1.0/bestBMTF.pt(),bestBMTF.pt()/g.pt())
 
             
             #the PT we want for 15 GeV to see turn on
@@ -310,6 +329,7 @@ for event in events:
             resPhiKMTF.Fill(bestKMTF.phi()-g.phi())
             resSTAPhiKMTF.Fill(bestKMTF.unconstrainedP4().phi()-g.phi())
             resRKMTF.Fill(deltaR(g.eta(),g.phi(),bestKMTF.eta(),bestKMTF.phi()))
+            kfCalib.Fill(abs(bestKMTF.curvatureAtVertex()),qPTInt(1.0/g.pt())/abs(bestKMTF.curvatureAtVertex()))
 
 #            if len(matchedBMTF)>0 and abs(bestKMTF.pt()-g.pt())-abs(bestBMTF.pt()-g.pt())>20.0:
 #                log(counter,stubs,gen,kmtfAll,kmtf,bmtf)
@@ -342,8 +362,8 @@ resRKMTF.Write()
 resSTAPhiKMTF.Write()     
 resPhiBMTF.Write()     
 resRBMTF.Write()     
-
-
+bmtfCalib.Write()
+kfCalib.Write()
 kmtfEff = ROOT.TGraphAsymmErrors(genPtKMTF,genPt)
 kmtfEff.Write("efficiencyVsPtKMTF")
 kmtfEffEta = ROOT.TGraphAsymmErrors(genEtaKMTF,genEta)

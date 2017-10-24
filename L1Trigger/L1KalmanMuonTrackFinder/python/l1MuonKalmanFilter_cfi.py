@@ -1,25 +1,23 @@
+
 import FWCore.ParameterSet.Config as cms
 
 l1MuonKalmanFilterSettings =  cms.PSet(
     verbose = cms.bool(False),
-    eLoss = cms.vdouble(-1.3e-3,-2.92e-4,-5.53e-4,-4.99e-4), #Implemented in LUT
-    aPhi  = cms.vint32(-29556,-286,-332,-245),   #divide this by 4096
-    bPhi  = cms.vint32(4096,-631,-709,-602),         # divide this by 512 
-    aPhiB =  cms.vint32(1847,286,331,264),#divide this by 4096
-    bPhiB =  cms.vint32(-8192,631,709,602), #divide this by 4096
-    wordSize =  cms.vint32(11,8,11), #one for phi one for phiB and one for K
-    denominator =  cms.int32(4096), #common denominator for precision
-    chiSquareVertexA = cms.vint32(585,532,479,428),   #divide this by 64
-    chiSquareVertexB = cms.vint32(715,2000,2300,2700),
-    chiSquareVertexC = cms.vint32(133,187,184,177), #dvide this by 128
-    chiSquareVertexDenominator =  cms.int32(128), #common denominator for precision on Chi2 calculations
+#    eLoss = cms.vint32(-361,-66,-135,-171), #Divide this by 1048736
+    eLoss = cms.vint32(-23,0,0,0), 
+    aPhi = cms.vint32(6364,264,233,133),
+    bPhi = cms.vint32(-4096,631,709,602),
+    aPhiB = cms.vint32(-6826,-1009,-1426,-1178),
+    aPhiBNLO = cms.vint32(-11,0,0,0),
+    bPhiB = cms.vint32(-4096,4727,4805,4698),
+    chiSquareA = cms.vint32(0,107,281,431),   #divide this by 1024
     useOfflineAlgo = cms.bool(True),
     ###Only for the offline algo -not in firmware -floating point 
-    mScatteringPhi = cms.vdouble(1.5e-3,0.5e-4,4.4e-4,2.2e-4),
-    mScatteringPhiB = cms.vdouble(2.0e-3,0.5e-4,0.75e-3,0.75e-3),
-    pointResolutionPhi = cms.double(6),
-    pointResolutionPhiB = cms.double(15),
-    pointResolutionVertex = cms.double(10),
+    mScatteringPhi = cms.vdouble(0.9322,8.384e-5,5.406e-5,1.786e-5),
+    mScatteringPhiB = cms.vdouble(4.821e-3,3.580e-3,6.634e-3,5.478e-3),
+    pointResolutionPhi = cms.double(1),
+    pointResolutionPhiB = cms.double(1024),
+    pointResolutionVertex = cms.double(1),
 
     #coarse eta look up table
 
