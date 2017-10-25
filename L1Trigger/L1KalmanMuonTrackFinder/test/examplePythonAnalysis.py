@@ -52,7 +52,7 @@ def globalBMTFPhi(muon):
 
 def fetchBMTF(event,etaMax=1.2,calib=1.169):
     bmtfH  = Handle  ('BXVector<l1t::RegionalMuonCand>')
-    event.getByLabel('simBmtfDigis','BMTF','L1MUONKF',bmtfH)
+    event.getByLabel('simBmtfDigis','BMTF','L1KMTF',bmtfH)
     bmtf=bmtfH.product()
     bmtfMuons=[]
     for bx in [0]:
@@ -201,8 +201,8 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 ##############################
 
-verbose=False
-tag='singleMuon140'
+verbose=True
+tag='test'
 
 
 events=Events([tag+'.root'])

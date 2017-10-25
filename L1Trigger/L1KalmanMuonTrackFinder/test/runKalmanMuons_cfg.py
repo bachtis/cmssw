@@ -1,16 +1,15 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("L1MUONKF")
+process = cms.Process("L1KMTF")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.StandardSequences.Services_cff')
+process.load('Configuration.StandardSequences.GeometryRecoDB_cff')   
 
 
 
-
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 
 
 
@@ -27,16 +26,15 @@ process.load("L1Trigger.L1KalmanMuonTrackFinder.l1KalmanMuons_cff")
 
 ##Stage 2 BMTF emulator####
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-#from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, '90X_upgrade2023_realistic_v9', '')
+#from Configuration.AlCa.GlobalTag import GlobalTag
+#process.GlobalTag = GlobalTag(process.GlobalTag, '90X_upgrade2023_realistic_v9', '')
 
 #Emulator Parameter
 process.load('L1Trigger.L1TMuonBarrel.fakeBmtfParams_cff')
-process.load('L1Trigger.L1TTwinMux.fakeTwinMuxParams_cff')
-process.load('L1Trigger.L1TTwinMux.simtwinMuxDigis_cfi')
+#process.load('L1Trigger.L1TTwinMux.fakeTwinMuxParams_cff')
 
 process.esProd = cms.EDAnalyzer("EventSetupRecordDataGetter",
    toGet = cms.VPSet(
@@ -78,10 +76,10 @@ process.simBmtfDigis.DTDigi_Theta_Source = cms.InputTag("simDtTriggerPrimitiveDi
 
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('singleNeutrino140.root')
+    fileName = cms.untracked.string('test.root')
 )
 
   
-process.p = cms.Path(process.simtwinMuxDigis,process.simBmtfDigis*process.l1KalmanMuons)
+process.p = cms.Path(process.simTwinMuxDigis*process.simBmtfDigis*process.l1KalmanMuons)
 process.e = cms.EndPath(process.out)
 process.schedule = cms.Schedule(process.p,process.e)
