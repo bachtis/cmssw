@@ -6,5 +6,5 @@ l1SelectedKalmanMuonTracks = cms.EDProducer('L1KalmanMuonTrackSelector',
                                           src = cms.InputTag("l1KalmanMuonTracks"),
                                           maxCurvature = cms.int32(2621), #pt>2.5 GeV
                                           maxLocalChi2 = cms.int32(1600), #Chi2 cut at 99.7%
-                                          chiSquareOffset = cms.int32(4) #remogve hit if another track has 4 times better chi2
+                                          chiSquareOffset = cms.int32(5) #remogve hit if another track has 4 times better chi2
 )

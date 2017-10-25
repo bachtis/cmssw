@@ -153,15 +153,20 @@ L1KalmanMuonTrackSelector::produce(edm::Event& iEvent, const edm::EventSetup& iS
    }
 
    clean(tracks4,tracks4);  
-   clean(tracks4,tracks3);  
-
+   clean(tracks2,tracks2);
    clean(tracks3,tracks3);
+
+
+
+   clean(tracks4,tracks3);  
+   clean(tracks4,tracks2);  
+
    clean(tracks3,tracks4);
    clean(tracks3,tracks2);
 
-   clean(tracks2,tracks2);
-   clean(tracks2,tracks3);
    clean(tracks2,tracks4);
+   clean(tracks2,tracks3);
+
    std::vector<L1KalmanMuTrack> out;
 
 
