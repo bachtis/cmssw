@@ -60,11 +60,12 @@ def fetchBMTF(event,etaMax=1.2,calib=1.169):
             mu = bmtf.at(bx,j)
             pt = mu.hwPt()*0.5
             #calibration
-#            K=1.0/pt
+            K=1.0/pt
+            K = 1.09*K+1.23e-3-0.107*K*K
 #            K = 1.10*K+6.19e-4+5.81e-6/K
-#            pt=1.0/K
-            pt=(0.813*pt+3.1-17.3/pt)
+            pt=1.0/K
             ####
+            
             phi=globalBMTFPhi(mu)
             eta = mu.hwEta()*0.010875           
             if abs(eta)<=etaMax:
@@ -149,13 +150,13 @@ def log(counter,stubs,gen,kmtfAll,kmtf,bmtf):
 etaLUT = ROOT.TH2D("etaLUT","etaLUT",4096,0,4096,128,0,128)
 
 bmtfCalib = ROOT.TH2D("bmtfCalib","resKF",50,1.0/120.,1.0/6.,100,0,10)
-kfCalib = ROOT.TH2D("kfCalib","resKF",489,46,1024,100,0,10)
+kfCalib = ROOT.TH2D("kfCalib","resKF",130,0,2600,100,0,5)
 
 
-resKMTF = ROOT.TH2D("resKMTF","resKF",10,8,100,60,-2,2)
-resKMTFAll = ROOT.TH2D("resKMTFAll","resKF",10,8,100,60,-2,2)
-resSTAKMTFAll = ROOT.TH2D("resSTAKMTFAll","resKF",10,8,100,60,-6,6)
-resBMTF = ROOT.TH2D("resBMTF","resKF",10,8,100,60,-2,2)
+resKMTF = ROOT.TH2D("resKMTF","resKF",20,0,100,60,-2,2)
+resKMTFAll = ROOT.TH2D("resKMTFAll","resKF",20,0,100,60,-2,2)
+resSTAKMTFAll = ROOT.TH2D("resSTAKMTFAll","resKF",20,0,100,60,-6,6)
+resBMTF = ROOT.TH2D("resBMTF","resKF",20,0,100,60,-2,2)
 
 resEtaKMTF = ROOT.TH1D("resEtaKMTF","resKF",60,-0.8,0.8)
 resEtaBMTF = ROOT.TH1D("resEtaBMTF","resKF",60,-0.8,0.8)
@@ -200,7 +201,7 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 ##############################
 
-verbose=True
+verbose=False
 tag='singleMuon140'
 
 
@@ -329,7 +330,7 @@ for event in events:
             resPhiKMTF.Fill(bestKMTF.phi()-g.phi())
             resSTAPhiKMTF.Fill(bestKMTF.unconstrainedP4().phi()-g.phi())
             resRKMTF.Fill(deltaR(g.eta(),g.phi(),bestKMTF.eta(),bestKMTF.phi()))
-            kfCalib.Fill(abs(bestKMTF.curvatureAtVertex()),qPTInt(1.0/g.pt())/abs(bestKMTF.curvatureAtVertex()))
+            kfCalib.Fill(abs(bestKMTF.curvatureAtVertex()),float(qPTInt(1.0/g.pt()))/float(abs(bestKMTF.curvatureAtVertex())))
 
 #            if len(matchedBMTF)>0 and abs(bestKMTF.pt()-g.pt())-abs(bestBMTF.pt()-g.pt())>20.0:
 #                log(counter,stubs,gen,kmtfAll,kmtf,bmtf)

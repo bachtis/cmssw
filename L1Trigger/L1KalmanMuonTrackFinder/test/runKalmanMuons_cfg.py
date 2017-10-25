@@ -9,7 +9,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50000) )
 
 
 
@@ -17,6 +17,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2) )
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
+#        'file:/scratch3/MTF/data/hzz4mu140.root'
         'file:/scratch3/MTF/data/singleMu140.root'
     )
 )

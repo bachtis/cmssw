@@ -250,9 +250,9 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
     Matrix32 Gain = cov*ROOT::Math::Transpose(H)*S;
 
     track.setKalmanGain(track.step(),Gain(0,0),Gain(0,1),Gain(1,0),Gain(1,1),Gain(2,0),Gain(2,1));
-    int KNew  = int(trackK+Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
-    int phiNew  = int(trackPhi+residual(0));
-    int phiBNew = int(trackPhiB+Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
+    int KNew  = trackK+int(Gain(0,0)*residual(0)+Gain(0,1)*residual(1));
+    int phiNew  = trackPhi+residual(0);
+    int phiBNew = trackPhiB+int(Gain(2,0)*residual(0)+Gain(2,1)*residual(1));
 
     track.setCoordinates(track.step(),KNew,phiNew,phiBNew);
     Matrix33 covNew = cov - Gain*(H*cov);
@@ -296,7 +296,7 @@ void L1MuonKF::vertexConstraintOffline(L1KalmanMuTrack& track) {
 
   int KNew = int(track.curvature()+Gain(0,0)*residual);
   int phiNew = int(track.positionAngle()+Gain(1,0)*residual);
-  track.setCoordinatesAtVertex(KNew,phiNew,track.dxy());
+  track.setCoordinatesAtVertex(KNew,phiNew,-residual);
   Matrix33 covNew = cov - Gain*(H*cov);
   L1KalmanMuTrack::CovarianceMatrix c;
   c(0,0)=covNew(0,0); 
@@ -332,7 +332,10 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
   }
 
   double lsb = 1.25/float(1 << 13);
-  double pt = 1.0/(lsb*abs(K));
+  //this will be in the final BRAM giving PT=1/K
+  double corrK = 0.83*abs(K)+9.173+2.49e-4*K*K;
+  
+  double pt = 1.0/(lsb*corrK);
   double eta = float(coarseEta)/100.0;
 
   double phi= track.sector()*M_PI/6.0+phiINT*M_PI/(12*2048.)-2*M_PI;
