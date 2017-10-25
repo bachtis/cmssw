@@ -202,7 +202,7 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 ##############################
 
 verbose=False
-tag='singleMuon140'
+tag='higgsFourMuons140'
 
 
 events=Events([tag+'.root'])
