@@ -1,0 +1,9 @@
+
+<lcgdict>
+ <class name="L1KalmanMuTrack"/>
+ <class name="std::vector<L1KalmanMuTrack>"/>
+ <class name="edm::Ref<std::vector<L1KalmanMuTrack> >"/>
+ <class name="edm::Wrapper<std::vector<L1KalmanMuTrack> >"/>
+ <class name="edm::Wrapper<edm::Ref<std::vector<L1KalmanMuTrack> >>"/>
+ <class name="edm::reftobase::Holder<reco::Candidate, edm::Ref<std::vector<L1KalmanMuTrack>,L1KalmanMuTrack,edm::refhelper::FindUsingAdvance<std::vector<L1KalmanMuTrack>,L1KalmanMuTrack> > >" />
+</lcgdict>
