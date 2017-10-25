@@ -120,7 +120,7 @@ public:
   void addStub(const StubRef&); 
 
   //kalman gain management
-  void setKalmanGain(unsigned int step, float a1 ,float a2,float a3,float a4=0 ,float a5=0,float a6=0);
+  void setKalmanGain(unsigned int step, unsigned int K,float a1 ,float a2,float a3,float a4=0 ,float a5=0,float a6=0);
  
   void setCovariance(const CovarianceMatrix&);
 

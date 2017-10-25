@@ -171,9 +171,10 @@ void L1KalmanMuTrack::addStub(const L1KalmanMuTrack::StubRef& stub) {
 }
 
 
-void L1KalmanMuTrack::setKalmanGain(unsigned int step,float a1, float a2,float a3,float a4,float a5,float a6) {
+void L1KalmanMuTrack::setKalmanGain(unsigned int step,unsigned int K,float a1, float a2,float a3,float a4,float a5,float a6) {
   switch(step) {
   case 3: 
+    kalmanGain3_.push_back(K);
     kalmanGain3_.push_back(a1);
     kalmanGain3_.push_back(a2);
     kalmanGain3_.push_back(a3);
@@ -182,6 +183,7 @@ void L1KalmanMuTrack::setKalmanGain(unsigned int step,float a1, float a2,float a
     kalmanGain3_.push_back(a6);
     break;
   case 2: 
+    kalmanGain2_.push_back(K);
     kalmanGain2_.push_back(a1);
     kalmanGain2_.push_back(a2);
     kalmanGain2_.push_back(a3);
@@ -190,6 +192,7 @@ void L1KalmanMuTrack::setKalmanGain(unsigned int step,float a1, float a2,float a
     kalmanGain2_.push_back(a6);
     break;
   case 1: 
+    kalmanGain1_.push_back(K);
     kalmanGain1_.push_back(a1);
     kalmanGain1_.push_back(a2);
     kalmanGain1_.push_back(a3);
@@ -198,6 +201,7 @@ void L1KalmanMuTrack::setKalmanGain(unsigned int step,float a1, float a2,float a
     kalmanGain1_.push_back(a6);
     break;
   case 0:
+    kalmanGain0_.push_back(K);
     kalmanGain0_.push_back(a1);
     kalmanGain0_.push_back(a2);
     kalmanGain0_.push_back(a3);
