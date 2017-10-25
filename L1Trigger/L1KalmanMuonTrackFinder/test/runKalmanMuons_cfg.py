@@ -17,7 +17,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-        'file:/scratch3/MTF/data/singleNu140.root'
+        'file:/scratch3/MTF/data/zmmTest.root'
 #        'file:/scratch3/MTF/data/hzz4mu140.root'
     )
 )
@@ -35,6 +35,9 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '90X_upgrade2023_realistic_v9',
 
 #Emulator Parameter
 process.load('L1Trigger.L1TMuonBarrel.fakeBmtfParams_cff')
+process.load('L1Trigger.L1TTwinMux.fakeTwinMuxParams_cff')
+process.load('L1Trigger.L1TTwinMux.simtwinMuxDigis_cfi')
+
 process.esProd = cms.EDAnalyzer("EventSetupRecordDataGetter",
    toGet = cms.VPSet(
       cms.PSet(record = cms.string('L1TMuonBarrelParamsRcd'),
@@ -79,6 +82,6 @@ process.out = cms.OutputModule("PoolOutputModule",
 )
 
   
-process.p = cms.Path(process.simBmtfDigis*process.l1KalmanMuons)
+process.p = cms.Path(process.simtwinMuxDigis,process.simBmtfDigis*process.l1KalmanMuons)
 process.e = cms.EndPath(process.out)
 process.schedule = cms.Schedule(process.p,process.e)
