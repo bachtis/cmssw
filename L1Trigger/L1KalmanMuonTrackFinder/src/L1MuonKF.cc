@@ -29,7 +29,7 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
 
 
 int L1MuonKF::correctedPhiB(const StubRef& stub) {
-  //place holder
+  //Promote phiB to 12 bits
   return 8*stub->phiB();
 
 }
@@ -327,15 +327,17 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
       track.setCharge(K/abs(K));
   }
   else {
-    K=track.curvature();
+    K=track.curvatureAtMuon();
     phiINT=track.positionAngle();
   }
 
   double lsb = 1.25/float(1 << 13);
   //this will be in the final BRAM giving PT=1/K
-  double corrK = 0.83*abs(K)+9.173+2.49e-4*K*K;
-  
-  double pt = 1.0/(lsb*corrK);
+  //  double corrK = 0.83*abs(K)+9.173+2.49e-4*K*K;
+
+  K = 0.963*abs(K)+(1.035e-4)*K*K;
+
+  double pt = 1.0/(lsb*abs(K));
   double eta = float(coarseEta)/100.0;
 
   double phi= track.sector()*M_PI/6.0+phiINT*M_PI/(12*2048.)-2*M_PI;
