@@ -17,7 +17,7 @@ l1MuonKalmanFilterSettings =  cms.PSet(
     mScatteringPhiB = cms.vdouble(4.821e-3,3.580e-3,6.634e-3,5.478e-3),
     pointResolutionPhi = cms.double(1),
     pointResolutionPhiB = cms.double(1024),
-    pointResolutionVertex = cms.double(284),
+    pointResolutionVertex = cms.double(1),
 
     #coarse eta look up table
 
