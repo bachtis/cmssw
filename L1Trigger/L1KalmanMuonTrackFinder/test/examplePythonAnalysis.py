@@ -1,4 +1,4 @@
-import ROOT,itertools,math
+import ROOT,itertools,math      # 
 from DataFormats.FWLite import Events, Handle
 ROOT.FWLiteEnabler.enable()
 ##A class to keep BMTF data
@@ -50,7 +50,7 @@ def globalBMTFPhi(muon):
         temp=temp-2*math.pi;
     return temp;
 
-def fetchBMTF(event,etaMax=1.2,calib=1.169):
+def fetchBMTF(event,etaMax=1.2):
     bmtfH  = Handle  ('BXVector<l1t::RegionalMuonCand>')
     event.getByLabel('simBmtfDigis','BMTF','L1MUONKF',bmtfH)
     bmtf=bmtfH.product()
@@ -82,12 +82,12 @@ def lsBIT(bits=14):
     lsb = 1.25/pow(2,bits-1)
     return lsb
 
+#import pdb;pdb.set_trace()
 
-
-def fetchKMTF(event,coll,etaMax=0.83):
+def fetchKMTF(event,coll,etaMax=0.83,chi2=1600):
     kmtfH  = Handle('vector<L1KalmanMuTrack>')
     event.getByLabel(coll,kmtfH)
-    kmtf=filter(lambda x: abs(x.eta())<etaMax,kmtfH.product())
+    kmtf=filter(lambda x: abs(x.eta())<etaMax and x.approxChi2()<chi2,kmtfH.product())
     return sorted(kmtf,key=lambda x: x.pt(),reverse=True)
 
 def curvResidual(a,b):
@@ -100,6 +100,67 @@ def curvResidualSTA(a,b):
     else:
         charge=charge/abs(charge)
     return (charge/a.unconstrainedP4().pt()-b.charge()/b.pt())*b.pt()/b.charge()
+
+
+
+def customCleaning(tracksAll,thresholdSTA,threshold,chi):
+
+    def checkCleaning(t1,tracks):
+        for j,t2 in enumerate(tracks):
+            if  t1.overlap(t2):
+                if len(t1.stubs())>len(t2.stubs()) and t1.approxChi2()>5*t2.approxChi2():
+                    return False
+                if len(t1.stubs())<len(t2.stubs()) and t1.approxChi2()*5>t2.approxChi2():
+                    return False
+        return True
+
+    def checkCleaningSame(i,tracks):
+        t1=tracks[i]
+        for j,t2 in enumerate(tracks):
+            if t1==t2:
+                continue
+            if  t1.overlap(t2):
+                if len(t1.stubs())==len(t2.stubs()) and t1.approxChi2()>t2.approxChi2():
+                    return False
+        return True
+
+
+    def clean(coll1,coll2=None):
+        cleaned=[]
+        for i,t in enumerate(coll1):
+            keep=True;
+            if coll2==None:
+                keep=checkCleaningSame(i,coll1)
+            else:
+                keep=checkCleaning(t,coll2)
+            if keep:
+                cleaned.append(t)
+        return cleaned
+
+
+    tracks  = filter(lambda x: abs(x.curvatureAtVertex())<threshold and abs(x.curvatureAtMuon())<thresholdSTA and abs(x.approxChi2())<chi,tracksAll)
+    if len(tracks)<=1:
+        return tracks
+
+    tracks4 = filter(lambda x: len(x.stubs())==4,tracks)
+    tracks3 = filter(lambda x: len(x.stubs())==3,tracks)
+    tracks2 = filter(lambda x: len(x.stubs())==2,tracks)
+
+    tracks4=clean(tracks4)
+    tracks4=clean(tracks4,tracks3)
+    tracks4=clean(tracks4,tracks2)
+
+    tracks3=clean(tracks3)
+    tracks3=clean(tracks3,tracks4)
+    tracks3=clean(tracks3,tracks2)
+
+    tracks2=clean(tracks2)
+    tracks2=clean(tracks2,tracks4)
+    tracks2=clean(tracks2,tracks3)
+    return tracks4+tracks3+tracks2
+
+    
+    
 
 
 def deltaPhi( p1, p2):
@@ -150,13 +211,13 @@ def log(counter,stubs,gen,kmtfAll,kmtf,bmtf):
 etaLUT = ROOT.TH2D("etaLUT","etaLUT",4096,0,4096,128,0,128)
 
 bmtfCalib = ROOT.TH2D("bmtfCalib","resKF",50,1.0/120.,1.0/6.,100,0,10)
-kfCalib = ROOT.TH2D("kfCalib","resKF",130,0,2600,100,0,5)
+kfCalib = ROOT.TH2D("kfCalib","resKF",100,46,2700,100,0,5)
 
 
-resKMTF = ROOT.TH2D("resKMTF","resKF",20,0,100,60,-2,2)
-resKMTFAll = ROOT.TH2D("resKMTFAll","resKF",20,0,100,60,-2,2)
-resSTAKMTFAll = ROOT.TH2D("resSTAKMTFAll","resKF",20,0,100,60,-6,6)
-resBMTF = ROOT.TH2D("resBMTF","resKF",20,0,100,60,-2,2)
+resKMTF = ROOT.TH2D("resKMTF","resKF",50,0,100,60,-2,2)
+resKMTFAll = ROOT.TH2D("resKMTFAll","resKF",50,0,100,60,-2,2)
+resSTAKMTFAll = ROOT.TH2D("resSTAKMTFAll","resKF",50,0,100,60,-6,6)
+resBMTF = ROOT.TH2D("resBMTF","resKF",50,0,100,60,-2,2)
 
 resEtaKMTF = ROOT.TH1D("resEtaKMTF","resKF",60,-0.8,0.8)
 resEtaBMTF = ROOT.TH1D("resEtaBMTF","resKF",60,-0.8,0.8)
@@ -201,8 +262,8 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 ##############################
 
-verbose=False
-tag='higgsFourMuons140'
+verbose=True
+tag='singleNeutrino140'
 
 
 events=Events([tag+'.root'])
@@ -217,16 +278,15 @@ for event in events:
     kmtfAll = fetchKMTF(event,'l1KalmanMuonTracks',1.2)
 
     #fetch kalman (prompt)
-    kmtf = fetchKMTF(event,'l1SelectedKalmanMuonTracks',1.2)
-#    kmtf = customCleaning(kmtfAll)
+#    kmtf = fetchKMTF(event,'l1SelectedKalmanMuonTracks',0.83,1600)
+
+    kmtf = customCleaning(kmtfAll,6553,2300,1600)
     #fetch BMTF
-    bmtf = fetchBMTF(event,1.2)
+    bmtf = fetchBMTF(event,0.83)
 
     #printout
     if verbose and (len(bmtf)>0 or len(kmtf)>0):
         log(counter,stubs,gen,kmtfAll,kmtf,bmtf)
-
-
 
     #Do not do anything if not at least 2 stubs anywhere 
     #runs faster and factors out DT inneficiency

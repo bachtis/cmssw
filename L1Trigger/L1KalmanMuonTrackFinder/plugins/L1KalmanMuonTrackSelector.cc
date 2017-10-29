@@ -128,7 +128,7 @@ L1KalmanMuonTrackSelector::produce(edm::Event& iEvent, const edm::EventSetup& iS
        continue;
 
      if (verbose_)
-       printf("Preselected Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d stubs=%d chi2=%d\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),int(track.stubs().size()),track.approxChi2()); 
+       printf("Preselected Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA =%d stubs=%d chi2=%d pts=%f %f\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),track.curvatureAtMuon(),int(track.stubs().size()),track.approxChi2(),track.pt(),track.unconstrainedP4().pt()); 
 
 
      switch(track.stubs().size()) {
@@ -174,19 +174,20 @@ L1KalmanMuonTrackSelector::produce(edm::Event& iEvent, const edm::EventSetup& iS
      printf("Selected Kalman Tracks-------------\n");
    for (const auto& track : tracks4) {
      if (verbose_)
-       printf("Final Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d stubs=%d chi2=%d\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),int(track.stubs().size()),track.approxChi2()); 
+       printf("Final Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA=%d stubs=%d chi2=%d\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),track.curvatureAtMuon(),int(track.stubs().size()),track.approxChi2()); 
      out.push_back(track);
    }
    for (const auto& track : tracks3) {
      if (verbose_)
-       printf("Final Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d stubs=%d chi2=%d\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),int(track.stubs().size()),track.approxChi2()); 
+       printf("Final Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA=%d stubs=%d chi2=%d\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),track.curvatureAtMuon(),int(track.stubs().size()),track.approxChi2()); 
+  
 
 
      out.push_back(track);
    }
    for (const auto& track : tracks2) {
      if (verbose_)
-       printf("Final Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d stubs=%d chi2=%d\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),int(track.stubs().size()),track.approxChi2()); 
+       printf("Final Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA=%d stubs=%d chi2=%d\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),track.curvatureAtMuon(),int(track.stubs().size()),track.approxChi2()); 
 
      out.push_back(track);
    }

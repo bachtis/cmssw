@@ -29,7 +29,7 @@ L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
 
 
 int L1MuonKF::correctedPhiB(const StubRef& stub) {
-  //place holder
+  //Promote phiB to 12 bits
   return 8*stub->phiB();
 
 }
@@ -320,6 +320,8 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
   int coarseEta=track.coarseEta();
   if (vertex) {
     K  = track.curvatureAtVertex();
+    if (K==0)
+      K=1;
     phiINT = track.phiAtVertex();
     if (K==0)
       track.setCharge(1);
@@ -328,13 +330,21 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
   }
   else {
     K=track.curvatureAtMuon();
+    if (K==0)
+      K=1;
     phiINT=track.positionAngle();
   }
+
+  if (K<46)
+    K=46*K/abs(K);
+  
+
 
   double lsb = 1.25/float(1 << 13);
   //this will be in the final BRAM giving PT=1/K
   //  double corrK = 0.83*abs(K)+9.173+2.49e-4*K*K;
-  
+
+  //  K = 0.963*abs(K)+(1.035e-4)*K*K;
 
   double pt = 1.0/(lsb*abs(K));
   double eta = float(coarseEta)/100.0;
@@ -417,12 +427,6 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	}
 	setFloatingPointValues(track,false);
 	track.setCoordinatesAtMuon(track.curvature(),track.positionAngle(),track.bendingAngle());
-	estimateChiSquare(track);
-	//Apply saturation
-	if (track.curvatureAtMuon()==0)
-	  track.setCoordinatesAtMuon(46,track.phiAtMuon(),track.phiBAtMuon());
-	else if (abs(track.curvatureAtMuon())<46)
-	  track.setCoordinatesAtMuon(track.charge()*46,track.phiAtMuon(),track.phiBAtMuon());
 	if (verbose_) 
 	  printf ("Floating point coordinates in Muon System: pt=%f, eta=%f phi=%f\n",track.unconstrainedP4().pt(),track.unconstrainedP4().eta(),track.unconstrainedP4().phi());
       }
@@ -442,17 +446,13 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	vertexConstraint(track);
+	estimateChiSquare(track);
+
 	if (verbose_) {
 	  printf(" Coordinates after vertex constraint step:%d,phi=%d,dxy=%d,K=%d  maximum local chi2=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex(),track.approxChi2());
 	  printf("------------------------------------------------------\n");
 	  printf("------------------------------------------------------\n");
 	}
-	//Saturation
-	if (track.curvatureAtVertex()==0)
-	  track.setCoordinatesAtVertex(-46,track.positionAngle(),track.bendingAngle());
-	else if (abs(track.curvatureAtVertex())<46)
-	  track.setCoordinatesAtVertex(track.charge()*46,track.phiAtVertex(),track.dxy());
-	///////
 	setFloatingPointValues(track,true);
 	if (verbose_)
 	  printf ("Floating point coordinates at vertex: pt=%f, eta=%f phi=%f\n",track.pt(),track.eta(),track.phi());
@@ -473,12 +473,12 @@ void L1MuonKF::estimateChiSquare(L1KalmanMuTrack& track) {
   //here we have a simplification of the algorithm for the sake of the emulator - rsult is identical
   // we apply cuts on the firmware as |u -u'|^2 < a+b *K^2 
 
-  int phi = track.phiAtMuon()+track.phiBAtMuon();
-  int K = track.curvatureAtMuon();
+  int phi = track.phiAtVertex();
+  int K = track.curvatureAtVertex();
   int chi=0;
   int N=0;
    for (const auto& stub: track.stubs()) {
-     int delta = int(float(4*correctedPhi(stub,track.sector())+4*correctedPhiB(stub)-4*phi)-float(chiSquareA_[stub->stNum()-1]*K/256));
+     int delta = int(float(correctedPhi(stub,track.sector())+correctedPhiB(stub)-phi)-float(chiSquareA_[stub->stNum()-1]*K/128));
      chi=chi+abs(delta);
      N=N+1;
    }

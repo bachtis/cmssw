@@ -9,7 +9,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 
 
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(50) )
 
 
 
@@ -17,8 +17,8 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-#        'file:/scratch3/MTF/data/singleNu140.root'
-        'file:/scratch3/MTF/data/hzz4mu140.root'
+        'file:/scratch3/MTF/data/singleNu140.root'
+#        'file:/scratch3/MTF/data/hzz4mu140.root'
     )
 )
 
@@ -75,8 +75,8 @@ process.simBmtfDigis.DTDigi_Theta_Source = cms.InputTag("simDtTriggerPrimitiveDi
 
 
 process.out = cms.OutputModule("PoolOutputModule",
-#    fileName = cms.untracked.string('singleNeutrino140.root')
-    fileName = cms.untracked.string('higgsFourLeptons140.root')
+    fileName = cms.untracked.string('singleNeutrino140.root')
+#    fileName = cms.untracked.string('higgsFourLeptons140_2.root')
 )
 
   
