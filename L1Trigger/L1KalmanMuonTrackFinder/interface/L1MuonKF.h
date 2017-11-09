@@ -51,13 +51,12 @@ class L1MuonKF {
 
 
   //propagation coefficients
-  std::vector<int> eLoss_;
-  std::vector<int> aPhi_;
-  std::vector<int> bPhi_;
-  std::vector<int> aPhiB_;
-  std::vector<int> aPhiBNLO_;
-  std::vector<int> bPhiB_;
-
+  std::vector<double> eLoss_;
+  std::vector<double> aPhi_;
+  std::vector<double> aPhiB_;
+  std::vector<double> aPhiBNLO_;
+  std::vector<double> bPhi_;
+  std::vector<double> bPhiB_;
 
   //coarse eta LUT
   std::vector<int> etaLUTAddr_;
@@ -68,7 +67,8 @@ class L1MuonKF {
   int denominator_;
 
   //Chi Square estimator input
-  std::vector<int> chiSquareA_;
+  std::vector<double> chiSquarePhi_;
+  std::vector<double> chiSquarePhiB_;
   //STUFF NOT USED IN THE FIRMWARE BUT ONLY FOR DEBUGGING
   ///////////////////////////////////////////////////////
 

@@ -20,7 +20,8 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
   hitPattern_(0),
   etaCoarsePattern_(0),
   step_(stub->stNum()),
-  sector_(stub->scNum())
+  sector_(stub->scNum()),
+  quality_(stub->code())
 {
 
 
@@ -105,6 +106,9 @@ int L1KalmanMuTrack::step() const{
 int L1KalmanMuTrack::sector() const{
    return sector_;
 } 
+int L1KalmanMuTrack::quality() const{
+   return quality_;
+} 
 
 const  L1KalmanMuTrack::PolarLorentzVector& L1KalmanMuTrack::unconstrainedP4() const{
    return unconstrainedP4_;
@@ -113,7 +117,6 @@ const  L1KalmanMuTrack::PolarLorentzVector& L1KalmanMuTrack::unconstrainedP4() c
 const L1KalmanMuTrack::StubRefVector& L1KalmanMuTrack::stubs() const {
   return stubs_;
 }
-
 
 
 
@@ -168,6 +171,8 @@ void L1KalmanMuTrack::setPtEtaPhi(double pt ,double eta, double phi,bool atVerte
 
 void L1KalmanMuTrack::addStub(const L1KalmanMuTrack::StubRef& stub) {
   stubs_.push_back(stub);
+  if (stub->code()<quality_)
+    quality_ = stub->code();
 }
 
 

@@ -1,24 +1,31 @@
 
 import FWCore.ParameterSet.Config as cms
 
+##ADD B PHIB
+##FIX CHI2
+
+
+
 l1MuonKalmanFilterSettings =  cms.PSet(
     verbose = cms.bool(False),
-    eLoss = cms.vint32(-23,0,0,0), 
-#    eLoss = cms.vint32(-23,-4,-8,-11), 
-    aPhi = cms.vint32(6364,264,233,133),
-    bPhi = cms.vint32(-4096,631,709,602),
-    aPhiB = cms.vint32(-6826,-1009,-1426,-1178),
-    aPhiBNLO = cms.vint32(11,0,0,0),
-    bPhiB = cms.vint32(-4096,4727,4805,4698),
-    chiSquareA = cms.vint32(-885,-707,-381,-192),   #divide this by 1024
+    eLoss = cms.vdouble(-2.85e-4,0,0,0), 
+    aPhi = cms.vdouble(0.777,0.032,0.028,0.016),
+    aPhiB = cms.vdouble(-0.833,-0.123,-0.174,-0.144),
+    aPhiBNLO = cms.vdouble(1.758e-4,0,0,0),
+    bPhi = cms.vdouble(-1,0.154,0.173,0.147),
+    bPhiB = cms.vdouble(-1,1.154,1.173,1.147),
+
+    chiSquarePhi = cms.vdouble(0.025,-0.099,-0.26,-0.24),   
+    chiSquarePhiB = cms.vdouble(-0.83,-0.60,-0.35,-0.15),  
     useOfflineAlgo = cms.bool(True),
-    ###Only for the offline algo -not in firmware -floating point 
+
+    ###Only for the offline algo -not in firmware --------------------
     mScatteringPhi = cms.vdouble(0.9322,8.384e-5,5.406e-5,1.786e-5),
     mScatteringPhiB = cms.vdouble(4.821e-3,3.580e-3,6.634e-3,5.478e-3),
     pointResolutionPhi = cms.double(1.),
-    pointResolutionPhiB = cms.double(1024.),
-    pointResolutionVertex = cms.double(1.),
-
+    pointResolutionPhiB = cms.double(500.),
+    pointResolutionVertex = cms.double(100.),
+    ###---------------------------------------------------------------
     #coarse eta look up table
 
     etaLUTAddr=cms.vint32(1152,129,258,1040,513,520,521,

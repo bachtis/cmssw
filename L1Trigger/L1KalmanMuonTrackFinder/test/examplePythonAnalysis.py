@@ -84,7 +84,7 @@ def lsBIT(bits=14):
 
 #import pdb;pdb.set_trace()
 
-def fetchKMTF(event,coll,etaMax=0.83,chi2=1600):
+def fetchKMTF(event,coll,etaMax=0.83,chi2=20000):
     kmtfH  = Handle('vector<L1KalmanMuTrack>')
     event.getByLabel(coll,kmtfH)
     kmtf=filter(lambda x: abs(x.eta())<etaMax and x.approxChi2()<chi2,kmtfH.product())
@@ -278,14 +278,14 @@ for event in events:
     kmtfAll = fetchKMTF(event,'l1KalmanMuonTracks',1.2)
 
     #fetch kalman (prompt)
-#    kmtf = fetchKMTF(event,'l1SelectedKalmanMuonTracks',0.83,1600)
+    kmtf = fetchKMTF(event,'l1SelectedKalmanMuonTracks',1.2)
 
-    kmtf = customCleaning(kmtfAll,6553,2300,1600)
+
     #fetch BMTF
-    bmtf = fetchBMTF(event,0.83)
+    bmtf = fetchBMTF(event,1.2)
 
     #printout
-    if verbose and (len(bmtf)>0 or len(kmtf)>0):
+    if verbose and (len(kmtf)>0):
         log(counter,stubs,gen,kmtfAll,kmtf,bmtf)
 
     #Do not do anything if not at least 2 stubs anywhere 
@@ -390,7 +390,10 @@ for event in events:
             resPhiKMTF.Fill(bestKMTF.phi()-g.phi())
             resSTAPhiKMTF.Fill(bestKMTF.unconstrainedP4().phi()-g.phi())
             resRKMTF.Fill(deltaR(g.eta(),g.phi(),bestKMTF.eta(),bestKMTF.phi()))
-            kfCalib.Fill(abs(bestKMTF.curvatureAtVertex()),float(qPTInt(1.0/g.pt()))/float(abs(bestKMTF.curvatureAtVertex())))
+            K = bestKMTF.curvatureAtVertex()
+            if K==0:
+                K=1;
+            kfCalib.Fill(abs(K),float(qPTInt(1.0/g.pt()))/float(abs(K)))
 
 #            if len(matchedBMTF)>0 and abs(bestKMTF.pt()-g.pt())-abs(bestBMTF.pt()-g.pt())>20.0:
 #                log(counter,stubs,gen,kmtfAll,kmtf,bmtf)

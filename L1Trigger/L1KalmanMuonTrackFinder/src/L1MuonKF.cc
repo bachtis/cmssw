@@ -3,18 +3,18 @@
 
 
 
-
 L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   verbose_(settings.getParameter<bool>("verbose")),
-  eLoss_(settings.getParameter<std::vector<int> >("eLoss")),
-  aPhi_(settings.getParameter<std::vector<int> >("aPhi")),
-  bPhi_(settings.getParameter<std::vector<int> >("bPhi")),
-  aPhiB_(settings.getParameter<std::vector<int> >("aPhiB")),
-  aPhiBNLO_(settings.getParameter<std::vector<int> >("aPhiBNLO")),
-  bPhiB_(settings.getParameter<std::vector<int> >("bPhiB")),
+  eLoss_(settings.getParameter<std::vector<double> >("eLoss")),
+  aPhi_(settings.getParameter<std::vector<double> >("aPhi")),
+  aPhiB_(settings.getParameter<std::vector<double> >("aPhiB")),
+  aPhiBNLO_(settings.getParameter<std::vector<double> >("aPhiBNLO")),
+  bPhi_(settings.getParameter<std::vector<double> >("bPhi")),
+  bPhiB_(settings.getParameter<std::vector<double> >("bPhiB")),
   etaLUTAddr_(settings.getParameter<std::vector<int> >("etaLUTAddr")),
   etaLUTVal_(settings.getParameter<std::vector<int> >("etaLUTValue")),
-  chiSquareA_(settings.getParameter<std::vector<int> >("chiSquareA")),
+  chiSquarePhi_(settings.getParameter<std::vector<double> >("chiSquarePhi")),
+  chiSquarePhiB_(settings.getParameter<std::vector<double> >("chiSquarePhiB")),
   useOfflineAlgo_(settings.getParameter<bool>("useOfflineAlgo")),
   mScatteringPhi_(settings.getParameter<std::vector<double> >("mScatteringPhi")),
   mScatteringPhiB_(settings.getParameter<std::vector<double> >("mScatteringPhiB")),
@@ -124,16 +124,14 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
 
 
   //energy loss term only for MU->VERTEX
-  int KNew =K+int(charge*float(eLoss_[step-1]*K*K)/65536.0);
-
-
+  int KNew =K+int(charge*eLoss_[step-1]*K*K);
   //phi propagation
-  int phiNew =phi+int(float(aPhi_[step-1]*K)/8192.-float(bPhi_[step-1]*phiB)/4096.);
+  int phiNew =phi+int(aPhi_[step-1]*K)-int(bPhi_[step-1]*phiB);
   //phiB propagation
-
+  int phiBNew = int(aPhiB_[step-1]*K)  +int(bPhiB_[step-1]*phiB);
   //Only for the propagation to vertex we use the LUT for better precision
-  int phiBNew = int(float(aPhiB_[step-1]*K)/8192.+float(bPhiB_[step-1]*phiB)/4096.);
-  phiBNew = phiBNew+int(float(charge*aPhiBNLO_[step-1]*K*K)/65536.0);
+  phiBNew = phiBNew+charge*aPhiBNLO_[step-1]*K*K;
+  
 
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
@@ -145,12 +143,12 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   a[0] = 1.0;
   a[1] = 0.0;
   a[2] = 0.0;
-  a[3] = double(aPhi_[step-1])/8192.;
+  a[3] = aPhi_[step-1];
   a[4] = 1.0;
-  a[5] = -double(bPhi_[step-1])/4096.;
-  a[6] = double(aPhiB_[step-1])/8192.;
+  a[5] = -bPhi_[step-1];
+  a[6] = aPhiB_[step-1];
   a[7] = 0.0;
-  a[8] = double(bPhiB_[step-1])/4096.;
+  a[8] = bPhiB_[step-1];
 
 
   ROOT::Math::SMatrix<double,3> P(a,9);
@@ -335,7 +333,7 @@ void L1MuonKF::setFloatingPointValues(L1KalmanMuTrack& track,bool vertex) {
     phiINT=track.positionAngle();
   }
 
-  if (K<46)
+  if (abs(K)<46)
     K=46*K/abs(K);
   
 
@@ -476,19 +474,12 @@ void L1MuonKF::estimateChiSquare(L1KalmanMuTrack& track) {
   int phi = track.phiAtVertex();
   int K = track.curvatureAtVertex();
   int chi=0;
-  int N=0;
    for (const auto& stub: track.stubs()) {
-     int delta = int(float(correctedPhi(stub,track.sector())+correctedPhiB(stub)-phi)-float(chiSquareA_[stub->stNum()-1]*K/128));
+     uint delta=abs(correctedPhi(stub,track.sector())-phi-chiSquarePhi_[stub->stNum()-1]*K)*64;
+     delta=delta+abs(correctedPhiB(stub)-chiSquarePhiB_[stub->stNum()-1]*K);
      chi=chi+abs(delta);
-     N=N+1;
    }
-   if (N==4)
-     chi=chi/4;
-   if (N==3)
-     chi=chi*170/512;
-   if (N==2)    
-     chi=chi/2;
-
+   chi=chi/64;
   track.setApproxChi2(chi);
 }
 

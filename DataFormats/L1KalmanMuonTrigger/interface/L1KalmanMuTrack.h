@@ -62,6 +62,8 @@ public:
   //step;
   int sector() const;
 
+  int quality() const;
+
   //Four vector for displaced particles
   const PolarLorentzVector& unconstrainedP4() const;
 
@@ -166,6 +168,10 @@ public:
 
   //propagation step
   int sector_;
+
+
+  //propagation step
+  int quality_;
 
   //Kalman Gain for making LUTs
   std::vector<float> kalmanGain0_;
