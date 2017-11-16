@@ -21,9 +21,11 @@ class BMTFMuon:
 ###Common methods############
 
 
-def fetchStubs(event,ontime=True,twinMux=True):
+def fetchStubs(event,isData,ontime=True,twinMux=True):
     phiSeg    = Handle  ('L1MuDTChambPhContainer')
-    if twinMux:
+    if isData:
+        event.getByLabel('BMTFStage2Digis',phiSeg)
+    elif twinMux:
         event.getByLabel('simTwinMuxDigis',phiSeg)
     else:
         event.getByLabel('simDtTriggerPrimitiveDigis',phiSeg)
@@ -50,9 +52,13 @@ def globalBMTFPhi(muon):
         temp=temp-2*math.pi;
     return temp;
 
-def fetchBMTF(event,etaMax=1.2):
+def fetchBMTF(event,isData,etaMax=1.2):
     bmtfH  = Handle  ('BXVector<l1t::RegionalMuonCand>')
-    event.getByLabel('simBmtfDigis','BMTF','L1KMTF',bmtfH)
+    if isData:
+        event.getByLabel('BMTFStage2Digis','BMTF','L1KMTF',bmtfH)
+    else:
+        event.getByLabel('simBmtfDigis','BMTF','L1KMTF',bmtfH)
+
     bmtf=bmtfH.product()
     bmtfMuons=[]
     for bx in [0]:
@@ -205,16 +211,19 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 verbose=False
 tag='test'
-
+isData=False
 
 events=Events([tag+'.root'])
 counter=-1
 for event in events:
     counter=counter+1
     #fetch stubs
-    stubs = fetchStubs(event)
+    stubs = fetchStubs(event,isData)
     #fetch gen
-    gen = fetchGEN(event,0.83)
+    if isData:
+        gen=[]
+    else:
+        gen = fetchGEN(event,0.83)
     #fetch kalman (fullcombinatorics)
     kmtfAll = fetchKMTF(event,'All',1.2)
 
@@ -223,7 +232,7 @@ for event in events:
 
 
     #fetch BMTF
-    bmtf = fetchBMTF(event,1.2)
+    bmtf = fetchBMTF(event,isData,1.2)
 
     #printout
     if verbose and (len(kmtf)>0) and kmtf[0].pt()>35:
