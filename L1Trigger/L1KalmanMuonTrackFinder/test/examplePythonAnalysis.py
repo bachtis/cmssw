@@ -61,7 +61,7 @@ def fetchBMTF(event,etaMax=1.2):
             pt = mu.hwPt()*0.5
             #calibration
             K=1.0/pt
-            K = 1.09*K+1.23e-3-0.107*K*K
+            K = (1.09*K+1.23e-3-0.107*K*K)*1.03
 #            K = 1.10*K+6.19e-4+5.81e-6/K
             pt=1.0/K
             ####
@@ -84,10 +84,10 @@ def lsBIT(bits=14):
 
 #import pdb;pdb.set_trace()
 
-def fetchKMTF(event,coll,etaMax=0.83,chi2=20000):
+def fetchKMTF(event,coll,etaMax=0.83,chi2=10000000):
     kmtfH  = Handle('vector<L1KalmanMuTrack>')
-    event.getByLabel(coll,kmtfH)
-    kmtf=filter(lambda x: abs(x.eta())<etaMax and x.approxChi2()<chi2,kmtfH.product())
+    event.getByLabel('l1KalmanMuonTracks',coll,'L1MUONKF',kmtfH)
+    kmtf=filter(lambda x: abs(x.eta())<etaMax and x.approxChi2()/x.stubs().size()<chi2,kmtfH.product())
     return sorted(kmtf,key=lambda x: x.pt(),reverse=True)
 
 def curvResidual(a,b):
@@ -102,65 +102,6 @@ def curvResidualSTA(a,b):
     return (charge/a.unconstrainedP4().pt()-b.charge()/b.pt())*b.pt()/b.charge()
 
 
-
-def customCleaning(tracksAll,thresholdSTA,threshold,chi):
-
-    def checkCleaning(t1,tracks):
-        for j,t2 in enumerate(tracks):
-            if  t1.overlap(t2):
-                if len(t1.stubs())>len(t2.stubs()) and t1.approxChi2()>5*t2.approxChi2():
-                    return False
-                if len(t1.stubs())<len(t2.stubs()) and t1.approxChi2()*5>t2.approxChi2():
-                    return False
-        return True
-
-    def checkCleaningSame(i,tracks):
-        t1=tracks[i]
-        for j,t2 in enumerate(tracks):
-            if t1==t2:
-                continue
-            if  t1.overlap(t2):
-                if len(t1.stubs())==len(t2.stubs()) and t1.approxChi2()>t2.approxChi2():
-                    return False
-        return True
-
-
-    def clean(coll1,coll2=None):
-        cleaned=[]
-        for i,t in enumerate(coll1):
-            keep=True;
-            if coll2==None:
-                keep=checkCleaningSame(i,coll1)
-            else:
-                keep=checkCleaning(t,coll2)
-            if keep:
-                cleaned.append(t)
-        return cleaned
-
-
-    tracks  = filter(lambda x: abs(x.curvatureAtVertex())<threshold and abs(x.curvatureAtMuon())<thresholdSTA and abs(x.approxChi2())<chi,tracksAll)
-    if len(tracks)<=1:
-        return tracks
-
-    tracks4 = filter(lambda x: len(x.stubs())==4,tracks)
-    tracks3 = filter(lambda x: len(x.stubs())==3,tracks)
-    tracks2 = filter(lambda x: len(x.stubs())==2,tracks)
-
-    tracks4=clean(tracks4)
-    tracks4=clean(tracks4,tracks3)
-    tracks4=clean(tracks4,tracks2)
-
-    tracks3=clean(tracks3)
-    tracks3=clean(tracks3,tracks4)
-    tracks3=clean(tracks3,tracks2)
-
-    tracks2=clean(tracks2)
-    tracks2=clean(tracks2,tracks4)
-    tracks2=clean(tracks2,tracks3)
-    return tracks4+tracks3+tracks2
-
-    
-    
 
 
 def deltaPhi( p1, p2):
@@ -223,8 +164,8 @@ resEtaKMTF = ROOT.TH1D("resEtaKMTF","resKF",60,-0.8,0.8)
 resEtaBMTF = ROOT.TH1D("resEtaBMTF","resKF",60,-0.8,0.8)
 resSTAPhiKMTF = ROOT.TH1D("resSTAPhiKMTF","resKF",60,-0.5,0.5)
 
-resPhiKMTF = ROOT.TH1D("resPhiKMTF","resKF",250,-math.pi,math.pi)
-resPhiBMTF = ROOT.TH1D("resPhiBMTF","resKF",250,-math.pi,math.pi)
+resPhiKMTF = ROOT.TH1D("resPhiKMTF","resKF",250,-0.5,0.5)
+resPhiBMTF = ROOT.TH1D("resPhiBMTF","resKF",250,-0.5,0.5)
 
 resRBMTF = ROOT.TH1D("resRBMTF","resKF",250,0,8)
 resRKMTF = ROOT.TH1D("resRKMTF","resKF",250,0,8)
@@ -245,8 +186,8 @@ genEtaKMTFAll=ROOT.TH1F("genEtaKMTFAll","genPt",50,-1.0,1.0)
 genEtaBMTF=ROOT.TH1F("genEtaBMTF","genEta",50,-1.0,1.0)
 
 
-chiBestKMTF = ROOT.TH1F("chiBestKMTF","chiBest",512,0,8192*4)
-chiKMTF = ROOT.TH1F("chiKMTF","chiBest",512,0,8192*4)
+chiBestKMTF = ROOT.TH1F("chiBestKMTF","chiBest",512,0,8192)
+chiKMTF = ROOT.TH1F("chiKMTF","chiBest",512,0,8192)
 
 dxyBestKMTF = ROOT.TH1F("dxyBestKMTF","chiBest",512,0,512)
 dxyKMTF = ROOT.TH1F("dxyKMTF","chiBest",512,0,512)
@@ -262,7 +203,7 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 ##############################
 
-verbose=True
+verbose=False
 tag='singleNeutrino140'
 
 
@@ -273,19 +214,19 @@ for event in events:
     #fetch stubs
     stubs = fetchStubs(event)
     #fetch gen
-    gen = fetchGEN(event,0.8)
+    gen = fetchGEN(event,0.83)
     #fetch kalman (fullcombinatorics)
-    kmtfAll = fetchKMTF(event,'l1KalmanMuonTracks',1.2)
+    kmtfAll = fetchKMTF(event,'All',1.2)
 
     #fetch kalman (prompt)
-    kmtf = fetchKMTF(event,'l1SelectedKalmanMuonTracks',1.2)
+    kmtf = fetchKMTF(event,'Cleaned',1.2,600)
 
 
     #fetch BMTF
     bmtf = fetchBMTF(event,1.2)
 
     #printout
-    if verbose and (len(kmtf)>0):
+    if verbose and (len(kmtf)>0) and kmtf[0].pt()>35:
         log(counter,stubs,gen,kmtfAll,kmtf,bmtf)
 
     #Do not do anything if not at least 2 stubs anywhere 
@@ -295,7 +236,7 @@ for event in events:
 
     ##Fill histograms and rates
     for track in kmtfAll:
-        chiKMTF.Fill(track.approxChi2())
+        chiKMTF.Fill(track.approxChi2()/track.stubs().size())
         dxyKMTF.Fill(abs(track.dxy()))
 
     if len(kmtf)>0:
@@ -325,7 +266,7 @@ for event in events:
 
     ##loop on gen and fill resolutuion and efficiencies
     for g in gen:
-        if abs(g.eta())<0.8:
+        if abs(g.eta())<0.83:
             genPt.Fill(g.pt())
         ##the eta efficiency we want at the plateau to see strucuture
         if g.pt()>25:
@@ -333,9 +274,9 @@ for event in events:
 
         #match *(loosely because we still use coarse eta)
 
-        matchedBMTF = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<1 and abs(g.eta()-x.eta())<0.5,bmtf) 
-        matchedKMTFAll = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<1 and abs(g.eta()-x.eta())<0.5,kmtfAll) 
-        matchedKMTF = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<1 and abs(g.eta()-x.eta())<0.5,kmtf)
+        matchedBMTF = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<0.5 and abs(g.eta()-x.eta())<0.5,bmtf) 
+        matchedKMTFAll = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<0.5 and abs(g.eta()-x.eta())<0.5,kmtfAll) 
+        matchedKMTF = filter(lambda x: abs(deltaPhi(g.phi(),x.phi()))<0.5 and abs(g.eta()-x.eta())<0.5,kmtf)
 
 #        if len(matchedBMTF)>len(matchedKMTF):
 #            log(counter,stubs,gen,kmtfAll,kmtf,bmtf)
@@ -353,7 +294,7 @@ for event in events:
             
             #the PT we want for 15 GeV to see turn on
             if bestBMTF.pt()>15:
-                if abs(g.eta())<0.8:
+                if abs(g.eta())<0.83:
                     genPtBMTF.Fill(g.pt())
                 if g.pt()>25:
                     genEtaBMTF.Fill(g.eta())
@@ -373,12 +314,12 @@ for event in events:
 
             #the PT we want for 15 GeV to see turn on
             if bestKMTFAll.pt()>15:
-                if abs(g.eta())<0.8:
+                if abs(g.eta())<0.83:
                     genPtKMTFAll.Fill(g.pt())
                 if g.pt()>25:
                     genEtaKMTFAll.Fill(g.eta())
 
-            chiBestKMTF.Fill(bestKMTFAll.approxChi2())        
+            chiBestKMTF.Fill(bestKMTFAll.approxChi2()/bestKMTFAll.stubs().size())        
             dxyBestKMTF.Fill(abs(bestKMTFAll.dxy()))        
                 
 
@@ -405,7 +346,7 @@ for event in events:
 
             #the PT we want for 15 GeV to see turn on
             if bestKMTF.pt()>15:
-                if abs(g.eta())<0.8:
+                if abs(g.eta())<0.83:
                     genPtKMTF.Fill(g.pt())
                 if g.pt()>25:
                     genEtaKMTF.Fill(g.eta())

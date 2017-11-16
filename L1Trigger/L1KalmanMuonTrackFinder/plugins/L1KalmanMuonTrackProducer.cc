@@ -35,7 +35,8 @@ L1KalmanMuonTrackProducer::L1KalmanMuonTrackProducer(const edm::ParameterSet& iC
   src_(consumes<std::vector<L1MuDTChambPhDigi> >(iConfig.getParameter<edm::InputTag>("src"))),
   kalmanFilter_(new L1MuonKF(iConfig.getParameter<edm::ParameterSet>("algo")))
 {
-  produces <std::vector<L1KalmanMuTrack> >();
+  produces <std::vector<L1KalmanMuTrack> >("All");
+  produces <std::vector<L1KalmanMuTrack> >("Cleaned");
 }
 
 
@@ -80,7 +81,12 @@ L1KalmanMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 {
    using namespace edm;
    Handle<std::vector<L1MuDTChambPhDigi> >stubHandle;
-   std::unique_ptr<std::vector<L1KalmanMuTrack> > out(new std::vector<L1KalmanMuTrack>);
+
+
+
+
+   std::vector<L1KalmanMuTrack> outAll;
+
    iEvent.getByToken(src_,stubHandle);
 
    L1MuonKF::StubRefVector stubs;
@@ -96,11 +102,21 @@ L1KalmanMuonTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
        for (const auto& seed: seeds) {
 	 L1MuonKF::TrackVector tracks = kalmanFilter_->process(seed,inputs);
 	 for (const auto& t : tracks) 
-	   out->push_back(t);
+	   outAll.push_back(t);
        }
      }
    }
-   iEvent.put(std::move(out));
+   L1MuonKF::TrackVector outCleaned = kalmanFilter_->cleanAndSort(outAll);
+  
+
+   std::unique_ptr<std::vector<L1KalmanMuTrack> > out1 = std::make_unique<std::vector<L1KalmanMuTrack> >(outAll); 
+   std::unique_ptr<std::vector<L1KalmanMuTrack> > out2 = std::make_unique<std::vector<L1KalmanMuTrack> >(outCleaned); 
+ 
+   iEvent.put(std::move(out1),"All");
+   iEvent.put(std::move(out2),"Cleaned");
+
+
+   //add logic for cleaned
 
 }
 

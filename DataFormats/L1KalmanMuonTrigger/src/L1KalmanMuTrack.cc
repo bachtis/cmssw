@@ -21,7 +21,8 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
   etaCoarsePattern_(0),
   step_(stub->stNum()),
   sector_(stub->scNum()),
-  quality_(stub->code())
+  quality_(stub->code()),
+  deltaK_(0)
 {
 
 
@@ -109,6 +110,10 @@ int L1KalmanMuTrack::sector() const{
 int L1KalmanMuTrack::quality() const{
    return quality_;
 } 
+uint L1KalmanMuTrack::deltaK() const{
+   return deltaK_;
+} 
+
 
 const  L1KalmanMuTrack::PolarLorentzVector& L1KalmanMuTrack::unconstrainedP4() const{
    return unconstrainedP4_;
@@ -261,4 +266,10 @@ void L1KalmanMuTrack::setCovariance(const CovarianceMatrix& c) {
   covariance_[3] = c(0,2);
   covariance_[4] = c(1,2);
   covariance_[5] = c(2,2);
+}
+
+
+
+void L1KalmanMuTrack::setDeltaK(uint deltaK) {
+  deltaK_ = deltaK;
 }

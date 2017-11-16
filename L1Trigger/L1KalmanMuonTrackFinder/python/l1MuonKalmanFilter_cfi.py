@@ -1,22 +1,16 @@
 
 import FWCore.ParameterSet.Config as cms
 
-##ADD B PHIB
-##FIX CHI2
-
-
-
 l1MuonKalmanFilterSettings =  cms.PSet(
     verbose = cms.bool(False),
     eLoss = cms.vdouble(-2.85e-4,0,0,0), 
-    aPhi = cms.vdouble(0.777,0.032,0.028,0.016),
+    aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
     aPhiB = cms.vdouble(-0.833,-0.123,-0.174,-0.144),
     aPhiBNLO = cms.vdouble(1.758e-4,0,0,0),
     bPhi = cms.vdouble(-1,0.154,0.173,0.147),
     bPhiB = cms.vdouble(-1,1.154,1.173,1.147),
-
-    chiSquarePhi = cms.vdouble(0.025,-0.099,-0.26,-0.24),   
-    chiSquarePhiB = cms.vdouble(-0.83,-0.60,-0.35,-0.15),  
+    chiSquare = cms.vdouble(0.0,0.095,0.232,0.356),   
+    chiSquareCut = cms.int32(800),
     useOfflineAlgo = cms.bool(True),
 
     ###Only for the offline algo -not in firmware --------------------
