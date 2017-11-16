@@ -52,7 +52,7 @@ def globalBMTFPhi(muon):
 
 def fetchBMTF(event,etaMax=1.2):
     bmtfH  = Handle  ('BXVector<l1t::RegionalMuonCand>')
-    event.getByLabel('simBmtfDigis','BMTF','L1MUONKF',bmtfH)
+    event.getByLabel('simBmtfDigis','BMTF','L1KMTF',bmtfH)
     bmtf=bmtfH.product()
     bmtfMuons=[]
     for bx in [0]:
@@ -86,7 +86,7 @@ def lsBIT(bits=14):
 
 def fetchKMTF(event,coll,etaMax=0.83,chi2=10000000):
     kmtfH  = Handle('vector<L1KalmanMuTrack>')
-    event.getByLabel('l1KalmanMuonTracks',coll,'L1MUONKF',kmtfH)
+    event.getByLabel('l1KalmanMuonTracks',coll,'L1KMTF',kmtfH)
     kmtf=filter(lambda x: abs(x.eta())<etaMax and x.approxChi2()/x.stubs().size()<chi2,kmtfH.product())
     return sorted(kmtf,key=lambda x: x.pt(),reverse=True)
 
@@ -204,7 +204,7 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 ##############################
 
 verbose=False
-tag='singleNeutrino140'
+tag='test'
 
 
 events=Events([tag+'.root'])
