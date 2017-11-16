@@ -62,6 +62,11 @@ public:
   //step;
   int sector() const;
 
+  //quality
+  int quality() const;
+
+  uint deltaK() const;
+
   //Four vector for displaced particles
   const PolarLorentzVector& unconstrainedP4() const;
 
@@ -121,9 +126,12 @@ public:
 
   //kalman gain management
   void setKalmanGain(unsigned int step, unsigned int K,float a1 ,float a2,float a3,float a4=0 ,float a5=0,float a6=0);
- 
+
+  //set covariance
   void setCovariance(const CovarianceMatrix&);
 
+  //set delta K
+  void setDeltaK(uint);
 
  private:
   //Floating point coordinates for studies
@@ -166,6 +174,14 @@ public:
 
   //propagation step
   int sector_;
+
+
+  //segment quality
+  int quality_;
+
+  //dleta K vertex 
+  uint deltaK_;
+
 
   //Kalman Gain for making LUTs
   std::vector<float> kalmanGain0_;

@@ -29,6 +29,8 @@ class L1MuonKF {
   L1MuonKF(const edm::ParameterSet& settings);
 
   TrackVector  process(const StubRef&, const StubRefVector&);  
+  TrackVector  cleanAndSort(const TrackVector&);  
+
  
 
  private:
@@ -48,16 +50,16 @@ class L1MuonKF {
   void setFloatingPointValues(L1KalmanMuTrack&,bool);
   void estimateChiSquare(L1KalmanMuTrack&);
 
-
+  int rank(const L1KalmanMuTrack&);
+  int wrapAround(int ,int);
 
   //propagation coefficients
-  std::vector<int> eLoss_;
-  std::vector<int> aPhi_;
-  std::vector<int> bPhi_;
-  std::vector<int> aPhiB_;
-  std::vector<int> aPhiBNLO_;
-  std::vector<int> bPhiB_;
-
+  std::vector<double> eLoss_;
+  std::vector<double> aPhi_;
+  std::vector<double> aPhiB_;
+  std::vector<double> aPhiBNLO_;
+  std::vector<double> bPhi_;
+  std::vector<double> bPhiB_;
 
   //coarse eta LUT
   std::vector<int> etaLUTAddr_;
@@ -68,7 +70,9 @@ class L1MuonKF {
   int denominator_;
 
   //Chi Square estimator input
-  std::vector<int> chiSquareA_;
+  std::vector<double> chiSquare_;
+  int chiSquareCut_;
+
   //STUFF NOT USED IN THE FIRMWARE BUT ONLY FOR DEBUGGING
   ///////////////////////////////////////////////////////
 
