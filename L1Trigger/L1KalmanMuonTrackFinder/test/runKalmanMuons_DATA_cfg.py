@@ -16,6 +16,8 @@ process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
         'file:/scratch3/MTF/data/data.root'
+#        '/store/data/Run2017F/MinimumBias/RAW/v1/000/305/038/00000/4623B44F-44B0-E711-9EC9-02163E011DDB.root'
+
     )
 )
 
@@ -40,7 +42,8 @@ process.load('EventFilter.L1TRawToDigi.l1tRawtoDigiBMTF_cfi')
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('test.root'),
     outputCommands = cms.untracked.vstring("drop *_*_*_*",
-                                 "keep *_*_*_L1KMTF")
+                                 "keep *_*_*_L1KMTF",
+                                 "keep *_muons_*_*")
                                
 )
 
@@ -49,4 +52,5 @@ process.l1KalmanInputStubs.src = cms.InputTag("BMTFStage2Digis")
 process.p = cms.Path(process.BMTFStage2Digis*process.l1KalmanMuons)
 process.e = cms.EndPath(process.out)
 process.schedule = cms.Schedule(process.p,process.e)
+
 

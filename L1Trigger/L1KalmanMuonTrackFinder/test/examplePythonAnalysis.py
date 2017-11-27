@@ -44,6 +44,13 @@ def fetchGEN(event,etaMax=1.2):
     return genMuons
 
 
+def fetchRECO(event,etaMax=1.2):
+    genH  = Handle  ('vector<reco::Muon>')
+    event.getByLabel('muons',genH)
+    genMuons=filter(lambda x: x.isGlobalMuon() and x.isPFMuon() and abs(x.eta())<etaMax,genH.product())
+    return genMuons
+
+
 def globalBMTFPhi(muon):
     temp=muon.processor()*48+muon.hwPhi()
 
@@ -211,7 +218,7 @@ rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
 verbose=False
 tag='test'
-isData=False
+isData=True
 
 events=Events([tag+'.root'])
 counter=-1
@@ -221,7 +228,7 @@ for event in events:
     stubs = fetchStubs(event,isData)
     #fetch gen
     if isData:
-        gen=[]
+        gen=fetchRECO(event,0.83)
     else:
         gen = fetchGEN(event,0.83)
     #fetch kalman (fullcombinatorics)
