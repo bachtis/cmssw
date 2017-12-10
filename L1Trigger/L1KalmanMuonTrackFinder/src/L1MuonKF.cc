@@ -412,7 +412,7 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
       printf("------------------------------------------------------\n");
       printf("stubs:\n");
       for (const auto& stub: stubs) 
-	printf("station=%d phi=%d phiB=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub)); 
+	printf("station=%d phi=%d phiB=%d qual=%d \n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub),stub->code()); 
       printf("------------------------------------------------------\n");
       printf("------------------------------------------------------\n");
 
@@ -445,7 +445,12 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	    printf("updated Coordinates step:%d,phi=%d,phiB=%d,K=%d\n",track.step(),track.positionAngle(),track.bendingAngle(),track.curvature());
 	}
       if (track.step()==0) {
-	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),track.bendingAngle());
+	//SATURATE DXY
+	int dxy = track.bendingAngle();
+	if (abs(dxy)>4096)
+	  dxy = 4096*dxy/abs(dxy);
+ 
+	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),dxy);
 	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	int preconstrainedK = track.curvature();
@@ -496,6 +501,8 @@ int L1MuonKF::rank(const L1KalmanMuTrack& track) {
   if (phiBitmask(track)==customBitmask(0,0,1,1))
     return -8192;
   return (track.stubs().size()*2+track.quality())*80-track.approxChi2();
+  //  return (track.stubs().size()*2+track.quality())*80-abs(track.dxy());
+
 }
 
 
@@ -530,7 +537,7 @@ L1MuonKF::TrackVector L1MuonKF::cleanAndSort(const L1MuonKF::TrackVector& tracks
       if (rank(track1)<rank(track2))
 	keep=false;
     }
-    if (keep && track1.approxChi2()<chiSquareCut_*int(track1.stubs().size()))
+    if (keep && (track1.approxChi2()<chiSquareCut_*int(track1.stubs().size()))) 
       out.push_back(track1);
   }
 
