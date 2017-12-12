@@ -35,6 +35,7 @@ class L1MuonKF {
 
  private:
   bool verbose_;
+  uint makePattern_;
   int correctedPhi(const StubRef&,int);
   int correctedPhiB(const StubRef&);
   void propagate(L1KalmanMuTrack&);

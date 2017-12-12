@@ -102,6 +102,8 @@ def curvResidualSTA(a,b):
     return (charge/a.unconstrainedP4().pt()-b.charge()/b.pt())*b.pt()/b.charge()
 
 
+def getBit(bitmask,pos):
+    return (bitmask & ( 1 << pos )) >> pos
 
 
 def deltaPhi( p1, p2):
@@ -147,7 +149,6 @@ def log(counter,stubs,gen,kmtfAll,kmtf,bmtf):
     import pdb;pdb.set_trace()
 
 #########Histograms#############
-
 #residual vs gen pt
 etaLUT = ROOT.TH2D("etaLUT","etaLUT",4096,0,4096,128,0,128)
 
@@ -189,8 +190,8 @@ genEtaBMTF=ROOT.TH1F("genEtaBMTF","genEta",50,-1.0,1.0)
 chiBestKMTF = ROOT.TH1F("chiBestKMTF","chiBest",512,0,8192)
 chiKMTF = ROOT.TH1F("chiKMTF","chiBest",512,0,8192)
 
-dxyBestKMTF = ROOT.TH1F("dxyBestKMTF","chiBest",512,0,512)
-dxyKMTF = ROOT.TH1F("dxyKMTF","chiBest",512,0,512)
+dxyBestKMTF = ROOT.TH1F("dxyBestKMTF","chiBest",512,0,2048)
+dxyKMTF = ROOT.TH1F("dxyKMTF","chiBest",512,0,2048)
 
 etaBMTF = ROOT.TH1F("etaBMTF","rateBMTF",24,-1.2,1.2)
 etaKMTF = ROOT.TH1F("etaKMTF","rateKMTF",24,-1.2,1.2)
@@ -201,10 +202,55 @@ rateKMTF = ROOT.TH1F("rateKMTF","rateKMTF",20,2.5,102.5)
 rateBMTFp7 = ROOT.TH1F("rateBMTFp7","rateBMTF",20,2.5,102.5)
 rateKMTFp7 = ROOT.TH1F("rateKMTFp7","rateKMTF",20,2.5,102.5)
 
+####Save the Kalman Gains for LUTs
+kalmanGain={}
+kalmanGain[3] = {}
+kalmanGain[3][8]={}
+kalmanGain[2] = {}
+kalmanGain[2][8]={}
+kalmanGain[2][12]={}
+kalmanGain[2][4]={}
+kalmanGain[1] = {}
+kalmanGain[1][8]={}
+kalmanGain[1][6]={}
+kalmanGain[1][4]={}
+kalmanGain[1][2]={}
+kalmanGain[1][10]={}
+kalmanGain[1][12]={}
+kalmanGain[1][14]={}
+kalmanGain[0] = {}
+kalmanGain[0][15] = {}
+kalmanGain[0][11] = {}
+kalmanGain[0][13] = {}
+kalmanGain[0][14] = {}
+kalmanGain[0][12] = {}
+kalmanGain[0][10] = {}
+kalmanGain[0][9] = {}
+kalmanGain[0][7] = {}
+kalmanGain[0][5] = {}
+kalmanGain[0][6] = {}
+kalmanGain[0][3] = {}
+for station,info1 in kalmanGain.iteritems():
+    for bit,info2 in info1.iteritems():
+        if station>0:
+            kalmanGain[station][bit][0]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=0),"h",128,0,512,512,-100,100)
+            kalmanGain[station][bit][1]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=1),"h",128,0,512,512,-3,3)
+        else:
+            kalmanGain[station][bit][0]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=0),"h",128,0,512,512,-5,5)
+            kalmanGain[station][bit][1]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=1),"h",128,0,512,512,-5,5)
+
+        kalmanGain[station][bit][2]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=2),"h",128,0,512,512,-100,100)
+        kalmanGain[station][bit][3]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=3),"h",128,0,512,512,-100,100)
+        kalmanGain[station][bit][4]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=4),"h",128,0,512,512,-8,0)
+        kalmanGain[station][bit][5]=ROOT.TH2D("gain_{station}_{bit}_{element}".format(station=station,bit=bit,element=5),"h",128,0,512,512,0,1)
+
+        
+    
+
 ##############################
 
 verbose=False
-tag='singleNeutrino140'
+tag='higgsFourMuons140'
 
 
 events=Events([tag+'.root'])
@@ -236,6 +282,39 @@ for event in events:
 
     ##Fill histograms and rates
     for track in kmtfAll:
+        mask = track.phiPattern();
+        pattern=[]
+        for i in range(0,4):
+            pattern.append(getBit(mask,i))
+        #start from station 3
+        if pattern[2]==1:
+            partialMask = pattern[3]*8
+            if partialMask in kalmanGain[3]:
+                gain = track.kalmanGain(3)
+                for i in range(0,6):
+                    kalmanGain[3][partialMask][i].Fill(gain[0]/4,gain[i+1])
+        #start from station 2
+        if pattern[1]==1:
+            partialMask = pattern[3]*8+pattern[2]*4
+            if partialMask in kalmanGain[2]:
+                gain = track.kalmanGain(2)
+                for i in range(0,6):
+                    kalmanGain[2][partialMask][i].Fill(gain[0]/4,gain[i+1])
+        #start from station 1
+        if pattern[0]==1:
+            partialMask = pattern[3]*8+pattern[2]*4+pattern[1]*2
+            if partialMask in kalmanGain[1]:
+                gain = track.kalmanGain(1)
+                for i in range(0,6):
+                    kalmanGain[1][partialMask][i].Fill(gain[0]/4,gain[i+1])
+        #start from vertex
+        partialMask = pattern[3]*8+pattern[2]*4+pattern[1]*2+pattern[0]
+        if partialMask in kalmanGain[0]:
+            gain = track.kalmanGain(0)
+            for i in range(0,3):
+                kalmanGain[0][partialMask][i].Fill(gain[0]/4,gain[i+1])
+
+    
         chiKMTF.Fill(track.approxChi2()/track.stubs().size())
         dxyKMTF.Fill(abs(track.dxy()))
 
@@ -422,6 +501,13 @@ c.Write("normRateKMTFEtaP7")
 
 etaLUT.Write()
 
+
+directory = f.mkdir("gains")
+directory.cd()
+for station,info1 in kalmanGain.iteritems():
+    for bit,info2 in info1.iteritems():
+        for i in range(0,6):
+            kalmanGain[station][bit][i].Write()
 f.Close()
 
 

@@ -5,6 +5,7 @@
 
 L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   verbose_(settings.getParameter<bool>("verbose")),
+  makePattern_(settings.getParameter<uint>("makePattern")),
   eLoss_(settings.getParameter<std::vector<double> >("eLoss")),
   aPhi_(settings.getParameter<std::vector<double> >("aPhi")),
   aPhiB_(settings.getParameter<std::vector<double> >("aPhiB")),
@@ -130,10 +131,10 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   int KNew =wrapAround(K+offset,8192);
 
   //phi propagation
-  int phiNew =wrapAround(phi+int(aPhi_[step-1]*K)-int(bPhi_[step-1]*phiB),8192);
+  int phiNew =wrapAround(phi+int(round(aPhi_[step-1]*K))-int(round(bPhi_[step-1]*phiB)),8192);
 
   //phiB propagation
-  int phiBNew = (int(aPhiB_[step-1]*K)  +int(bPhiB_[step-1]*phiB));
+  int phiBNew = wrapAround(int(round(aPhiB_[step-1]*K))  +int(round(bPhiB_[step-1]*phiB)),8192);
 
   //Only for the propagation to vertex we use the LUT for better precision
   phiBNew = wrapAround(phiBNew+charge*aPhiBNLO_[step-1]*K*K,2048);
@@ -141,7 +142,9 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
   //where we want to check what is happening in the covariaznce matrix 
-
+  if (makePattern_==1 && step>1) {
+    printf("%d %d %d %f %f %f %d %d\n",K,phi,phiB,fabs(aPhi_[step-1]),fabs(bPhi_[step-1]),fabs(aPhiB_[step-1]),phiNew,phiBNew);
+  }
 
   //Create the transformation matrix
   double a[9];
@@ -209,6 +212,9 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
 	continue;
       int phi = correctedPhi(stubs[i],sector)+correctedPhiB(stubs[i]);
       int d = abs(phi-trackPhi-trackPhiB);
+      if (makePattern_==3) {
+	printf ("%d %d %d %d %d\n",correctedPhi(stubs[i],sector),correctedPhiB(stubs[i]),trackPhi,trackPhiB,d);
+      }
       if (d<distance) {
         distance = d;
         bestStub=i;
@@ -388,6 +394,8 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 
   for( const auto& mask : combinatorics) {
     L1KalmanMuTrack track(seed);
+    if (makePattern_==2)
+      printf("%d %d %d %d  %d\n",seed->stNum(), seed->phi(),8*seed->phiB(),seed->code(),track.curvature()); 
     //set covariance
     L1KalmanMuTrack::CovarianceMatrix covariance;  
     covariance(0,0)=4096*4096;

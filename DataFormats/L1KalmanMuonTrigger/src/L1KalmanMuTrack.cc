@@ -26,19 +26,18 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
 {
 
 
-
   switch(stub->stNum()) {
   case 1:
-    curv_ = -238*phiB_/512;
+    curv_ = -int(round(0.47*phiB_));
     break;
   case 2:
-    curv_ = -865*phiB_/512;
+    curv_ = -int(round(1.69*phiB_));
     break;
   case 3:
-    curv_ = -1254*phiB_/512;
+    curv_ = -int(round(2.45*phiB_));
     break;
   case 4:
-    curv_ = -1823*phiB_/512;
+    curv_ = -int(round(3.56*phiB_));
     break;
   default:
     curv_ = 0;

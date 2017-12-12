@@ -1,8 +1,8 @@
-
 import FWCore.ParameterSet.Config as cms
 
 l1MuonKalmanFilterSettings =  cms.PSet(
     verbose = cms.bool(False),
+    makePattern = cms.uint32(0), #Tool to make patterns for hardware tests 
     eLoss = cms.vdouble(-2.85e-4,0,0,0), 
     aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
     aPhiB = cms.vdouble(-0.833,-0.123,-0.174,-0.144),
