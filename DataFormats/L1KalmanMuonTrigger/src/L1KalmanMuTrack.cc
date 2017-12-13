@@ -11,6 +11,7 @@ L1KalmanMuTrack::~L1KalmanMuTrack() {
 
 L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
   reco::LeafCandidate(-1,reco::LeafCandidate::PolarLorentzVector(0.1,0.0,0.0,0.105)),
+  unconstrainedP4_(reco::LeafCandidate::PolarLorentzVector(0.1,0.0,0.0,0.105)),
   covariance_(std::vector<double>(6,0.0)),
   curv_(0),
   phi_(stub->phi()),
@@ -26,25 +27,25 @@ L1KalmanMuTrack::L1KalmanMuTrack(const L1KalmanMuTrack::StubRef& stub):
 {
 
 
+
   switch(stub->stNum()) {
   case 1:
-    curv_ = -int(round(0.47*phiB_));
+    curv_ = -238*phiB_/512;
     break;
   case 2:
-    curv_ = -int(round(1.69*phiB_));
+    curv_ = -865*phiB_/512;
     break;
   case 3:
-    curv_ = -int(round(2.45*phiB_));
+    curv_ = -1254*phiB_/512;
     break;
   case 4:
-    curv_ = -int(round(3.56*phiB_));
+    curv_ = -1823*phiB_/512;
     break;
   default:
     curv_ = 0;
     break;
-    
+   
   }
-
 
   stubs_.push_back(stub);
 }
@@ -168,7 +169,6 @@ void L1KalmanMuTrack::setPtEtaPhi(double pt ,double eta, double phi,bool atVerte
     unconstrainedP4_.SetEta(eta);
     unconstrainedP4_.SetPhi(phi);
     unconstrainedP4_.SetM(0.105);
-
   }
 }
 

@@ -9,7 +9,6 @@
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "DataFormats/L1DTTrackFinder/interface/L1MuDTChambPhDigi.h"
 #include "DataFormats/L1DTTrackFinder/interface/L1MuDTChambPhContainer.h"
-
 //
 // class declaration
 //
@@ -26,6 +25,7 @@ class L1BarrelStubSelector : public edm::stream::EDProducer<> {
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       virtual void endStream() override;
   edm::EDGetTokenT<L1MuDTChambPhContainer> src_;
+  int minQuality_;
   bool onlyBX0_;
   
 
@@ -45,6 +45,7 @@ class L1BarrelStubSelector : public edm::stream::EDProducer<> {
 //
 L1BarrelStubSelector::L1BarrelStubSelector(const edm::ParameterSet& iConfig):
   src_(consumes<L1MuDTChambPhContainer>(iConfig.getParameter<edm::InputTag>("src"))),
+  minQuality_(iConfig.getParameter<int>("minQuality")),
   onlyBX0_(iConfig.getParameter<bool>("onlyBX0"))
 {
   produces <std::vector<L1MuDTChambPhDigi>>();
@@ -75,6 +76,8 @@ L1BarrelStubSelector::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    std::vector<L1MuDTChambPhDigi> out;
 
    for (const auto& seg : *(phiIn.product()->getContainer())) {
+     if (seg.code()<minQuality_)
+       continue;
      if ((seg.bxNum()==0 && onlyBX0_) || (!onlyBX0_)) {
        //we also do not want stubs at st = 1 and wheel +=2 due to overlap
        if (abs(seg.whNum())==2 && seg.stNum()==1)

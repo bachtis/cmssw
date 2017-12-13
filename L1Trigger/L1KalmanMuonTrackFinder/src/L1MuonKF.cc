@@ -5,7 +5,6 @@
 
 L1MuonKF::L1MuonKF(const edm::ParameterSet& settings):
   verbose_(settings.getParameter<bool>("verbose")),
-  makePattern_(settings.getParameter<uint>("makePattern")),
   eLoss_(settings.getParameter<std::vector<double> >("eLoss")),
   aPhi_(settings.getParameter<std::vector<double> >("aPhi")),
   aPhiB_(settings.getParameter<std::vector<double> >("aPhiB")),
@@ -131,10 +130,10 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   int KNew =wrapAround(K+offset,8192);
 
   //phi propagation
-  int phiNew =wrapAround(phi+int(round(aPhi_[step-1]*K))-int(round(bPhi_[step-1]*phiB)),8192);
+  int phiNew =wrapAround(phi+int(aPhi_[step-1]*K)-int(bPhi_[step-1]*phiB),8192);
 
   //phiB propagation
-  int phiBNew = wrapAround(int(round(aPhiB_[step-1]*K))  +int(round(bPhiB_[step-1]*phiB)),8192);
+  int phiBNew = (int(aPhiB_[step-1]*K)  +int(bPhiB_[step-1]*phiB));
 
   //Only for the propagation to vertex we use the LUT for better precision
   phiBNew = wrapAround(phiBNew+charge*aPhiBNLO_[step-1]*K*K,2048);
@@ -142,9 +141,7 @@ void L1MuonKF::propagate(L1KalmanMuTrack& track) {
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
   //where we want to check what is happening in the covariaznce matrix 
-  if (makePattern_==1 && step>1) {
-    printf("%d %d %d %f %f %f %d %d\n",K,phi,phiB,fabs(aPhi_[step-1]),fabs(bPhi_[step-1]),fabs(aPhiB_[step-1]),phiNew,phiBNew);
-  }
+
 
   //Create the transformation matrix
   double a[9];
@@ -212,9 +209,6 @@ bool L1MuonKF::updateOffline(L1KalmanMuTrack& track,const StubRefVector& stubs,i
 	continue;
       int phi = correctedPhi(stubs[i],sector)+correctedPhiB(stubs[i]);
       int d = abs(phi-trackPhi-trackPhiB);
-      if (makePattern_==3) {
-	printf ("%d %d %d %d %d\n",correctedPhi(stubs[i],sector),correctedPhiB(stubs[i]),trackPhi,trackPhiB,d);
-      }
       if (d<distance) {
         distance = d;
         bestStub=i;
@@ -394,8 +388,6 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 
   for( const auto& mask : combinatorics) {
     L1KalmanMuTrack track(seed);
-    if (makePattern_==2)
-      printf("%d %d %d %d  %d\n",seed->stNum(), seed->phi(),8*seed->phiB(),seed->code(),track.curvature()); 
     //set covariance
     L1KalmanMuTrack::CovarianceMatrix covariance;  
     covariance(0,0)=4096*4096;
@@ -420,7 +412,7 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
       printf("------------------------------------------------------\n");
       printf("stubs:\n");
       for (const auto& stub: stubs) 
-	printf("station=%d phi=%d phiB=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub)); 
+	printf("station=%d phi=%d phiB=%d qual=%d \n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub),stub->code()); 
       printf("------------------------------------------------------\n");
       printf("------------------------------------------------------\n");
 
@@ -453,7 +445,12 @@ L1MuonKF::TrackVector L1MuonKF::process(const StubRef& seed, const StubRefVector
 	    printf("updated Coordinates step:%d,phi=%d,phiB=%d,K=%d\n",track.step(),track.positionAngle(),track.bendingAngle(),track.curvature());
 	}
       if (track.step()==0) {
-	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),track.bendingAngle());
+	//SATURATE DXY
+	int dxy = track.bendingAngle();
+	if (abs(dxy)>4096)
+	  dxy = 4096*dxy/abs(dxy);
+ 
+	track.setCoordinatesAtVertex(track.curvature(),track.positionAngle(),dxy);
 	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	int preconstrainedK = track.curvature();
@@ -504,6 +501,8 @@ int L1MuonKF::rank(const L1KalmanMuTrack& track) {
   if (phiBitmask(track)==customBitmask(0,0,1,1))
     return -8192;
   return (track.stubs().size()*2+track.quality())*80-track.approxChi2();
+  //  return (track.stubs().size()*2+track.quality())*80-abs(track.dxy());
+
 }
 
 
@@ -538,7 +537,7 @@ L1MuonKF::TrackVector L1MuonKF::cleanAndSort(const L1MuonKF::TrackVector& tracks
       if (rank(track1)<rank(track2))
 	keep=false;
     }
-    if (keep && track1.approxChi2()<chiSquareCut_*int(track1.stubs().size()))
+    if (keep && (track1.approxChi2()<chiSquareCut_*int(track1.stubs().size()))) 
       out.push_back(track1);
   }
 

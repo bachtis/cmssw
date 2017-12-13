@@ -1,8 +1,8 @@
+
 import FWCore.ParameterSet.Config as cms
 
 l1MuonKalmanFilterSettings =  cms.PSet(
     verbose = cms.bool(False),
-    makePattern = cms.uint32(0), #Tool to make patterns for hardware tests 
     eLoss = cms.vdouble(-2.85e-4,0,0,0), 
     aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
     aPhiB = cms.vdouble(-0.833,-0.123,-0.174,-0.144),
@@ -10,14 +10,14 @@ l1MuonKalmanFilterSettings =  cms.PSet(
     bPhi = cms.vdouble(-1,0.154,0.173,0.147),
     bPhiB = cms.vdouble(-1,1.154,1.173,1.147),
     chiSquare = cms.vdouble(0.0,0.095,0.232,0.356),   
-    chiSquareCut = cms.int32(800),
+    chiSquareCut = cms.int32(1500),
     useOfflineAlgo = cms.bool(True),
 
     ###Only for the offline algo -not in firmware --------------------
     mScatteringPhi = cms.vdouble(0.9322,8.384e-5,5.406e-5,1.786e-5),
     mScatteringPhiB = cms.vdouble(4.821e-3,3.580e-3,6.634e-3,5.478e-3),
     pointResolutionPhi = cms.double(1.),
-    pointResolutionPhiB = cms.double(500.),
+    pointResolutionPhiB = cms.double(500),
     pointResolutionVertex = cms.double(100.),
     ###---------------------------------------------------------------
     #coarse eta look up table

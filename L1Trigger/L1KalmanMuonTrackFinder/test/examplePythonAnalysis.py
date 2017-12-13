@@ -52,7 +52,7 @@ def globalBMTFPhi(muon):
 
 def fetchBMTF(event,etaMax=1.2):
     bmtfH  = Handle  ('BXVector<l1t::RegionalMuonCand>')
-    event.getByLabel('simBmtfDigis','BMTF','L1MUONKF',bmtfH)
+    event.getByLabel('simBmtfDigis:BMTF',bmtfH)
     bmtf=bmtfH.product()
     bmtfMuons=[]
     for bx in [0]:
@@ -84,9 +84,9 @@ def lsBIT(bits=14):
 
 #import pdb;pdb.set_trace()
 
-def fetchKMTF(event,coll,etaMax=0.83,chi2=10000000):
+def fetchKMTF(event,coll,etaMax=0.83,chi2=1500):
     kmtfH  = Handle('vector<L1KalmanMuTrack>')
-    event.getByLabel('l1KalmanMuonTracks',coll,'L1MUONKF',kmtfH)
+    event.getByLabel('l1KalmanMuonTracks:'+coll,kmtfH)
     kmtf=filter(lambda x: abs(x.eta())<etaMax and x.approxChi2()/x.stubs().size()<chi2,kmtfH.product())
     return sorted(kmtf,key=lambda x: x.pt(),reverse=True)
 
@@ -250,7 +250,7 @@ for station,info1 in kalmanGain.iteritems():
 ##############################
 
 verbose=False
-tag='higgsFourMuons140'
+tag='singleNeutrino140'
 
 
 events=Events([tag+'.root'])
