@@ -13,6 +13,7 @@
 #include "DataFormats/L1TMuon/interface/L1MuBMTrack.h"
 #include "DataFormats/L1TMuon/interface/L1MuBMTrackSegPhi.h"
 #include "DataFormats/L1TMuon/interface/L1MuBMTrackSegEta.h"
+#include "DataFormats/L1TMuon/interface/L1MuKBMTCombinedStub.h"
 
 #include <vector>
 
@@ -40,6 +41,7 @@ namespace {
 
 namespace L1Trigger_L1TMuonBarrel {
   struct dictionary {
+    L1MuKBMTCombinedStub l1mu_stub_comp;
     L1MuBMTrackSegPhi l1mu_trk_ph;
     L1MuBMTrackSegEta l1mu_trk_th;
     L1MuBMTrack       l1mu_trk_tr;
@@ -49,6 +51,12 @@ namespace L1Trigger_L1TMuonBarrel {
 
     L1MuBMTrackCollection l1mu_trk_tr_V;
     edm::Wrapper<L1MuBMTrackCollection> l1mu_trk_tr_W;
+
+    L1MuKBMTCombinedStubCollection l1mu_stub_comb_V;
+    edm::Wrapper<L1MuKBMTCombinedStubCollection> l1mu_stub_comb_W;
+    edm::Ref<L1MuKBMTCombinedStubCollection > l1mu_stub_comb_R;
+    edm::Wrapper<std::vector<edm::Ref<L1MuKBMTCombinedStubCollection > > > l1mu_stub_comb_RW;
+
 
     L1MuBMTrackSegPhiCollection l1mu_trk_ph_V;
     edm::Wrapper<L1MuBMTrackSegPhiCollection> l1mu_trk_ph_W;

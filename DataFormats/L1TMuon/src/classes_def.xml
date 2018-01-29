@@ -43,6 +43,17 @@
     <version ClassVersion="10" checksum="3818011888"/>
   </class>
 
+  <class name="L1MuKBMTCombinedStub"/>
+  <class name="L1MuKBMTCombinedStubCollection"/>
+  <class name="edm::Wrapper<L1MuKBMTCombinedStubCollection >"/>
+
+ <class name="edm::Ref<L1MuKBMTCombinedStubCollection>" splitLevel="0"/>
+ <class name="edm::Wrapper<edm::Ref<L1MuKBMTCombinedStubCollection > >"/>
+
+
+
+
+
   <class name="L1MuBMTrackSegEta" ClassVersion="10">
     <version ClassVersion="10" checksum="2263077996"/>
  </class>
