@@ -29,6 +29,8 @@
 //------------------------------------
 
 #include "DataFormats/L1TMuon/interface/BMTF/L1MuBMTrackSegLoc.h"
+#include "DataFormats/L1Trigger/interface/BXVector.h"
+#include "DataFormats/Common/interface/Ref.h"
 
 //              ---------------------
 //              -- Class Interface --
@@ -37,6 +39,8 @@
 class L1MuKBMTCombinedStub;
 
 typedef std::vector<L1MuKBMTCombinedStub> L1MuKBMTCombinedStubCollection;
+typedef edm::Ref<L1MuKBMTCombinedStubCollection > L1MuKBMTCombinedStubRef;
+typedef std::vector<edm::Ref<L1MuKBMTCombinedStubCollection > > L1MuKBMTCombinedStubRefVector;
 
 class L1MuKBMTCombinedStub {
 
@@ -64,6 +68,19 @@ class L1MuKBMTCombinedStub {
     inline int tag() const { return tag_; }
     /// return bunch crossing
     inline int bxNum() const { return bxNum_; }
+
+    /// return first eta
+    inline int eta1() const { return eta1_; }
+    /// return second eta
+    inline int eta2() const { return eta2_; }
+    /// return first eta quality
+    inline int qeta1() const { return qeta1_; }
+    /// return second eta quality
+    inline int qeta2() const { return qeta2_; }
+
+    /// return coarse Eta
+    inline int coarseEta() const { return coarseEta_; }
+
     /// assignment operator
     L1MuKBMTCombinedStub& operator=(const L1MuKBMTCombinedStub&);
     /// equal operator

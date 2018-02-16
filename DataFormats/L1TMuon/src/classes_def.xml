@@ -62,6 +62,9 @@
     <version ClassVersion="10" checksum="955528069"/>
   </class>
 
+  <class name="L1MuKBMTrack"/>
+
+
   <class name="L1MuBMSecProcId" ClassVersion="10">
     <version ClassVersion="10" checksum="3768381571"/>
   </class>
@@ -75,10 +78,12 @@
   </class>
 
   <class name="L1MuBMTrackCollection"/>
+  <class name="L1MuKBMTrackCollection"/>
   <class name="L1MuBMTrackSegPhiCollection"/>
   <class name="L1MuBMTrackSegEtaCollection"/>
 
   <class name="edm::Wrapper<L1MuBMTrackCollection >"/>
+  <class name="edm::Wrapper<L1MuKBMTrackCollection >"/>
   <class name="edm::Wrapper<L1MuBMTrackSegPhiCollection >"/>
   <class name="edm::Wrapper<L1MuBMTrackSegEtaCollection >"/>
 

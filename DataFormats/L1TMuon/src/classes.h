@@ -14,6 +14,7 @@
 #include "DataFormats/L1TMuon/interface/L1MuBMTrackSegPhi.h"
 #include "DataFormats/L1TMuon/interface/L1MuBMTrackSegEta.h"
 #include "DataFormats/L1TMuon/interface/L1MuKBMTCombinedStub.h"
+#include "DataFormats/L1TMuon/interface/L1MuKBMTrack.h"
 
 #include <vector>
 
@@ -45,12 +46,15 @@ namespace L1Trigger_L1TMuonBarrel {
     L1MuBMTrackSegPhi l1mu_trk_ph;
     L1MuBMTrackSegEta l1mu_trk_th;
     L1MuBMTrack       l1mu_trk_tr;
+    L1MuKBMTrack       l1muk_trk_tr;
     L1MuBMSecProcId   l1mu_dt_proc;
     L1MuBMTrackSegLoc  l1mu_dt_segloc;
     L1MuBMAddressArray l1mu_dt_addr;
 
     L1MuBMTrackCollection l1mu_trk_tr_V;
+    L1MuKBMTrackCollection l1muk_trk_tr_V;
     edm::Wrapper<L1MuBMTrackCollection> l1mu_trk_tr_W;
+    edm::Wrapper<L1MuKBMTrackCollection> l1muk_trk_tr_W;
 
     L1MuKBMTCombinedStubCollection l1mu_stub_comb_V;
     edm::Wrapper<L1MuKBMTCombinedStubCollection> l1mu_stub_comb_W;
