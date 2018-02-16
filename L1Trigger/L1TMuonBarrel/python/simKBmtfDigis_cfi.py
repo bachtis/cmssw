@@ -7,8 +7,11 @@ bmtfKalmanTrackingSettings = cms.PSet(
 #    eLoss = cms.vdouble(-2.85e-4,-6.21e-5,-1.26e-4,-1.23e-4), 
     eLoss = cms.vdouble(+3.825e-4,0,0,0), 
     aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
-    aPhiB = cms.vdouble(-0.740,-0.123,-0.174,-0.144),
-    aPhiBNLO = cms.vdouble(1.758e-4,0,0,0),
+#    aPhiB = cms.vdouble(-0.740,-0.123,-0.174,-0.144),
+#    aPhiBNLO = cms.vdouble(1.758e-4,0,0,0),
+    aPhiB = cms.vdouble(-1383.,-0.123,-0.174,-0.144),
+    aPhiBNLO = cms.vdouble(5.201e-4,0,0,0),
+
     bPhi = cms.vdouble(-1,0.154,0.173,0.147),
     bPhiB = cms.vdouble(-1,1.154,1.173,1.147),
     etaLUT0 = cms.vdouble(8.946,7.508,6.279,6.399),

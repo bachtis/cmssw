@@ -113,10 +113,11 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   int phiNew =wrapAround(phi+int(aPhi_[step-1]*K)-int(bPhi_[step-1]*phiB),8192);
 
   //phiB propagation
-  int phiBNew = (int(aPhiB_[step-1]*K)  +int(bPhiB_[step-1]*phiB));
-
-  //Only for the propagation to vertex we use the LUT for better precision
-  phiBNew = wrapAround(phiBNew+charge*aPhiBNLO_[step-1]*K*K,8192);
+  int phiBNew = wrapAround(int(aPhiB_[step-1]*K)  +int(bPhiB_[step-1]*phiB),2048);
+  
+  //Only for the propagation to vertex we use the LUT for better precision and the full function
+  if (step==1)
+    phiBNew = wrapAround(int(aPhiB_[step-1]*atan(aPhiBNLO_[step-1]*K))+int(bPhiB_[step-1]*phiB),2048);
 
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
@@ -131,6 +132,9 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   a[4] = 1.0;
   a[5] = -bPhi_[step-1];
   a[6] = aPhiB_[step-1]+2*charge*aPhiBNLO_[step-1]*K;
+  if (step==1)
+    a[6] = aPhiB_[step-1]*aPhiBNLO_[step-1]/((1+aPhiBNLO_[step-1]*K*aPhiBNLO_[step-1])*(1+aPhiBNLO_[step-1]*K*aPhiBNLO_[step-1]));
+
   a[7] = 0.0;
   a[8] = bPhiB_[step-1];
 
@@ -218,7 +222,7 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline(L1MuKBMTrack& track,const L1MuKBMTCo
 
     int KNew  = wrapAround(trackK+int(Gain(0,0)*residual(0)+Gain(0,1)*residual(1)),8192);
     int phiNew  = wrapAround(trackPhi+residual(0),8192);
-    int phiBNew = wrapAround(trackPhiB+int(Gain(2,0)*residual(0)+Gain(2,1)*residual(1)),8192);
+    int phiBNew = wrapAround(trackPhiB+int(Gain(2,0)*residual(0)+Gain(2,1)*residual(1)),2048);
 
 
     track.setCoordinates(track.step(),KNew,phiNew,phiBNew);
