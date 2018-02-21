@@ -58,8 +58,9 @@
     <version ClassVersion="10" checksum="2263077996"/>
  </class>
 
-  <class name="L1MuBMTrack" ClassVersion="10">
+  <class name="L1MuBMTrack" ClassVersion="11">
     <version ClassVersion="10" checksum="955528069"/>
+    <version ClassVersion="11" checksum="1380324591"/>
   </class>
 
   <class name="L1MuKBMTrack"/>

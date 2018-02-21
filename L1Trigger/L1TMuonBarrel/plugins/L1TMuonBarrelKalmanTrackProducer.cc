@@ -75,11 +75,8 @@ L1TMuonBarrelKalmanTrackProducer::produce(edm::Event& iEvent, const edm::EventSe
 {
    using namespace edm;
    Handle<std::vector<L1MuKBMTCombinedStub> >stubHandle;
-
    std::vector<L1MuKBMTrack> outAll;
-
    iEvent.getByToken(src_,stubHandle);
-
 
    L1MuKBMTCombinedStubRefVector stubs;
    for (uint i=0;i<stubHandle->size();++i) {

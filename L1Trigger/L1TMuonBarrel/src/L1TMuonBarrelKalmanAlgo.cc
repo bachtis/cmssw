@@ -61,13 +61,16 @@ int L1TMuonBarrelKalmanAlgo::correctedPhiB(const L1MuKBMTCombinedStubRef& stub) 
 }
 
 int L1TMuonBarrelKalmanAlgo::correctedPhi(const L1MuKBMTCombinedStubRef& stub,int sector) {
-  if (stub->scNum()==sector)
+  if (stub->scNum()==sector) {
     return stub->phi();
-  else if ((stub->scNum()==sector-1) || (stub->scNum()==11 && sector==0))
+  }
+  else if ((stub->scNum()==sector-1) || (stub->scNum()==11 && sector==0)) {
     return stub->phi()-2144;
-  else if ((stub->scNum()==sector+1) || (stub->scNum()==0 && sector==11))
+  }
+  else if ((stub->scNum()==sector+1) || (stub->scNum()==0 && sector==11)) {
     return stub->phi()+2144;
-  return 0;
+  }
+  return stub->phi();
 } 
 
 
@@ -117,7 +120,7 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   
   //Only for the propagation to vertex we use the LUT for better precision and the full function
   if (step==1)
-    phiBNew = wrapAround(int(aPhiB_[step-1]*atan(aPhiBNLO_[step-1]*K))+int(bPhiB_[step-1]*phiB),2048);
+    phiBNew = wrapAround(int(aPhiB_[step-1]*K/(1+charge*aPhiBNLO_[step-1]*K))+int(bPhiB_[step-1]*phiB),2048);
 
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
@@ -125,16 +128,16 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   
   //Create the transformation matrix
   double a[9];
-  a[0] = 1./((1.0+charge*eLoss_[step-1]*K)*(1.0+charge*eLoss_[step-1]*K));
+  //  a[0] = 1./((1.0+charge*eLoss_[step-1]*K)*(1.0+charge*eLoss_[step-1]*K));
+  a[0] = 1.;
   a[1] = 0.0;
   a[2] = 0.0;
   a[3] = aPhi_[step-1];
   a[4] = 1.0;
   a[5] = -bPhi_[step-1];
-  a[6] = aPhiB_[step-1]+2*charge*aPhiBNLO_[step-1]*K;
-  if (step==1)
-    a[6] = aPhiB_[step-1]*aPhiBNLO_[step-1]/((1+aPhiBNLO_[step-1]*K*aPhiBNLO_[step-1])*(1+aPhiBNLO_[step-1]*K*aPhiBNLO_[step-1]));
-
+  a[6] = aPhiB_[step-1];
+  //  if (step==1)
+  //    a[6] = aPhiB_[step-1]/((1+charge*aPhiBNLO_[step-1]*K)*(1+charge*aPhiBNLO_[step-1]*K));
   a[7] = 0.0;
   a[8] = bPhiB_[step-1];
 
@@ -149,7 +152,6 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   //Add the multiple scattering
   double phiRMS = mScatteringPhi_[step-1]*K*K;
   double phiBRMS = mScatteringPhiB_[step-1]*K*K;
-
 
   std::vector<double> b(6);
   b[0] = 0;
@@ -186,8 +188,8 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline(L1MuKBMTrack& track,const L1MuKBMTCo
     int phiB = correctedPhiB(stub);
     //Update eta
     track.setCoarseEta(int((track.coarseEta()+stub->coarseEta())/2.0));
-    if (stub->quality()<6)//Michalios
-      phiB=trackPhiB;
+    //    if (stub->quality()<track.quality())//Michalis
+    //      phiB=trackPhiB;
 
 
     Vector2 residual;
@@ -224,6 +226,11 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline(L1MuKBMTrack& track,const L1MuKBMTCo
     int phiNew  = wrapAround(trackPhi+residual(0),8192);
     int phiBNew = wrapAround(trackPhiB+int(Gain(2,0)*residual(0)+Gain(2,1)*residual(1)),2048);
 
+    if (verbose_) {
+      printf(" K = %d + %f * %f + %f * %f\n",trackK,Gain(0,0),residual(0),Gain(0,1),residual(1));
+      printf(" phiB = %d + %f * %f + %f * %f\n",trackPhiB,Gain(2,0),residual(0),Gain(2,1),residual(1));
+    }
+
 
     track.setCoordinates(track.step(),KNew,phiNew,phiBNew);
     Matrix33 covNew = cov - Gain*(H*cov);
@@ -256,8 +263,8 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
 
     int phi  = correctedPhi(stub,track.sector());
     int phiB = correctedPhiB(stub);
-    if (stub->quality()<6)
-      phiB=trackPhiB;
+    //    if (stub->quality()<6)
+    //      phiB=trackPhiB;
 
     Vector2 residual;
     residual[0] = phi-trackPhi;
@@ -394,9 +401,16 @@ void L1TMuonBarrelKalmanAlgo::setFloatingPointValues(L1MuKBMTrack& track,bool ve
       phi=phi+2*M_PI;
     if (K==0)
       K=1;    
-    if (abs(K)<46)
-      K=46*K/abs(K);
-    double pt = 1.0/(lsb*abs(0.85*K));
+
+
+    float FK=fabs(K);
+    FK = fabs(0.912*FK+(2.557e-5)*FK*FK-6);
+
+    if (FK<51)
+      FK=51;
+    
+    double pt = 1.0/(lsb*(FK));
+
     track.setPtEtaPhi(pt,eta,phi);
   }
   else {
@@ -441,7 +455,10 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
     L1MuKBMTrack track(seed,correctedPhi(seed,seed->scNum()),correctedPhiB(seed));
     int initialK = int(initK_[seed->stNum()-1]*correctedPhiB(seed));
     int initialPhiB = correctedPhiB(seed);
-
+    if (seed->quality()<6) {
+      initialPhiB=0;
+      initialK=0;
+    }
     track.setCoordinates(seed->stNum(),initialK,correctedPhi(seed,seed->scNum()),initialPhiB);
     track.setHitPattern(hitPattern(track));
     //Set eta coarse
@@ -549,8 +566,8 @@ void L1TMuonBarrelKalmanAlgo::estimateChiSquare(L1MuKBMTrack& track) {
 
   for (const auto& stub: track.stubs()) {
      uint delta=abs(correctedPhi(stub,track.sector())-track.phiAtMuon()+correctedPhiB(stub)-track.phiBAtMuon()-chiSquare_[stub->stNum()-1]*K);
-     if (stub->quality()<6)
-       delta = abs(correctedPhi(stub,track.sector())-track.phiAtMuon()-chiSquare_[stub->stNum()-1]*K);
+     //     if (stub->quality()<6)
+     //       delta = abs(correctedPhi(stub,track.sector())-track.phiAtMuon()-chiSquare_[stub->stNum()-1]*K);
      chi=chi+abs(delta);
    }
    track.setApproxChi2(chi);
@@ -558,9 +575,14 @@ void L1TMuonBarrelKalmanAlgo::estimateChiSquare(L1MuKBMTrack& track) {
 
 
 int L1TMuonBarrelKalmanAlgo::rank(const L1MuKBMTrack& track) {
+  int offset=0;
+  //  if (track.stubs()[0]->quality()<4)
+  //    offset=-8000;
   if (hitPattern(track)==customBitmask(0,0,1,1))
-    return -8192;
-  return (track.stubs().size()*2+track.quality())*80-track.approxChi2();
+    offset=-999;
+  //  return offset+(track.stubs().size()*2+track.quality())*80-track.approxChi2();
+  return offset+(track.stubs().size()*2)*80-track.approxChi2();
+
 }
 
 

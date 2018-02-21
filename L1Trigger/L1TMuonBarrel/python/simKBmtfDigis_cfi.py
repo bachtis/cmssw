@@ -9,8 +9,8 @@ bmtfKalmanTrackingSettings = cms.PSet(
     aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
 #    aPhiB = cms.vdouble(-0.740,-0.123,-0.174,-0.144),
 #    aPhiBNLO = cms.vdouble(1.758e-4,0,0,0),
-    aPhiB = cms.vdouble(-1383.,-0.123,-0.174,-0.144),
-    aPhiBNLO = cms.vdouble(5.201e-4,0,0,0),
+    aPhiB = cms.vdouble(-0.754,-0.123,-0.174,-0.144),
+    aPhiBNLO = cms.vdouble(1.657e-4,0,0,0),
 
     bPhi = cms.vdouble(-1,0.154,0.173,0.147),
     bPhiB = cms.vdouble(-1,1.154,1.173,1.147),
@@ -25,11 +25,21 @@ bmtfKalmanTrackingSettings = cms.PSet(
     useOfflineAlgo = cms.bool(True),
     
     ###Only for the offline algo -not in firmware --------------------
-    mScatteringPhi = cms.vdouble(0.9322,8.384e-5,5.406e-5,1.786e-5),
-    mScatteringPhiB = cms.vdouble(4.821e-3,3.580e-3,6.634e-3,5.478e-3),
+
+#    mScatteringPhi = cms.vdouble(0.9322,8.384e-5,5.406e-5,1.786e-5),
+#    mScatteringPhiB = cms.vdouble(7.92e-3,3.580e-3,6.634e-3,5.478e-3),
+#    pointResolutionPhi = cms.double(1.),
+#    pointResolutionPhiB = cms.double(500.),
+
+    mScatteringPhi = cms.vdouble(2.49e-3,5.47e-5,3.49e-5,1.37e-5),
+    mScatteringPhiB = cms.vdouble(7.22e-3,3.461e-3,4.447e-3,4.12e-3),
+
+#    mScatteringPhi = cms.vdouble(0,0,0,0),
+#    mScatteringPhiB = cms.vdouble(0,0,0,0),
+
     pointResolutionPhi = cms.double(1.),
-    pointResolutionPhiB = cms.double(500),
-    pointResolutionVertex = cms.double(100.)
+    pointResolutionPhiB = cms.double(500.),
+    pointResolutionVertex = cms.double(1.)
 )
 
 
