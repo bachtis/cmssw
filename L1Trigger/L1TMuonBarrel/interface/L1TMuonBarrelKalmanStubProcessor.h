@@ -7,6 +7,10 @@
 #include "DataFormats/L1DTTrackFinder/interface/L1MuDTChambThContainer.h"
 #include "DataFormats/L1TMuon/interface/L1MuKBMTCombinedStub.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "CondFormats/L1TObjects/interface/L1TMuonBarrelParams.h"
+#include "CondFormats/DataRecord/interface/L1TMuonBarrelParamsRcd.h"
+
+class L1MuDTTFMasks;
 
 
 class L1TMuonBarrelKalmanStubProcessor {
@@ -51,6 +55,12 @@ class L1TMuonBarrelKalmanStubProcessor {
   std::vector<int>  etaCoarseLUT_plus_2;
 
   int verbose_;
+
+
+  //    edm::ESHandle< L1TMuonBarrelParams > bmtfParamsHandle;
+  //    L1MuDTTFMasks       masks_;
+
+
 };
 
 

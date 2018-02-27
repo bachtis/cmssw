@@ -3,7 +3,8 @@ import FWCore.ParameterSet.Config as cms
 bmtfKalmanTrackingSettings = cms.PSet(
     verbose = cms.bool(False),
     lutFile = cms.string("L1Trigger/L1TMuonBarrel/data/luts.root"),
-    initialK = cms.vdouble(-0.465,-1.689,-2.449,-3.561),
+    initialK = cms.vdouble(-1.196,-1.581,-2.133,-2.263),
+    initialK2 = cms.vdouble(-3.26e-4,-7.165e-4,2.305e-3,-5.63e-3),
 #    eLoss = cms.vdouble(-2.85e-4,-6.21e-5,-1.26e-4,-1.23e-4), 
     eLoss = cms.vdouble(+3.825e-4,0,0,0), 
     aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
@@ -17,11 +18,23 @@ bmtfKalmanTrackingSettings = cms.PSet(
     etaLUT0 = cms.vdouble(8.946,7.508,6.279,6.399),
     etaLUT1 = cms.vdouble(0.159,0.116,0.088,0.128),
     chiSquare = cms.vdouble(0.0,0.095,0.232,0.356),   
-    chiSquareCut = cms.int32(1500),
+#    chiSquareCutPattern = cms.vint32(3,6),
+#    chiSquareCutCurvMax = cms.vint32(273,273),
+#    chiSquareCut = cms.vint32(400,400),
+    chiSquareCutPattern = cms.vint32(3,5,9,6,10,12,7,11,13,14,15,3,6,12),
+    chiSquareCutCurvMax = cms.vint32(8192,8192,8192,8192,8912,8192,8192,8192,8192,8192,8192,273,273,273),
+    chiSquareCut = cms.vint32(1000,1000,1000,1000,1000,1000,1200,1200,1200,1200,1200,250,250,250),
+#    chiSquareCut = cms.vint32(1000,1000,1000,1000,1000,1000,1200,1200,1200,1200,1200,8192,8192,8192),
+
+
     combos4=cms.vint32(9,10,11,12,13,14,15),
     combos3=cms.vint32(5,6,7),
     combos2=cms.vint32(3),
     combos1=cms.vint32(), #for future possible usage
+
+
+
+
     useOfflineAlgo = cms.bool(True),
     
     ###Only for the offline algo -not in firmware --------------------

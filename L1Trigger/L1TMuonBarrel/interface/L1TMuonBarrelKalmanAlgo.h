@@ -25,6 +25,7 @@ class L1TMuonBarrelKalmanAlgo {
   L1TMuonBarrelKalmanAlgo (const edm::ParameterSet& settings);
   std::pair<bool,L1MuKBMTrack> chain(const L1MuKBMTCombinedStubRef&, const L1MuKBMTCombinedStubRefVector&);
   L1MuKBMTrackCollection cleanAndSort(const L1MuKBMTrackCollection&,uint);
+  void resolveEtaUnit(L1MuKBMTrackCollection&);
 
 
 
@@ -39,8 +40,9 @@ class L1TMuonBarrelKalmanAlgo {
   int correctedPhiB(const L1MuKBMTCombinedStubRef&);
   void propagate(L1MuKBMTrack&);
   void updateEta(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
-  bool update(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
+  bool update(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&,int);
   bool updateOffline(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
+  bool updateOffline1D(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
   bool updateLUT(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
   void vertexConstraint(L1MuKBMTrack&);
   void vertexConstraintOffline(L1MuKBMTrack&);
@@ -52,6 +54,7 @@ class L1TMuonBarrelKalmanAlgo {
   void estimateChiSquare(L1MuKBMTrack&);
   int rank(const L1MuKBMTrack&);
   int wrapAround(int,int);
+  std::pair<bool,uint> getByCode(const L1MuKBMTrackCollection& tracks,int mask);
 
   //LUT service
   L1TMuonBarrelKalmanLUTs* lutService_;
@@ -59,6 +62,7 @@ class L1TMuonBarrelKalmanAlgo {
 
   //Initial Curvature
   std::vector<double> initK_;
+  std::vector<double> initK2_;
 
   //propagation coefficients
   std::vector<double> eLoss_;
@@ -72,7 +76,10 @@ class L1TMuonBarrelKalmanAlgo {
 
   //Chi Square estimator input
   std::vector<double> chiSquare_;
-  int chiSquareCut_;
+  std::vector<int> chiSquareCutPattern_;
+  std::vector<int> chiSquareCutCurv_;
+  std::vector<int> chiSquareCut_;
+
 
   //bitmasks to run== diferent combinations for a given seed in a given station
   std::vector<int> combos4_;

@@ -33,6 +33,9 @@ L1MuKBMTrack::L1MuKBMTrack(const L1MuKBMTCombinedStubRef& seed,int phi,int phiB)
   ptUnconstrained_(0.0)
 {
   stubs_.push_back(seed);
+  residuals_.push_back(0);
+  residuals_.push_back(0);
+  residuals_.push_back(0);
 
 }
 
@@ -120,6 +123,10 @@ const L1MuKBMTCombinedStubRefVector&L1MuKBMTrack::stubs() const {
   return stubs_;
 }
 
+int L1MuKBMTrack::residual(uint i) const {
+  return residuals_[i];
+}
+
 
 
 void L1MuKBMTrack::setCoordinates(int step,int curv,int phi,int phiB) {
@@ -164,7 +171,7 @@ void L1MuKBMTrack::setPtUnconstrained(float pt) {
 }
 
 void L1MuKBMTrack::addStub(const L1MuKBMTCombinedStubRef& stub) {
-  if (quality_<stub->quality())
+  if (stub->quality()<quality_)
     quality_ = stub->quality();
   stubs_.push_back(stub);
 
@@ -220,6 +227,11 @@ void L1MuKBMTrack::setKalmanGain(unsigned int step,unsigned int K,float a1, floa
  default:
    printf("Critical ERROR on setting the Klamn gain\n"); 
   }
+}
+
+
+void L1MuKBMTrack::setResidual(uint i, int val) {
+  residuals_[i]=val;
 }
 
 

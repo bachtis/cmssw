@@ -1,6 +1,9 @@
 #include "L1Trigger/L1TMuonBarrel/interface/L1TMuonBarrelKalmanStubProcessor.h"
 #include "math.h"
-
+#include "CondFormats/L1TObjects/interface/L1MuDTTFParameters.h"
+#include "CondFormats/DataRecord/interface/L1MuDTTFParametersRcd.h"
+#include "CondFormats/L1TObjects/interface/L1MuDTTFMasks.h"
+#include "CondFormats/DataRecord/interface/L1MuDTTFMasksRcd.h"
 
 L1TMuonBarrelKalmanStubProcessor::L1TMuonBarrelKalmanStubProcessor():
   minPhiQuality_(0),
@@ -125,7 +128,7 @@ L1TMuonBarrelKalmanStubProcessor::buildStub(const L1MuDTChambPhDigi* phiS,const 
 	  p=(etaLUT_0_2[i]);
 	if (station==3)
 	  p=(etaLUT_0_3[i]);
-	if (sector==0 || sector==3 || sector==4 || sector==7 ||sector==8 ||sector==11)
+	if (!(sector==0 || sector==3 || sector==4 || sector==7 ||sector==8 ||sector==11))
 	  p=-p;
       }
       if (wheel==1) {
@@ -193,6 +196,16 @@ L1TMuonBarrelKalmanStubProcessor::buildStub(const L1MuDTChambPhDigi* phiS,const 
 
 L1MuKBMTCombinedStubCollection 
 L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiContainer,const L1MuDTChambThContainer* etaContainer) {
+
+
+  //get the masks from th standard BMTF setup!
+  //    const L1TMuonBarrelParamsRcd& bmtfParamsRcd = setup.get<L1TMuonBarrelParamsRcd>();
+  //  bmtfParamsRcd.get(bmtfParamsHandle);
+  //  const L1TMuonBarrelParams& bmtfParams = *bmtfParamsHandle.product();
+  //  masks_ =  bmtfParams.l1mudttfmasks;
+
+
+
   L1MuKBMTCombinedStubCollection  out;
   for (int bx=minBX_;bx<=maxBX_;bx++) {
     for (int wheel=-2;wheel<=2;wheel++) {
@@ -202,6 +215,10 @@ L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiCon
 	  const L1MuDTChambPhDigi* low  = phiContainer->chPhiSegm2(wheel,station,sector,bx);
 	  const L1MuDTChambThDigi*  eta   = etaContainer->chThetaSegm(wheel,station,sector,bx);
 	  
+	  //Temporary mask
+	  if (station==1  && abs(wheel)==2)
+	    continue;
+
 	  if (high && high->code()>=minPhiQuality_) {
 	    out.push_back(buildStub(high,eta));
 	    if (verbose_==1) {

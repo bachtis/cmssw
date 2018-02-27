@@ -75,6 +75,10 @@ public:
   //get covariance
   const std::vector<double>& covariance() const;
 
+
+  //get residual
+  int residual(uint) const;
+
   //check ogverlap
   bool overlap(const L1MuKBMTrack&) const; 
 
@@ -131,6 +135,10 @@ public:
 
   //set rank
   void setRank(int);
+
+  //set residual
+  void setResidual(uint,int);
+
 
  private:
 
@@ -195,6 +203,7 @@ public:
   std::vector<float> kalmanGain3_;
 
 
+  std::vector<int> residuals_;
   
   
 }; 
