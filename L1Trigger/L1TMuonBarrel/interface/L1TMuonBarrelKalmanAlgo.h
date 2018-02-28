@@ -11,6 +11,7 @@ Sep. 2017
 #include "DataFormats/L1TMuon/interface/L1MuKBMTrack.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "L1Trigger/L1TMuonBarrel/interface/L1TMuonBarrelKalmanLUTs.h"
+#include "DataFormats/L1TMuon/interface/RegionalMuonCand.h"
 
 class L1TMuonBarrelKalmanAlgo {
  public:
@@ -26,13 +27,14 @@ class L1TMuonBarrelKalmanAlgo {
   std::pair<bool,L1MuKBMTrack> chain(const L1MuKBMTCombinedStubRef&, const L1MuKBMTCombinedStubRefVector&);
   L1MuKBMTrackCollection cleanAndSort(const L1MuKBMTrackCollection&,uint);
   void resolveEtaUnit(L1MuKBMTrackCollection&);
+  void addBMTFMuon(int,const L1MuKBMTrack&,std::unique_ptr<l1t::RegionalMuonCandBxCollection>&);
+
 
 
 
 
 
  
-
  private:
   bool verbose_;
   std::pair<bool,uint> match(const L1MuKBMTrack&, const L1MuKBMTCombinedStubRefVector&);
@@ -143,6 +145,9 @@ class L1TMuonBarrelKalmanAlgo {
     }
   };
   
+
+
+
  
 
 

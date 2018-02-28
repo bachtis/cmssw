@@ -12,6 +12,7 @@
 #include "L1Trigger/L1TMuonBarrel/interface/L1TMuonBarrelKalmanAlgo.h"
 #include "L1Trigger/L1TMuonBarrel/interface/L1TMuonBarrelKalmanTrackFinder.h"
 #include "DataFormats/L1TMuon/interface/L1MuKBMTCombinedStub.h"
+#include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
 
 //
 // class declaration
@@ -32,6 +33,8 @@ class L1TMuonBarrelKalmanTrackProducer : public edm::stream::EDProducer<> {
   std::vector<int> bx_;
   L1TMuonBarrelKalmanAlgo *algo_;
   L1TMuonBarrelKalmanTrackFinder *trackFinder_;
+
+  
   
   
 
@@ -41,9 +44,9 @@ L1TMuonBarrelKalmanTrackProducer::L1TMuonBarrelKalmanTrackProducer(const edm::Pa
   bx_(iConfig.getParameter<std::vector<int> >("bx")),
   algo_(new L1TMuonBarrelKalmanAlgo(iConfig.getParameter<edm::ParameterSet>("algoSettings"))),
   trackFinder_(new L1TMuonBarrelKalmanTrackFinder(iConfig.getParameter<edm::ParameterSet>("trackFinderSettings")))
-
 {
   produces <std::vector<L1MuKBMTrack> >();
+  produces <l1t::RegionalMuonCandBxCollection>("BMTF");
 
 }
 
@@ -85,15 +88,23 @@ L1TMuonBarrelKalmanTrackProducer::produce(edm::Event& iEvent, const edm::EventSe
    }
 
 
+   std::unique_ptr<l1t::RegionalMuonCandBxCollection> outBMTF(new l1t::RegionalMuonCandBxCollection());
+   outBMTF->setBXRange(-3,3);
    L1MuKBMTrackCollection out;
    for (const auto& bx : bx_) {
      L1MuKBMTrackCollection tmp = trackFinder_->process(algo_,stubs,bx);
+     for (const auto& track :tmp) {
+       algo_->addBMTFMuon(bx,track,outBMTF);
+     } 
      if (tmp.size())
        out.insert(out.end(),tmp.begin(),tmp.end());
    }
+   
+   
 
 
-
+   
+   iEvent.put(std::move(outBMTF),"BMTF");
    std::unique_ptr<L1MuKBMTrackCollection > out1 = std::make_unique<L1MuKBMTrackCollection >(out); 
    iEvent.put(std::move(out1));
 

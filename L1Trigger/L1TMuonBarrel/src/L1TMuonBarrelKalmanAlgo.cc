@@ -44,6 +44,99 @@ std::pair<bool,uint> L1TMuonBarrelKalmanAlgo::getByCode(const L1MuKBMTrackCollec
   }
   return std::make_pair(false,0);
 }
+void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std::unique_ptr<l1t::RegionalMuonCandBxCollection>& out) {
+
+  int  K = abs(track.curvatureAtVertex());
+  //calibration
+  int sign,signValid;
+
+  if (track.curvatureAtVertex()==0) {
+    sign=0;
+    signValid=0;
+  }
+  else if (track.curvatureAtVertex()>0) {
+    sign=0;
+    signValid=1;
+  }
+  else  {
+    sign=1;
+    signValid=1;
+  }	  
+
+  if (K<22)
+    K=22;
+
+  if (K>2047)
+    K=2047;
+
+  float lsb=1.25/float(1<<13);
+  int pt = int(2*(1.0/(lsb*K)));
+
+
+  int  K2 = abs(track.curvatureAtMuon());
+  if (K2<22)
+    K2=22;
+
+  if (K2>2047)
+    K2=2047;
+  int pt2 = int(1.0/(lsb*K2)); 
+  int eta  = track.hasFineEta() ? track.fineEta() : track.coarseEta();
+  
+  int phi=track.phiAtVertex();
+  phi=int((phi*M_PI/(6.0*2048.0)+15.0*M_PI/180.)/(0.625*M_PI/180.0));
+
+
+
+  int processor=track.sector();
+  int HF = track.hasFineEta();
+  
+  int chi=track.approxChi2();
+  if (chi>2047)
+    chi=2047;
+  chi=chi << 7;
+  
+  int quality;
+  if (chi<1)
+    quality=0;
+  else if (chi<2)
+    quality=1;
+  else if (chi<3)
+    quality=2;
+  else if (chi<4)
+    quality=3;
+  else if (chi<5)
+    quality=4;
+  else if (chi<6)
+    quality=5;
+  else if (chi<7)
+    quality=6;
+  else if (chi<8)
+    quality=7;
+  else if (chi<9)
+    quality=8;
+  else if (chi<10)
+    quality=9; 
+  else if (chi<11)
+    quality=10;
+  else if (chi<12)
+    quality=11;
+  else if (chi<13)
+    quality=12;
+  else if (chi<14)
+    quality=13;
+  else if (chi<15)
+    quality=14;
+  else 
+    quality=15;
+
+
+  int dxy=abs(track.dxy()) <<9;
+  l1t::RegionalMuonCand muon(pt,phi,eta,sign,signValid,quality,processor,l1t::bmtf);
+  muon.setHwHF(HF);
+  muon.setHwPt2(pt2);
+  muon.setHwDXY(dxy);
+  out->push_back(bx,muon);
+}
 
 
 
