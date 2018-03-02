@@ -23,16 +23,11 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanTrackFinder::process(L1TMuonBarrelKalm
     if (tmp.size()>0)
       pretracks.insert(pretracks.end(),tmp.begin(),tmp.end());
   } 
-
-  L1MuKBMTrackCollection out =trackMaker->cleanAndSort(pretracks,4);
   if (verbose_) {
-    printf(" -----Track Finder Kalman Tracks-----\n");
-    for (const auto& track1 :out)
+    printf(" -----Track Finder Kalman Tracks (Uncleaned!)-----\n");
+    for (const auto& track1 :pretracks)
       printf("Kalman Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA =%d stubs=%d chi2=%d pts=%f %f\n",track1.charge(),track1.pt(),track1.eta(),track1.phi(),track1.curvatureAtVertex(),track1.curvatureAtMuon(),int(track1.stubs().size()),track1.approxChi2(),track1.pt(),track1.ptUnconstrained()); 
   }
-
-
-
-  return out;
+  return pretracks;
 
 }

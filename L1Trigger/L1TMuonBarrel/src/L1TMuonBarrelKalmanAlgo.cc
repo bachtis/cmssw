@@ -13,6 +13,7 @@ L1TMuonBarrelKalmanAlgo::L1TMuonBarrelKalmanAlgo(const edm::ParameterSet& settin
   aPhiBNLO_(settings.getParameter<std::vector<double> >("aPhiBNLO")),
   bPhi_(settings.getParameter<std::vector<double> >("bPhi")),
   bPhiB_(settings.getParameter<std::vector<double> >("bPhiB")),
+  globalChi2Cut_(settings.getParameter<unsigned int>("globalChi2Cut")),
   chiSquare_(settings.getParameter<std::vector<double> >("chiSquare")),
   chiSquareCutPattern_(settings.getParameter<std::vector<int> >("chiSquareCutPattern")),
   chiSquareCutCurv_(settings.getParameter<std::vector<int> >("chiSquareCutCurvMax")),
@@ -70,8 +71,9 @@ void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std
     K=2047;
 
   float lsb=1.25/float(1<<13);
-  int pt = int(2*(1.0/(lsb*K)));
-
+  int pt = int(2*(1.0/(lsb*float(K))));
+  if (pt>511)
+    pt=511;
 
   int  K2 = abs(track.curvatureAtMuon());
   if (K2<22)
@@ -79,62 +81,44 @@ void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std
 
   if (K2>2047)
     K2=2047;
-  int pt2 = int(1.0/(lsb*K2)); 
+  int pt2 = int(1.0/(lsb*float(K2))); 
+  if (pt2>254)
+    pt2=254;
   int eta  = track.hasFineEta() ? track.fineEta() : track.coarseEta();
   
-  int phi=track.phiAtVertex();
+  int phi=track.phiAtMuon();
   phi=int((phi*M_PI/(6.0*2048.0)+15.0*M_PI/180.)/(0.625*M_PI/180.0));
-
-
 
   int processor=track.sector();
   int HF = track.hasFineEta();
   
-  int chi=track.approxChi2();
-  if (chi>2047)
-    chi=2047;
-  chi=chi << 7;
-  
-  int quality;
-  if (chi<1)
-    quality=0;
-  else if (chi<2)
-    quality=1;
-  else if (chi<3)
-    quality=2;
-  else if (chi<4)
-    quality=3;
-  else if (chi<5)
-    quality=4;
-  else if (chi<6)
-    quality=5;
-  else if (chi<7)
-    quality=6;
-  else if (chi<8)
-    quality=7;
-  else if (chi<9)
-    quality=8;
-  else if (chi<10)
-    quality=9; 
-  else if (chi<11)
-    quality=10;
-  else if (chi<12)
-    quality=11;
-  else if (chi<13)
-    quality=12;
-  else if (chi<14)
-    quality=13;
-  else if (chi<15)
-    quality=14;
-  else 
-    quality=15;
+  int quality=rank(track)/64;
 
+  int dxy=abs(track.dxy())>>7;
 
-  int dxy=abs(track.dxy()) <<9;
-  l1t::RegionalMuonCand muon(pt,phi,eta,sign,signValid,quality,processor,l1t::bmtf);
+  int trackAddr;
+  std::map<int,int> addr = trackAddress(track,trackAddr);
+
+  l1t::RegionalMuonCand muon(pt,phi,eta,sign,signValid,quality,processor,l1t::bmtf,addr);
   muon.setHwHF(HF);
   muon.setHwPt2(pt2);
   muon.setHwDXY(dxy);
+
+
+  //nw the words!
+  uint32_t word1=pt;
+  word1=word1 | quality<<9;
+  word1=word1 | (twosCompToBits(eta))<<13;
+  word1=word1 | HF<<22;
+  word1=word1 | (twosCompToBits(phi))<<23;
+
+  uint32_t word2=sign;
+  word2=word2 | signValid<<1;
+  word2=word2 | dxy<<2;
+  word2=word2 | trackAddr<<4;
+  word2=word2 | (twosCompToBits(track.wheel()))<<20;
+  word2=word2 | pt2<<23;
+  muon.setDataword(word2,word1);
   out->push_back(bx,muon);
 }
 
@@ -286,7 +270,10 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
 bool L1TMuonBarrelKalmanAlgo::update(L1MuKBMTrack& track,const L1MuKBMTCombinedStubRef& stub,int mask) {
   updateEta(track,stub);
   if (useOfflineAlgo_) {
-      return updateOffline(track,stub);
+    if (mask==3 || mask ==5 || mask==9 ||mask==6|| mask==10 ||mask==12)
+          return updateOffline(track,stub);
+        else
+	  return updateOffline1D(track,stub);
 
   }
   else
@@ -678,6 +665,8 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
 
     //set covariance
     L1MuKBMTrack::CovarianceMatrix covariance;  
+
+
     float DK=512*512.;
     covariance(0,0)=DK;
     covariance(0,1)=0;
@@ -734,6 +723,8 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
 	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	estimateChiSquare(track);
+	if (abs(track.approxChi2())>globalChi2Cut_)
+	  break;
 	vertexConstraint(track);
 	if (verbose_) {
 	  printf(" Coordinates after vertex constraint step:%d,phi=%d,dxy=%d,K=%d  maximum local chi2=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex(),track.approxChi2());
@@ -773,20 +764,24 @@ void L1TMuonBarrelKalmanAlgo::estimateChiSquare(L1MuKBMTrack& track) {
 
   for (const auto& stub: track.stubs()) {
     uint delta=abs(correctedPhi(stub,track.sector())-track.phiAtMuon()+correctedPhiB(stub)-track.phiBAtMuon()-chiSquare_[stub->stNum()-1]*K);
-    //delta=abs(correctedPhi(stub,track.sector())-track.phiAtMuon()-chiSquare_[stub->stNum()-1]*K);
-     chi=chi+abs(delta);
+     chi=chi+abs(delta);    
    }
+  chi=chi/2;
+  if (chi>511)
+    chi=511;
    track.setApproxChi2(chi);
 }
 
 
 int L1TMuonBarrelKalmanAlgo::rank(const L1MuKBMTrack& track) {
-  int offset=0;
-  if (hitPattern(track)==customBitmask(0,0,1,1))
-    offset=-1024;
-  return offset+(track.stubs().size()*2+track.quality())*80-track.approxChi2();
-  
+  //    int offset=0;
+    if (hitPattern(track)==customBitmask(0,0,1,1))
+      return 65;
+    //    return offset+(track.stubs().size()*2+track.quality())*80-track.approxChi2();
+    return 700+(track.stubs().size())*80-track.approxChi2();
+
 }
+
 
 
 int L1TMuonBarrelKalmanAlgo::wrapAround(int value,int maximum) {
@@ -867,6 +862,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanAlgo::cleanAndSort(const L1MuKBMTrackC
   }
 
 
+
   TrackSorter sorter;
   if (out.size()>0)
     std::sort(out.begin(),out.end(),sorter);
@@ -879,3 +875,118 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanAlgo::cleanAndSort(const L1MuKBMTrackC
   return exported;
 }
 
+
+int L1TMuonBarrelKalmanAlgo::encode(bool ownwheel,int sector,bool tag) {
+  if (ownwheel) {
+    if (sector==0) {
+      if (tag)
+	return 8;
+      else 
+	return 9;
+    }
+    else if (sector==1) {
+      if (tag)
+	return 10;
+      else 
+	return 11;
+
+    }
+    else {
+      if (tag)
+	return 12;
+      else 
+	return 13;
+    }
+
+  }
+  else {
+    if (sector==0) {
+      if (tag)
+	return 0;
+      else 
+	return 1;
+    }
+    else if (sector==1) {
+      if (tag)
+	return 2;
+      else 
+	return 3;
+
+    }
+    else {
+      if (tag)
+	return 4;
+      else 
+	return 5;
+    }
+  }
+  return 15;
+} 
+
+
+
+
+std::map<int,int> L1TMuonBarrelKalmanAlgo::trackAddress(const L1MuKBMTrack& track,int& word) {
+  std::map<int,int> out;
+  if (track.wheel()>=0)
+    out[l1t::RegionalMuonCand::kWheelSide] = 0;
+  else
+    out[l1t::RegionalMuonCand::kWheelSide] = 1;
+
+  out[l1t::RegionalMuonCand::kWheelNum] = abs(track.wheel());
+  out[l1t::RegionalMuonCand::kStat1]=3;
+  out[l1t::RegionalMuonCand::kStat2]=15;
+  out[l1t::RegionalMuonCand::kStat3]=15;
+  out[l1t::RegionalMuonCand::kStat4]=15;
+  out[l1t::RegionalMuonCand::kSegSelStat1]=0;
+  out[l1t::RegionalMuonCand::kSegSelStat2]=0;
+  out[l1t::RegionalMuonCand::kSegSelStat3]=0;
+  out[l1t::RegionalMuonCand::kSegSelStat4]=0;
+  out[l1t::RegionalMuonCand::kNumBmtfSubAddr]=0;
+
+
+  for (const auto stub: track.stubs()) {
+    bool ownwheel = stub->whNum() == track.wheel();
+    int sector=0;
+    if ((stub->scNum()==track.sector()+1) || (stub->scNum()==0 && track.sector()==11))
+      sector=+1;
+    if ((stub->scNum()==track.sector()-1) || (stub->scNum()==11 && track.sector()==0))
+      sector=-1;
+    int addr = encode(ownwheel,sector,stub->tag());
+   
+    if (stub->stNum()==4) {
+      addr=addr & 3;
+      out[l1t::RegionalMuonCand::kStat1]=addr;
+    }      
+    if (stub->stNum()==3) {
+      out[l1t::RegionalMuonCand::kStat2]=addr;    
+    }
+    if (stub->stNum()==2) {
+      out[l1t::RegionalMuonCand::kStat3]=addr;
+    }
+    if (stub->stNum()==1) {
+      out[l1t::RegionalMuonCand::kStat4]=addr;
+    }
+  }
+    
+  word=0;
+  word = word | out[l1t::RegionalMuonCand::kStat1]<<12;
+  word = word | out[l1t::RegionalMuonCand::kStat2]<<8;
+  word = word | out[l1t::RegionalMuonCand::kStat3]<<4;
+  word = word | out[l1t::RegionalMuonCand::kStat4];
+
+  
+
+  return out;
+}
+
+
+
+uint L1TMuonBarrelKalmanAlgo::twosCompToBits(int q) {
+  if (q>=0)
+    return q;
+  else 
+    return (~q)+1; 
+
+
+}

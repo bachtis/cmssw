@@ -49,6 +49,8 @@ public:
   int step() const;
   //sector;
   int sector() const;
+  //wheel
+  int wheel() const;
   //quality
   int quality() const;
 
@@ -174,8 +176,10 @@ public:
   //propagation step
   int step_;
 
-  //propagation step
+  //sector
   int sector_;
+  //wheel
+  int wheel_;
 
   //quality
   int quality_;

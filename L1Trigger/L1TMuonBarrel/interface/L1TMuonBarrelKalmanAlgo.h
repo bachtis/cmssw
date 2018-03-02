@@ -57,6 +57,9 @@ class L1TMuonBarrelKalmanAlgo {
   int rank(const L1MuKBMTrack&);
   int wrapAround(int,int);
   std::pair<bool,uint> getByCode(const L1MuKBMTrackCollection& tracks,int mask);
+  std::map<int,int> trackAddress(const L1MuKBMTrack&,int&);
+  int encode(bool ownwheel,int sector,bool tag); 
+  uint twosCompToBits(int);
 
   //LUT service
   L1TMuonBarrelKalmanLUTs* lutService_;
@@ -77,6 +80,7 @@ class L1TMuonBarrelKalmanAlgo {
   std::vector<double> etaLUT1_;
 
   //Chi Square estimator input
+  uint globalChi2Cut_;
   std::vector<double> chiSquare_;
   std::vector<int> chiSquareCutPattern_;
   std::vector<int> chiSquareCutCurv_;

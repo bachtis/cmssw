@@ -26,6 +26,7 @@ L1MuKBMTrack::L1MuKBMTrack(const L1MuKBMTCombinedStubRef& seed,int phi,int phiB)
   hitPattern_(0),
   step_(seed->stNum()),
   sector_(seed->scNum()),
+  wheel_(seed->whNum()),
   quality_(seed->quality()),
   hasFineEta_(false),
   bx_(seed->bxNum()),
@@ -91,6 +92,9 @@ int L1MuKBMTrack::step() const{
 } 
 int L1MuKBMTrack::sector() const{
    return sector_;
+} 
+int L1MuKBMTrack::wheel() const{
+   return wheel_;
 } 
 
 int L1MuKBMTrack::quality() const{

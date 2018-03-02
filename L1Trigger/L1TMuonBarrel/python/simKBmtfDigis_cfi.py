@@ -20,10 +20,10 @@ bmtfKalmanTrackingSettings = cms.PSet(
     chiSquare = cms.vdouble(0.0,0.095,0.232,0.356),   
 #    chiSquareCutPattern = cms.vint32(3,6),
 #    chiSquareCutCurvMax = cms.vint32(273,273),
-#    chiSquareCut = cms.vint32(400,400),
-    chiSquareCutPattern = cms.vint32(3,5,9,6,10,12,7,11,13,14,15,3,6,12),
-    chiSquareCutCurvMax = cms.vint32(8192,8192,8192,8192,8912,8192,8192,8192,8192,8192,8192,273,273,273),
-    chiSquareCut = cms.vint32(1000,1000,1000,1000,1000,1000,1200,1200,1200,1200,1200,250,250,250),
+    globalChi2Cut = cms.uint32(510),
+    chiSquareCutPattern = cms.vint32(3,6,12),
+    chiSquareCutCurvMax = cms.vint32(273,273,273),
+    chiSquareCut = cms.vint32(128,128,128),
 #    chiSquareCut = cms.vint32(1000,1000,1000,1000,1000,1000,1200,1200,1200,1200,1200,8192,8192,8192),
 
 
@@ -31,8 +31,6 @@ bmtfKalmanTrackingSettings = cms.PSet(
     combos3=cms.vint32(5,6,7),
     combos2=cms.vint32(3),
     combos1=cms.vint32(), #for future possible usage
-
-
 
 
     useOfflineAlgo = cms.bool(True),
