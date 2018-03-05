@@ -277,7 +277,7 @@ bool L1TMuonBarrelKalmanAlgo::update(L1MuKBMTrack& track,const L1MuKBMTCombinedS
 
   }
   else
-    return updateLUT(track,stub);
+    return updateLUT(track,stub,mask);
 
 }
 
@@ -425,7 +425,7 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline1D(L1MuKBMTrack& track,const L1MuKBMT
 
 
 
-bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombinedStubRef& stub) {
+bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombinedStubRef& stub,int mask) {
     int trackK = track.curvature();
     int trackPhi = track.positionAngle();
     int trackPhiB = track.bendingAngle();
@@ -443,10 +443,20 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
     residual[1] = phiB-trackPhiB;
 
     uint absK = abs(trackK);
-    if (absK>2047)
-      absK = 2047;
-    std::vector<float> GAIN = lutService_->trackGain(track.step(),track.hitPattern(),absK/4);
+    if (absK>4095)
+      absK = 4095;
+    std::vector<float> GAIN = lutService_->trackGain(track.step(),mask,absK/4);
     track.setKalmanGain(track.step(),abs(trackK),GAIN[0],GAIN[1],1,0,GAIN[2],GAIN[3]);
+
+    //For the three stub stuff use only gains 0 and 4
+    if (!(mask==3 || mask ==5 || mask==9 ||mask==6|| mask==10 ||mask==12))  {
+      GAIN[1]=0.0;
+      GAIN[3]=0.0;
+    }
+      
+
+
+
     int KNew  = wrapAround(trackK+int(GAIN[0]*residual(0)+GAIN[1]*residual(1)),8192);
     int phiNew  = wrapAround(trackPhi+residual(0),8192);
     int phiBNew = wrapAround(trackPhiB+int(GAIN[2]*residual(0)+GAIN[3]*residual(1)),2048);

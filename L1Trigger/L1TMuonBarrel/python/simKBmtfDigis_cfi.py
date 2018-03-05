@@ -23,7 +23,7 @@ bmtfKalmanTrackingSettings = cms.PSet(
     globalChi2Cut = cms.uint32(510),
     chiSquareCutPattern = cms.vint32(3,6,12),
     chiSquareCutCurvMax = cms.vint32(273,273,273),
-    chiSquareCut = cms.vint32(128,128,128),
+    chiSquareCut = cms.vint32(100,128,128),
 #    chiSquareCut = cms.vint32(1000,1000,1000,1000,1000,1000,1200,1200,1200,1200,1200,8192,8192,8192),
 
 
@@ -33,7 +33,7 @@ bmtfKalmanTrackingSettings = cms.PSet(
     combos1=cms.vint32(), #for future possible usage
 
 
-    useOfflineAlgo = cms.bool(True),
+    useOfflineAlgo = cms.bool(False),
     
     ###Only for the offline algo -not in firmware --------------------
 

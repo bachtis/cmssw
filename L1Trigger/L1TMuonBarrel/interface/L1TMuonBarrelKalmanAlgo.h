@@ -45,7 +45,7 @@ class L1TMuonBarrelKalmanAlgo {
   bool update(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&,int);
   bool updateOffline(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
   bool updateOffline1D(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
-  bool updateLUT(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
+  bool updateLUT(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&,int);
   void vertexConstraint(L1MuKBMTrack&);
   void vertexConstraintOffline(L1MuKBMTrack&);
   void vertexConstraintLUT(L1MuKBMTrack&);
