@@ -79,90 +79,83 @@ fout.cd()
 def parse(fileio,f,fout,ele,bins,mini,maxi,zeroSup=False,constant=-1,absol=False,factor=1):
     fout.cd()
     stele=str(ele)
-    h,hO=generate(f,"gain_15_3_"+stele,"G_15_3_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1111_3_"+stele,512)
+    h,hO=generate(f,"gain_8_3_"+stele,"G_8_3_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_1000_3_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_15_2_"+stele,"G_15_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1111_2_"+stele,512)
+    h,hO=generate(f,"gain_8_2_"+stele,"G_8_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_1000_2_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_15_1_"+stele,"G_15_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1111_1_"+stele,512)
+
+    h,hO=generate(f,"gain_12_2_"+stele,"G_12_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_1100_2_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_14_3_"+stele,"G_14_3_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_0111_3_"+stele,512)
+    h,hO=generate(f,"gain_12_1_"+stele,"G_12_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_1100_1_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_14_2_"+stele,"G_14_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_0111_2_"+stele,512)
+    h,hO=generate(f,"gain_4_2_"+stele,"G_4_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_0100_2_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_13_3_"+stele,"G_13_3_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1011_3_"+stele,512)
+    h,hO=generate(f,"gain_10_1_"+stele,"G_10_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_1010_1_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_13_1_"+stele,"G_13_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1011_1_"+stele,512)
+    h,hO=generate(f,"gain_6_1_"+stele,"G_6_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_0110_1_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_12_3_"+stele,"G_12_3_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_0011_3_"+stele,512)
+    h,hO=generate(f,"gain_14_1_"+stele,"G_14_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain_1110_1_"+stele,1024)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_11_2_"+stele,"G_11_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1101_2_"+stele,512)
+
+
+def parse2(fileio,f,fout,ele,bins,mini,maxi,zeroSup=False,constant=-1,absol=False,factor=1):
+    fout.cd()
+    stele=str(ele)
+    h,hO=generate(f,"gain2_8_3_"+stele,"G2_8_3_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain2_1000_3_"+stele,512)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_11_1_"+stele,"G_11_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1101_1_"+stele,512)
+    h,hO=generate(f,"gain2_8_2_"+stele,"G2_8_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain2_1000_2_"+stele,512)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_10_2_"+stele,"G_10_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_0101_2_"+stele,512)
+    h,hO=generate(f,"gain2_8_1_"+stele,"G2_8_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain2_1000_1_"+stele,512)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_9_1_"+stele,"G_9_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1001_1_"+stele,512)
+    h,hO=generate(f,"gain2_4_2_"+stele,"G2_4_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain2_0100_2_"+stele,512)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_7_2_"+stele,"G_7_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1110_2_"+stele,512)
+    h,hO=generate(f,"gain2_4_1_"+stele,"G2_4_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain2_0100_1_"+stele,512)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_7_1_"+stele,"G_7_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1110_1_"+stele,512)
+    h,hO=generate(f,"gain2_2_1_"+stele,"G2_2_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
+    printLUT(h,fileio,"gain2_0010_1_"+stele,512)
     h.Write()
     hO.Write()
 
-    h,hO=generate(f,"gain_6_2_"+stele,"G_6_2_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_0110_2_"+stele,512)
-    h.Write()
-    hO.Write()
 
-    h,hO=generate(f,"gain_5_1_"+stele,"G_5_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1010_1_"+stele,512)
-    h.Write()
-    hO.Write()
-
-    h,hO=generate(f,"gain_3_1_"+stele,"G_3_1_"+stele,bins,mini,maxi,zeroSup,constant,absol,factor)
-    printLUT(h,fileio,"gain_1100_1_"+stele,512)
-    h.Write()
-    hO.Write()
 
 
 
@@ -217,9 +210,12 @@ def parseV(fileio,f,fout,ele,bins,mini,maxi,zeroSup=False,constant=-1,absol=Fals
 
 
 parse(fileio,f,fout,0,512,0,64,True,-1,False,2)    
-parse(fileio,f,fout,1,512,-4,4,True,-1,False,2)    
 parse(fileio,f,fout,4,512,0,16,True,-1,True,2)    
-parse(fileio,f,fout,5,512,0,1,True,-1,False,2)    
+
+parse2(fileio,f,fout,0,512,0,64,True,-1,False,1)    
+parse2(fileio,f,fout,1,512,-8,8,True,-1,False,1)    
+parse2(fileio,f,fout,4,512,0,16,True,-1,True,1)    
+parse2(fileio,f,fout,5,512,0,1,True,-1,False,1)    
 
 parseV(fileio,f,fout,0,512,0,4,True,700,True,2)    
 parseV(fileio,f,fout,1,512,0,4,True,700,True,2)    

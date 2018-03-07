@@ -445,14 +445,20 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
     uint absK = abs(trackK);
     if (absK>4095)
       absK = 4095;
-    std::vector<float> GAIN = lutService_->trackGain(track.step(),mask,absK/4);
-    track.setKalmanGain(track.step(),abs(trackK),GAIN[0],GAIN[1],1,0,GAIN[2],GAIN[3]);
 
+
+
+    std::vector<float> GAIN;
     //For the three stub stuff use only gains 0 and 4
     if (!(mask==3 || mask ==5 || mask==9 ||mask==6|| mask==10 ||mask==12))  {
+      GAIN = lutService_->trackGain(track.step(),track.hitPattern(),absK/4);
       GAIN[1]=0.0;
       GAIN[3]=0.0;
     }
+    else {
+      GAIN = lutService_->trackGain2(track.step(),track.hitPattern(),absK/8);
+    }
+    track.setKalmanGain(track.step(),abs(trackK),GAIN[0],GAIN[1],1,0,GAIN[2],GAIN[3]);
       
 
 
@@ -644,22 +650,28 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
   for( const auto& mask : combinatorics) {
     L1MuKBMTrack track(seed,correctedPhi(seed,seed->scNum()),correctedPhiB(seed));
     int phiB = correctedPhiB(seed);
-    if (seed->quality()<4)
-      phiB=0;
     int charge;
     if (phiB==0)
       charge = 0;
     else
       charge=phiB/abs(phiB);
-    int initialK = int(initK_[seed->stNum()-1]*phiB/(1+initK2_[seed->stNum()-1]*charge*phiB));
-    if (initialK>8192)
-      initialK=8192;
-    if (initialK<-8192)
-      initialK=-8192;
-    
-    
 
+    int address=phiB;
+    if (track.step()>=3 and abs(seed->phiB())>63)
+      address=charge*63*8;
+    if (track.step()==2 and abs(seed->phiB())>127)
+      address=charge*127*8;         
+    int initialK = int(initK_[seed->stNum()-1]*address/(1+initK2_[seed->stNum()-1]*charge*address));
+    if (initialK>8191)
+      initialK=8191;
+    if (initialK<-8191)
+      initialK=-8191;
+    if (seed->quality()<4)
+      phiB=0;
     track.setCoordinates(seed->stNum(),initialK,correctedPhi(seed,seed->scNum()),phiB);
+
+
+
     track.setHitPattern(hitPattern(track));
     //Set eta coarse
     track.setCoarseEta(seed->coarseEta());
