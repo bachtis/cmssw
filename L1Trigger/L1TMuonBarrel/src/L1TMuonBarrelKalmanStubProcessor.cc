@@ -240,3 +240,186 @@ L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiCon
   return out;
 }
 
+L1TMuonBarrelKalmanStubProcessor::bmtf_in L1TMuonBarrelKalmanStubProcessor::makePattern(const L1MuDTChambPhContainer* phiContainer,const L1MuDTChambThContainer* etaContainer,int sector, int wheel) {
+  L1TMuonBarrelKalmanStubProcessor::bmtf_in out;
+
+    out.ts1_st1_phi=0;
+    out.ts1_st1_phib=0;
+    out.ts1_st1_q=0;
+    out.ts1_st1_rpc=0;
+    out.ts1_st1_cal=0;
+
+    const L1MuDTChambPhDigi* seg = phiContainer->chPhiSegm1(wheel,1,sector,0);
+    if (seg) {
+      out.ts1_st1_phi=seg->phi();
+      out.ts1_st1_phib=seg->phiB();
+      out.ts1_st1_q=seg->code();
+      out.ts1_st1_rpc=0;
+      out.ts1_st1_cal=0;
+    }
+      
+
+
+
+
+    out.ts1_st2_phi=0;
+    out.ts1_st2_phib=0;
+    out. ts1_st2_q=0;
+    out.ts1_st2_rpc=0;
+    out.ts1_st2_cal=0;
+
+    seg = phiContainer->chPhiSegm1(wheel,2,sector,0);
+    if (seg) {
+      out.ts1_st2_phi=seg->phi();
+      out.ts1_st2_phib=seg->phiB();
+      out.ts1_st2_q=seg->code();
+      out.ts1_st2_rpc=0;
+      out.ts1_st2_cal=0;
+    }
+
+
+    out.ts1_st3_phi=0;
+    out.ts1_st3_phib=0;
+    out.ts1_st3_q=0;
+    out.ts1_st3_rpc=0;
+    out.ts1_st3_cal=0;
+
+    seg = phiContainer->chPhiSegm1(wheel,3,sector,0);
+    if (seg) {
+      out.ts1_st3_phi=seg->phi();
+      out.ts1_st3_phib=seg->phiB();
+      out.ts1_st3_q=seg->code();
+      out.ts1_st3_rpc=0;
+      out.ts1_st3_cal=0;
+    }
+
+
+    out.ts1_st4_phi=0;
+    out.ts1_st4_phib=0;
+    out.ts1_st4_q=0;
+    out.ts1_st4_rpc=0;
+    out.ts1_st4_cal=0;
+
+    seg = phiContainer->chPhiSegm1(wheel,4,sector,0);
+    if (seg) {
+      out.ts1_st4_phi=seg->phi();
+      out.ts1_st4_phib=seg->phiB();
+      out.ts1_st4_q=seg->code();
+      out.ts1_st4_rpc=0;
+      out.ts1_st4_cal=0;
+    }
+
+    out.eta_hit_st1=0;
+    out.eta_hit_st2=0;
+    out.eta_hit_st3=0;
+    out.eta_qbit_st1=0;
+    out.eta_qbit_st2=0;
+    out.eta_qbit_st3=0;
+
+    const L1MuDTChambThDigi*  eta   = etaContainer->chThetaSegm(wheel,1,sector,0);
+    if (eta) {
+      out.eta_hit_st1=eta->position(0)+(eta->position(1)<<1) +(eta->position(2)<<2) +(eta->position(3)<<3) +(eta->position(4)<<4)+(eta->position(5)<<5)+(eta->position(6)<<6);
+      out.eta_qbit_st1=eta->quality(0)+(eta->quality(1)<<1) +(eta->quality(2)<<2) +(eta->quality(3)<<3) +(eta->quality(4)<<4)+(eta->quality(5)<<5)+(eta->quality(6)<<6);
+
+    }
+    eta   = etaContainer->chThetaSegm(wheel,2,sector,0);
+    if (eta) {
+      out.eta_hit_st2=eta->position(0)+(eta->position(1)<<1) +(eta->position(2)<<2) +(eta->position(3)<<3) +(eta->position(4)<<4)+(eta->position(5)<<5)+(eta->position(6)<<6);
+      out.eta_qbit_st2=eta->quality(0)+(eta->quality(1)<<1) +(eta->quality(2)<<2) +(eta->quality(3)<<3) +(eta->quality(4)<<4)+(eta->quality(5)<<5)+(eta->quality(6)<<6);
+
+
+    }
+    eta   = etaContainer->chThetaSegm(wheel,3,sector,0);
+    if (eta) {
+      out.eta_hit_st3=eta->position(0)+(eta->position(1)<<1) +(eta->position(2)<<2) +(eta->position(3)<<3) +(eta->position(4)<<4)+(eta->position(5)<<5)+(eta->position(6)<<6);
+      out.eta_qbit_st3=eta->quality(0)+(eta->quality(1)<<1) +(eta->quality(2)<<2) +(eta->quality(3)<<3) +(eta->quality(4)<<4)+(eta->quality(5)<<5)+(eta->quality(6)<<6);
+    }
+
+    out.bcnt_1a=0;
+    out.bcnt_1b=0;
+    out.bcnt_1c=0;
+    out.bcnt_1d=0;
+    out.bcnt_1e=0;
+    out.bcnt_1f=0;
+
+    out.bc0_1=0;
+
+
+
+
+
+    out.ts2_st1_phi=0;
+    out.ts2_st1_phib=0;
+    out.ts2_st1_q=0;
+    out.ts2_st1_rpc=0;
+    out.ts2_st1_cal=0;
+
+
+    seg = phiContainer->chPhiSegm2(wheel,1,sector,0);
+    if (seg) {
+      out.ts2_st1_phi=seg->phi();
+      out.ts2_st1_phib=seg->phiB();
+      out.ts2_st1_q=seg->code();
+    }
+
+
+
+    out.ts2_st2_phi=0;
+    out.ts2_st2_phib=0;
+    out.ts2_st2_q=0;
+    out.ts2_st2_rpc=0;
+    out.ts2_st2_cal=0;
+
+    seg = phiContainer->chPhiSegm2(wheel,2,sector,0);
+    if (seg) {
+      out.ts2_st2_phi=seg->phi();
+      out.ts2_st2_phib=seg->phiB();
+      out.ts2_st2_q=seg->code();
+    }
+
+
+    out.ts2_st3_phi=0;
+    out.ts2_st3_phib=0;
+    out.ts2_st3_q=0;
+    out.ts2_st3_rpc=0;
+    out.ts2_st3_cal=0;
+
+    seg = phiContainer->chPhiSegm2(wheel,3,sector,0);
+    if (seg) {
+      out.ts2_st3_phi=seg->phi();
+      out.ts2_st3_phib=seg->phiB();
+      out.ts2_st3_q=seg->code();
+    }
+
+
+    out.ts2_st4_phi=0;
+    out.ts2_st4_phib=0;
+    out.ts2_st4_q=0;
+    out.ts2_st4_rpc=0;
+    out.ts2_st4_cal=0;
+
+
+    seg = phiContainer->chPhiSegm2(wheel,4,sector,0);
+    if (seg) {
+      out.ts2_st4_phi=seg->phi();
+      out.ts2_st4_phib=seg->phiB();
+      out.ts2_st4_q=seg->code();
+    }
+
+
+    out.bcnt_2a=0;
+    out.bcnt_2b=0;
+    out.bcnt_2c=0;
+    out.bcnt_2d=0;
+    out.bcnt_2e=0;
+    out.bcnt_2f=0;
+    out.bc0_2=0;
+
+
+  return out;
+}
+
+void L1TMuonBarrelKalmanStubProcessor::printWord(const L1MuDTChambPhContainer* phiContainer,const L1MuDTChambThContainer* etaContainer,int sector,int wheel) {
+  L1TMuonBarrelKalmanStubProcessor::bmtf_in data  = makePattern(phiContainer,etaContainer,sector,wheel);
+  std::cout << "IN " << sector << " " << wheel << " " << data.ts1_st1_phi << " " << data.ts1_st1_phib << " " << data.ts1_st1_q << " " << data.ts1_st2_phi << " " << data.ts1_st2_phib << " " << data.ts1_st2_q << " " <<  data.ts1_st3_phi << " " << data.ts1_st3_phib << " " << data.ts1_st3_q << " " << data.ts1_st4_phi << " " << data.ts1_st4_phib << " " << data.ts1_st4_q << " " << data.eta_hit_st1 << " " << data.eta_hit_st2 << " " << data.eta_hit_st3 << " " << data.ts2_st1_phi << " " << data.ts2_st1_phib << " " << data.ts2_st1_q << " " << data.ts2_st2_phi << " " << data.ts2_st2_phib << " " << data.ts2_st2_q << " " <<  data.ts2_st3_phi << " " << data.ts2_st3_phib << " " << data.ts2_st3_q << " " << data.ts2_st4_phi << " " << data.ts2_st4_phib << " " << data.ts2_st4_q << " " << data.eta_qbit_st1 << " " << data.eta_qbit_st2 << " " << data.eta_qbit_st3 << std::endl;
+}

@@ -28,6 +28,7 @@ class L1TMuonBarrelKalmanAlgo {
   L1MuKBMTrackCollection cleanAndSort(const L1MuKBMTrackCollection&,uint);
   void resolveEtaUnit(L1MuKBMTrackCollection&);
   void addBMTFMuon(int,const L1MuKBMTrack&,std::unique_ptr<l1t::RegionalMuonCandBxCollection>&);
+  l1t::RegionalMuonCand  convertToBMTF(const L1MuKBMTrack& track); 
 
 
 

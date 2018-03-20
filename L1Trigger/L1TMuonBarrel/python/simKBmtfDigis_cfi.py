@@ -6,12 +6,12 @@ bmtfKalmanTrackingSettings = cms.PSet(
     initialK = cms.vdouble(-1.196,-1.581,-2.133,-2.263),
     initialK2 = cms.vdouble(-3.26e-4,-7.165e-4,2.305e-3,-5.63e-3),
 #    eLoss = cms.vdouble(-2.85e-4,-6.21e-5,-1.26e-4,-1.23e-4), 
-    eLoss = cms.vdouble(+3.825e-4,0,0,0), 
+    eLoss = cms.vdouble(+0.000765,0,0,0), 
     aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
 #    aPhiB = cms.vdouble(-0.740,-0.123,-0.174,-0.144),
 #    aPhiBNLO = cms.vdouble(1.758e-4,0,0,0),
-    aPhiB = cms.vdouble(-0.754,-0.123,-0.174,-0.144),
-    aPhiBNLO = cms.vdouble(1.657e-4,0,0,0),
+    aPhiB = cms.vdouble(-1.508,-0.123,-0.174,-0.144),
+    aPhiBNLO = cms.vdouble(0.000331,0,0,0),
 
     bPhi = cms.vdouble(-1,0.154,0.173,0.147),
     bPhiB = cms.vdouble(-1,1.154,1.173,1.147),
@@ -20,10 +20,10 @@ bmtfKalmanTrackingSettings = cms.PSet(
     chiSquare = cms.vdouble(0.0,0.095,0.232,0.356),   
 #    chiSquareCutPattern = cms.vint32(3,6),
 #    chiSquareCutCurvMax = cms.vint32(273,273),
-    globalChi2Cut = cms.uint32(510),
+    globalChi2Cut = cms.uint32(126),
     chiSquareCutPattern = cms.vint32(3,6,12),
     chiSquareCutCurvMax = cms.vint32(273,273,273),
-    chiSquareCut = cms.vint32(100,128,128),
+    chiSquareCut = cms.vint32(25,31,31),
 #    chiSquareCut = cms.vint32(1000,1000,1000,1000,1000,1000,1200,1200,1200,1200,1200,8192,8192,8192),
 
 

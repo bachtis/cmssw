@@ -45,8 +45,10 @@ std::pair<bool,uint> L1TMuonBarrelKalmanAlgo::getByCode(const L1MuKBMTrackCollec
   }
   return std::make_pair(false,0);
 }
-void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std::unique_ptr<l1t::RegionalMuonCandBxCollection>& out) {
 
+
+l1t::RegionalMuonCand  
+L1TMuonBarrelKalmanAlgo::convertToBMTF(const L1MuKBMTrack& track) {
   int  K = abs(track.curvatureAtVertex());
   //calibration
   int sign,signValid;
@@ -67,8 +69,8 @@ void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std
   if (K<22)
     K=22;
 
-  if (K>2047)
-    K=2047;
+  if (K>4095)
+    K=4095;
 
   float lsb=1.25/float(1<<13);
   int pt = int(2*(1.0/(lsb*float(K))));
@@ -79,8 +81,8 @@ void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std
   if (K2<22)
     K2=22;
 
-  if (K2>2047)
-    K2=2047;
+  if (K2>4095)
+    K2=4095;
   int pt2 = int(1.0/(lsb*float(K2))); 
   if (pt2>254)
     pt2=254;
@@ -92,7 +94,7 @@ void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std
   int processor=track.sector();
   int HF = track.hasFineEta();
   
-  int quality=rank(track)/64;
+  int quality=rank(track)/16;
 
   int dxy=abs(track.dxy())>>7;
 
@@ -119,7 +121,11 @@ void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std
   word2=word2 | (twosCompToBits(track.wheel()))<<20;
   word2=word2 | pt2<<23;
   muon.setDataword(word2,word1);
-  out->push_back(bx,muon);
+  return muon;
+}
+
+void L1TMuonBarrelKalmanAlgo::addBMTFMuon(int bx,const L1MuKBMTrack& track,  std::unique_ptr<l1t::RegionalMuonCandBxCollection>& out) { 
+  out->push_back(bx,convertToBMTF(track));
 }
 
 
@@ -200,7 +206,15 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   //int offset=int(charge*eLoss_[step-1]*K*K);
   //  if (abs(offset)>4096)
   //      offset=4096*offset/abs(offset);
-  int KNew =wrapAround(int(K/(1+charge*eLoss_[step-1]*K)),8192);
+
+  int KBound=K;
+  if (KBound>4095)
+    KBound=4095;
+  if (KBound<-4095)
+    KBound=-4095;
+
+
+  int KNew =wrapAround(int(KBound/(1+charge*eLoss_[step-1]*(KBound/2))),8192);
 
   //phi propagation
   int phiNew =wrapAround(phi+int(aPhi_[step-1]*K)-int(bPhi_[step-1]*phiB),8192);
@@ -209,9 +223,10 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   int phiBNew = wrapAround(int(aPhiB_[step-1]*K)  +int(bPhiB_[step-1]*phiB),2048);
   
   //Only for the propagation to vertex we use the LUT for better precision and the full function
-  if (step==1)
-    phiBNew = wrapAround(int(aPhiB_[step-1]*K/(1+charge*aPhiBNLO_[step-1]*K))+int(bPhiB_[step-1]*phiB),2048);
-
+  if (step==1) {
+    phiBNew = wrapAround(int(aPhiB_[step-1]*(KBound/2)/(1+charge*aPhiBNLO_[step-1]*(KBound/2)))+int(bPhiB_[step-1]*phiB),2048);
+    
+  }
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
   //where we want to check what is happening in the covariaznce matrix 
@@ -785,12 +800,12 @@ void L1TMuonBarrelKalmanAlgo::estimateChiSquare(L1MuKBMTrack& track) {
   int chi=0;
 
   for (const auto& stub: track.stubs()) {
-    uint delta=abs(correctedPhi(stub,track.sector())-track.phiAtMuon()+correctedPhiB(stub)-track.phiBAtMuon()-chiSquare_[stub->stNum()-1]*K);
+    uint delta=abs(correctedPhi(stub,track.sector())/8-track.phiAtMuon()/8+correctedPhiB(stub)/8-track.phiBAtMuon()/8-chiSquare_[stub->stNum()-1]*K/8);
      chi=chi+abs(delta);    
    }
-  chi=chi/2;
-  if (chi>511)
-    chi=511;
+  //  chi=chi/2;
+  if (chi>127)
+    chi=127;
    track.setApproxChi2(chi);
 }
 
@@ -798,9 +813,9 @@ void L1TMuonBarrelKalmanAlgo::estimateChiSquare(L1MuKBMTrack& track) {
 int L1TMuonBarrelKalmanAlgo::rank(const L1MuKBMTrack& track) {
   //    int offset=0;
     if (hitPattern(track)==customBitmask(0,0,1,1))
-      return 65;
+      return 15;
     //    return offset+(track.stubs().size()*2+track.quality())*80-track.approxChi2();
-    return 700+(track.stubs().size())*80-track.approxChi2();
+    return 105+(track.stubs().size())*20-track.approxChi2();
 
 }
 
