@@ -1,20 +1,19 @@
 import FWCore.ParameterSet.Config as cms
 
 bmtfKalmanTrackingSettings = cms.PSet(
-    verbose = cms.bool(False),
+    verbose = cms.bool(True),
     lutFile = cms.string("L1Trigger/L1TMuonBarrel/data/kalmanLUTs.root"),
     initialK = cms.vdouble(-1.196,-1.581,-2.133,-2.263),
     initialK2 = cms.vdouble(-3.26e-4,-7.165e-4,2.305e-3,-5.63e-3),
 #    eLoss = cms.vdouble(-2.85e-4,-6.21e-5,-1.26e-4,-1.23e-4), 
     eLoss = cms.vdouble(+0.000765,0,0,0), 
-    aPhi = cms.vdouble(1.942,0.032,0.028,0.016),
-#    aPhiB = cms.vdouble(-0.740,-0.123,-0.174,-0.144),
-#    aPhiBNLO = cms.vdouble(1.758e-4,0,0,0),
-    aPhiB = cms.vdouble(-1.508,-0.123,-0.174,-0.144),
+
+    aPhi = cms.vdouble(1.942,0.0317383,0.0278320,0.0161133),
+    aPhiB = cms.vdouble(-1.508,-0.122559,-0.174316,-0.144043),
     aPhiBNLO = cms.vdouble(0.000331,0,0,0),
 
-    bPhi = cms.vdouble(-1,0.154,0.173,0.147),
-    bPhiB = cms.vdouble(-1,1.154,1.173,1.147),
+    bPhi = cms.vdouble(-1,0.153809,0.173340,0.146973),
+    bPhiB = cms.vdouble(-1,1.153809,1.173340,1.146973),
     etaLUT0 = cms.vdouble(8.946,7.508,6.279,6.399),
     etaLUT1 = cms.vdouble(0.159,0.116,0.088,0.128),
     chiSquare = cms.vdouble(0.0,0.095,0.232,0.356),   
@@ -60,10 +59,11 @@ simKBmtfDigis = cms.EDProducer("L1TMuonBarrelKalmanTrackProducer",
     bx = cms.vint32(0),
     algoSettings = bmtfKalmanTrackingSettings,
     trackFinderSettings = cms.PSet(
-        sectorsToProcess = cms.vint32(0,1,2,3,4,5,6,7,8,9,10,11),
-        verbose = cms.int32(0),
+#        sectorsToProcess = cms.vint32(0,1,2,3,4,5,6,7,8,9,10,11),
+        sectorsToProcess = cms.vint32(3),
+        verbose = cms.int32(1),
         sectorSettings = cms.PSet(
-            verbose = cms.int32(0),
+            verbose = cms.int32(1),
             wheelsToProcess = cms.vint32(-2,-1,0,1,2),
             regionSettings = cms.PSet(
                 verbose=cms.int32(0)

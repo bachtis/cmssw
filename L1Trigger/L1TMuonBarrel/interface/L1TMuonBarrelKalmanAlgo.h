@@ -61,10 +61,11 @@ class L1TMuonBarrelKalmanAlgo {
   std::map<int,int> trackAddress(const L1MuKBMTrack&,int&);
   int encode(bool ownwheel,int sector,bool tag); 
   uint twosCompToBits(int);
+  int fp_product(float,int, uint);
 
   //LUT service
   L1TMuonBarrelKalmanLUTs* lutService_;
-
+  bool punchThroughVeto(const L1MuKBMTrack& track);
 
   //Initial Curvature
   std::vector<double> initK_;
