@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 bmtfKalmanTrackingSettings = cms.PSet(
-    verbose = cms.bool(True),
+    verbose = cms.bool(False),
     lutFile = cms.string("L1Trigger/L1TMuonBarrel/data/kalmanLUTs.root"),
     initialK = cms.vdouble(-1.196,-1.581,-2.133,-2.263),
     initialK2 = cms.vdouble(-3.26e-4,-7.165e-4,2.305e-3,-5.63e-3),
@@ -59,11 +59,11 @@ simKBmtfDigis = cms.EDProducer("L1TMuonBarrelKalmanTrackProducer",
     bx = cms.vint32(0),
     algoSettings = bmtfKalmanTrackingSettings,
     trackFinderSettings = cms.PSet(
-#        sectorsToProcess = cms.vint32(0,1,2,3,4,5,6,7,8,9,10,11),
-        sectorsToProcess = cms.vint32(3),
-        verbose = cms.int32(1),
+        sectorsToProcess = cms.vint32(0,1,2,3,4,5,6,7,8,9,10,11),
+#        sectorsToProcess = cms.vint32(3),
+        verbose = cms.int32(0),
         sectorSettings = cms.PSet(
-            verbose = cms.int32(1),
+            verbose = cms.int32(0),
             wheelsToProcess = cms.vint32(-2,-1,0,1,2),
             regionSettings = cms.PSet(
                 verbose=cms.int32(0)

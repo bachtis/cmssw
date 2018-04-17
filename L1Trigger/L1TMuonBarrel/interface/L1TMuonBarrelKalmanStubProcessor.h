@@ -27,7 +27,8 @@ class L1TMuonBarrelKalmanStubProcessor {
  private:
   bool isGoodPhiStub(const L1MuDTChambPhDigi*); 
   std::pair<bool,bool> isGoodThetaStub(const L1MuDTChambThDigi*,uint pos1,uint pos2=0); 
-  L1MuKBMTCombinedStub buildStub(const L1MuDTChambPhDigi*,const L1MuDTChambThDigi*);
+  L1MuKBMTCombinedStub buildStub(const L1MuDTChambPhDigi&,const L1MuDTChambThDigi*);
+  L1MuKBMTCombinedStub buildStubNoEta(const L1MuDTChambPhDigi&);
   int minPhiQuality_;
   int minThetaQuality_;
   int minBX_;

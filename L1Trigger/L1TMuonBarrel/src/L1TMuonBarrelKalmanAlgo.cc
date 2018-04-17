@@ -73,7 +73,15 @@ L1TMuonBarrelKalmanAlgo::convertToBMTF(const L1MuKBMTrack& track) {
     K=4095;
 
   float lsb=1.25/float(1<<13);
-  int pt = int(2*(1.0/(lsb*float(K))));
+  float ptF = (2*(1.0/(lsb*float(K))));
+  float KF = 1.0/ptF;
+  int pt=0;
+  KF = 0.797*KF+0.454*KF*KF-5.679e-4;
+  if (KF!=0)
+    pt=int(1.0/KF);
+  else
+    pt=511;
+
   if (pt>511)
     pt=511;
 
@@ -476,11 +484,11 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
       GAIN = lutService_->trackGain(track.step(),track.hitPattern(),absK/4);
       GAIN[1]=0.0;
       GAIN[3]=0.0;
-      printf("KALMAN GAIN:addr=%d gains= %f %f %f %f  residual=%f %f \n ",absK/4,GAIN[0],GAIN[1],GAIN[2],GAIN[3],residual(0),residual(1)); 
+
     }
     else {
       GAIN = lutService_->trackGain2(track.step(),track.hitPattern(),absK/8);
-      printf("KALMAN GAIN:addr=%d gains= %f %f %f %f residual=%f %f \n",absK/8,GAIN[0],GAIN[1],GAIN[2],GAIN[3],residual(0),residual(1)); 
+
 
     }
     track.setKalmanGain(track.step(),abs(trackK),GAIN[0],GAIN[1],1,0,GAIN[2],GAIN[3]);
@@ -634,11 +642,8 @@ void L1TMuonBarrelKalmanAlgo::setFloatingPointValues(L1MuKBMTrack& track,bool ve
 
 
     float FK=fabs(K);
-    FK = fabs(0.912*FK+(2.557e-5)*FK*FK-6);
-
     if (FK<51)
-      FK=51;
-    
+      FK=51;   
     double pt = 1.0/(lsb*(FK));
 
     track.setPtEtaPhi(pt,eta,phi);
@@ -700,9 +705,10 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
       initialK=8191;
     if (initialK<-8191)
       initialK=-8191;
-    if (seed->quality()<4)
-      phiB=0;
     track.setCoordinates(seed->stNum(),initialK,correctedPhi(seed,seed->scNum()),phiB);
+    if (seed->quality()<4) {
+      track.setCoordinates(seed->stNum(),0,correctedPhi(seed,seed->scNum()),0);     
+    }
 
 
 
@@ -746,7 +752,7 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
       printf("------------------------------------------------------\n");
       printf("stubs:\n");
       for (const auto& stub: stubs) 
-	printf("station=%d phi=%d phiB=%d qual=%d tag=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub),stub->quality(),stub->tag()); 
+	printf("station=%d phi=%d phiB=%d qual=%d tag=%d sector=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub),stub->quality(),stub->tag(),stub->scNum()); 
       printf("------------------------------------------------------\n");
       printf("------------------------------------------------------\n");
 
@@ -779,6 +785,9 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
 	if (verbose_)
 	  printf(" Coordinates before vertex constraint step:%d,phi=%d,dxy=%d,K=%d\n",track.step(),track.phiAtVertex(),track.dxy(),track.curvatureAtVertex());
 	estimateChiSquare(track);
+	if (verbose_)
+	  printf("Chi Square = %d\n",track.approxChi2());
+
 	if (abs(track.approxChi2())>globalChi2Cut_)
 	  break;
 	vertexConstraint(track);
