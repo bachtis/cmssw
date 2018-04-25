@@ -72,18 +72,8 @@ L1TMuonBarrelKalmanAlgo::convertToBMTF(const L1MuKBMTrack& track) {
   if (K>4095)
     K=4095;
 
-  float lsb=1.25/float(1<<13);
-  float ptF = (2*(1.0/(lsb*float(K))));
-  float KF = 1.0/ptF;
-  int pt=0;
-  KF = 0.797*KF+0.454*KF*KF-5.679e-4;
-  if (KF!=0)
-    pt=int(1.0/KF);
-  else
-    pt=511;
+  int pt = ptLUT(K);
 
-  if (pt>511)
-    pt=511;
 
   int  K2 = abs(track.curvatureAtMuon());
   if (K2<22)
@@ -91,9 +81,7 @@ L1TMuonBarrelKalmanAlgo::convertToBMTF(const L1MuKBMTrack& track) {
 
   if (K2>4095)
     K2=4095;
-  int pt2 = int(1.0/(lsb*float(K2))); 
-  if (pt2>254)
-    pt2=254;
+  int pt2 = ptLUT(K2)/2;
   int eta  = track.hasFineEta() ? track.fineEta() : track.coarseEta();
   
   int phi=track.phiAtMuon();
@@ -149,8 +137,8 @@ std::pair<bool,uint> L1TMuonBarrelKalmanAlgo::match(const L1MuKBMTrack& track, c
     N=N+1;
     if (stub->stNum()!=track.step()) 
       continue;
-    if (abs(track.positionAngle()-correctedPhi(stub,track.sector()))<distance) {
-      distance = abs(track.positionAngle()-correctedPhi(stub,track.sector()));
+    if (abs(track.positionAngle()/8-correctedPhi(stub,track.sector())/8)<distance) {
+      distance = abs(track.positionAngle()/8-correctedPhi(stub,track.sector())/8);
       best=N-1;
       found=true;
     }
@@ -206,14 +194,17 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   int phiB = track.bendingAngle();
   unsigned int step = track.step();
 
-  int charge=1;
-  if (K!=0) 
-    charge = K/abs(K);
-
   //energy loss term only for MU->VERTEX
   //int offset=int(charge*eLoss_[step-1]*K*K);
   //  if (abs(offset)>4096)
   //      offset=4096*offset/abs(offset);
+
+  int charge=1;
+  if (K!=0) 
+    charge = K/abs(K);
+
+
+
 
   int KBound=K;
   if (KBound>4095)
@@ -221,15 +212,30 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   if (KBound<-4095)
     KBound=-4095;
 
- 
-  int KNew =wrapAround(int(2*int(KBound/2)/(1+charge*eLoss_[step-1]*(KBound/2))),8192);
+  int deltaK=0;
+  int KNew=0;
+  if (step==1) {
+    int addr = KBound/2;
+    if (addr<0) 
+      addr=(-KBound)/2;
+    deltaK =2*addr-int(2*addr/(1+eLoss_[step-1]*addr));
+  
+    if (verbose_)
+      printf("propagate to vertex K=%d deltaK=%d addr=%d\n",K,deltaK,addr);
+  }
 
-   
+  if (K>=0)
+    KNew=K-deltaK;
+  else 
+    KNew=K+deltaK;
+
 
   //phi propagation
   int phi11 = fp_product(aPhi_[step-1],K,10);
   int phi12 = fp_product(-bPhi_[step-1],phiB,10);
-
+  if (verbose_) {
+    printf("%d* %f = %d, %d* %f =%d\n",K,aPhi_[step-1],phi11,phiB,-bPhi_[step-1],phi12);
+  }
   int phiNew =wrapAround(phi+phi11+phi12,8192);
   //phiB propagation
   int phiB11 = fp_product(aPhiB_[step-1],K,10);
@@ -239,8 +245,8 @@ void L1TMuonBarrelKalmanAlgo::propagate(L1MuKBMTrack& track) {
   
   //Only for the propagation to vertex we use the LUT for better precision and the full function
   if (step==1) {
-    phiBNew = wrapAround(int(aPhiB_[step-1]*(KBound/2)/(1+charge*aPhiBNLO_[step-1]*(KBound/2))+bPhiB_[step-1]*phiB),2048);
-   
+    int addr = KBound/2;
+    phiBNew = wrapAround(int(aPhiB_[step-1]*addr/(1+charge*aPhiBNLO_[step-1]*addr))+int(bPhiB_[step-1]*phiB),2048);
   }
   ///////////////////////////////////////////////////////
   //Rest of the stuff  is for the offline version only 
@@ -472,6 +478,10 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
     residual[0] = phi-trackPhi;
     residual[1] = phiB-trackPhiB;
 
+    if (verbose_)
+      printf("residuals %d %d\n",int(residual[0]),int(residual[1]));
+
+
     uint absK = abs(trackK);
     if (absK>4095)
       absK = 4095;
@@ -491,18 +501,25 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
 
 
     }
+    if (verbose_)
+      printf("Gains:%d  %f %f %f %f\n",absK/4,GAIN[0],GAIN[1],GAIN[2],GAIN[3]);
     track.setKalmanGain(track.step(),abs(trackK),GAIN[0],GAIN[1],1,0,GAIN[2],GAIN[3]);
-      
 
     int k_0 = fp_product(GAIN[0],int(residual(0)),3);
     int k_1 = fp_product(GAIN[1],int(residual(1)),5);
     int KNew  = wrapAround(trackK+k_0+k_1,8192);
 
+    if (verbose_)
+      printf("Kupdate: %d %d\n",k_0,k_1);
 
     int phiNew  = wrapAround(trackPhi+residual(0),8192);
 
     int pb_0 = fp_product(fabs(GAIN[2]),int(residual(0)),5);
-    int pb_1 = fp_product(GAIN[3],int(residual(1)),1);
+    int pb_1 = fp_product(GAIN[3],int(residual(1)),9);
+
+    if (verbose_)
+      printf("phiupdate: %d %d\n",pb_0,pb_1);
+
 
     int phiBNew = wrapAround(trackPhiB-pb_0+pb_1,2048);
     track.setCoordinates(track.step(),KNew,phiNew,phiBNew);
@@ -604,6 +621,12 @@ std::pair<float,float> GAIN = lutService_->vertexGain(track.hitPattern(),absK/2)
 
   int k_0 = fp_product(GAIN.first,int(residual),7);
   int KNew = wrapAround(track.curvature()+k_0,8192);
+
+  if (verbose_) {
+    printf("VERTEX GAIN(%d)= %f * %d  = %d\n",absK/2,GAIN.first,int(residual),k_0);
+
+  }
+
 
   int p_0 = fp_product(GAIN.second,int(residual),7);
   int phiNew = wrapAround(track.positionAngle()+p_0,8192);
@@ -752,7 +775,7 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
       printf("------------------------------------------------------\n");
       printf("stubs:\n");
       for (const auto& stub: stubs) 
-	printf("station=%d phi=%d phiB=%d qual=%d tag=%d sector=%d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub),stub->quality(),stub->tag(),stub->scNum()); 
+	printf("station=%d phi=%d phiB=%d qual=%d tag=%d sector=%d wheel=%d fineEta= %d %d\n",stub->stNum(),correctedPhi(stub,seed->scNum()),correctedPhiB(stub),stub->quality(),stub->tag(),stub->scNum(),stub->whNum(),stub->eta1(),stub->eta2()); 
       printf("------------------------------------------------------\n");
       printf("------------------------------------------------------\n");
 
@@ -830,9 +853,14 @@ void L1TMuonBarrelKalmanAlgo::estimateChiSquare(L1MuKBMTrack& track) {
 
   int chi=0;
 
-  for (const auto& stub: track.stubs()) {
-    uint delta=abs(correctedPhi(stub,track.sector())/8-track.phiAtMuon()/8+correctedPhiB(stub)/8-track.phiBAtMuon()/8-chiSquare_[stub->stNum()-1]*K/8);
-     chi=chi+abs(delta);    
+  int coords = (track.phiAtMuon()+track.phiBAtMuon())/8;
+  for (const auto& stub: track.stubs()) {   
+    int AK = fp_product(-chiSquare_[stub->stNum()-1],K>>3,8);
+
+    int stubCoords =   (correctedPhi(stub,track.sector())>>3)+stub->phiB();
+    uint delta = abs(stubCoords-coords+AK);
+    //    printf("station=%d %d %d %d\n",stub->stNum(),stubCoords,coords,AK);
+    chi=chi+abs(delta);    
    }
   //  chi=chi/2;
   if (chi>127)
@@ -899,6 +927,8 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanAlgo::cleanAndSort(const L1MuKBMTrackC
 
 
   for(const auto& track1 : pretracks) {
+    printf("Pre Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA =%d stubs=%d bitmask=%d rank=%d chi=%d pts=%f %f\n",track1.charge(),track1.pt(),track1.eta(),track1.phi(),track1.curvatureAtVertex(),track1.curvatureAtMuon(),int(track1.stubs().size()),track1.hitPattern(),rank(track1),track1.approxChi2(),track1.pt(),track1.ptUnconstrained()); 
+
     bool keep=true;
     for(const auto& track2 : pretracks) {
       if (track1==track2)
@@ -1054,4 +1084,22 @@ int L1TMuonBarrelKalmanAlgo::fp_product(float a,int b, uint bits) {
   float shifted = int((1<<bits)*a);
   int product = int(shifted*b);
   return (product>>bits);
+}
+
+
+
+int L1TMuonBarrelKalmanAlgo::ptLUT(int K) {
+  float lsb=1.25/float(1<<13);
+  float ptF = (2*(1.0/(lsb*float(K))));
+  float KF = 1.0/ptF;
+  int pt=0;
+  KF = 0.797*KF+0.454*KF*KF-5.679e-4;
+  if (KF!=0)
+    pt=int(1.0/KF);
+  else
+    pt=511;
+
+  if (pt>511)
+    pt=511;
+  return pt;
 }

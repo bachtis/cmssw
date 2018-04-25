@@ -8,21 +8,22 @@ bmtfKalmanTrackingSettings = cms.PSet(
 #    eLoss = cms.vdouble(-2.85e-4,-6.21e-5,-1.26e-4,-1.23e-4), 
     eLoss = cms.vdouble(+0.000765,0,0,0), 
 
-    aPhi = cms.vdouble(1.942,0.0317383,0.0278320,0.0161133),
-    aPhiB = cms.vdouble(-1.508,-0.122559,-0.174316,-0.144043),
+    aPhi = cms.vdouble(1.942,0.03125,0.0273438,0.015625),
+    aPhiB = cms.vdouble(-1.508,-0.123047,-0.174805,-0.144531),
     aPhiBNLO = cms.vdouble(0.000331,0,0,0),
 
-    bPhi = cms.vdouble(-1,0.153809,0.173340,0.146973),
-    bPhiB = cms.vdouble(-1,1.153809,1.173340,1.146973),
+    bPhi = cms.vdouble(-1,0.154297,0.173828,0.147461),
+    bPhiB = cms.vdouble(-1,1.15332,1.17285,1.14648),
     etaLUT0 = cms.vdouble(8.946,7.508,6.279,6.399),
     etaLUT1 = cms.vdouble(0.159,0.116,0.088,0.128),
-    chiSquare = cms.vdouble(0.0,0.095,0.232,0.356),   
+    chiSquare = cms.vdouble(0.0,0.109375,0.234375,0.359375),   
 #    chiSquareCutPattern = cms.vint32(3,6),
 #    chiSquareCutCurvMax = cms.vint32(273,273),
     globalChi2Cut = cms.uint32(126),
     chiSquareCutPattern = cms.vint32(3,6,12),
     chiSquareCutCurvMax = cms.vint32(273,273,273),
     chiSquareCut = cms.vint32(25,31,31),
+
 #    chiSquareCut = cms.vint32(1000,1000,1000,1000,1000,1000,1200,1200,1200,1200,1200,8192,8192,8192),
 
 
@@ -63,6 +64,7 @@ simKBmtfDigis = cms.EDProducer("L1TMuonBarrelKalmanTrackProducer",
 #        sectorsToProcess = cms.vint32(3),
         verbose = cms.int32(0),
         sectorSettings = cms.PSet(
+#            verbose = cms.int32(1),
             verbose = cms.int32(0),
             wheelsToProcess = cms.vint32(-2,-1,0,1,2),
             regionSettings = cms.PSet(

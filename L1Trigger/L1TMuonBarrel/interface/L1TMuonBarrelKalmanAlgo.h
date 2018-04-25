@@ -66,6 +66,8 @@ class L1TMuonBarrelKalmanAlgo {
   //LUT service
   L1TMuonBarrelKalmanLUTs* lutService_;
   bool punchThroughVeto(const L1MuKBMTrack& track);
+  int ptLUT(int K);
+
 
   //Initial Curvature
   std::vector<double> initK_;

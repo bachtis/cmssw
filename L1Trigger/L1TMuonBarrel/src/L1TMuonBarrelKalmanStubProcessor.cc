@@ -424,7 +424,7 @@ L1TMuonBarrelKalmanStubProcessor::bmtf_in L1TMuonBarrelKalmanStubProcessor::make
     out.ts2_st1_cal=0;
 
 
-    seg = phiContainer->chPhiSegm2(wheel,1,sector,0);
+    seg = phiContainer->chPhiSegm2(wheel,1,sector,-1);
     if (seg) {
       out.ts2_st1_phi=seg->phi();
       out.ts2_st1_phib=seg->phiB();
@@ -439,7 +439,7 @@ L1TMuonBarrelKalmanStubProcessor::bmtf_in L1TMuonBarrelKalmanStubProcessor::make
     out.ts2_st2_rpc=0;
     out.ts2_st2_cal=0;
 
-    seg = phiContainer->chPhiSegm2(wheel,2,sector,0);
+    seg = phiContainer->chPhiSegm2(wheel,2,sector,-1);
     if (seg) {
       out.ts2_st2_phi=seg->phi();
       out.ts2_st2_phib=seg->phiB();
@@ -453,7 +453,7 @@ L1TMuonBarrelKalmanStubProcessor::bmtf_in L1TMuonBarrelKalmanStubProcessor::make
     out.ts2_st3_rpc=0;
     out.ts2_st3_cal=0;
 
-    seg = phiContainer->chPhiSegm2(wheel,3,sector,0);
+    seg = phiContainer->chPhiSegm2(wheel,3,sector,-1);
     if (seg) {
       out.ts2_st3_phi=seg->phi();
       out.ts2_st3_phib=seg->phiB();
@@ -468,7 +468,7 @@ L1TMuonBarrelKalmanStubProcessor::bmtf_in L1TMuonBarrelKalmanStubProcessor::make
     out.ts2_st4_cal=0;
 
 
-    seg = phiContainer->chPhiSegm2(wheel,4,sector,0);
+    seg = phiContainer->chPhiSegm2(wheel,4,sector,-1);
     if (seg) {
       out.ts2_st4_phi=seg->phi();
       out.ts2_st4_phib=seg->phiB();
