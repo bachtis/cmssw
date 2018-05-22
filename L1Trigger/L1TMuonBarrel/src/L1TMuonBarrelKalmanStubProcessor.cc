@@ -246,7 +246,7 @@ L1TMuonBarrelKalmanStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& phiS) 
 
 
 L1MuKBMTCombinedStubCollection 
-L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiContainer,const L1MuDTChambThContainer* etaContainer) {
+L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiContainer,const L1MuDTChambThContainer* etaContainer,const L1TMuonBarrelParams& params) {
 
 
   //get the masks from th standard BMTF setup!
@@ -256,22 +256,68 @@ L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiCon
   //  masks_ =  bmtfParams.l1mudttfmasks;
 
 
+  //get the masks!
+  L1MuDTTFMasks msks = params.l1mudttfmasks;
+
 
   L1MuKBMTCombinedStubCollection  out;
   for (int bx=minBX_;bx<=maxBX_;bx++) {
     for (int wheel=-2;wheel<=2;wheel++) {
       for (uint sector=0;sector<12;sector++) {
 	for (uint station=1;station<5;station++) {
+
+	  //Have to cook up something for the fact that KMTF doesnt use 2 SP at whel=0
+	  int lwheel1;
+	  int lwheel2;
+	  if (wheel<0) {
+	    lwheel1=wheel-1;
+	    lwheel2=wheel-1;
+	  }
+	  else if (wheel>0) {
+	    lwheel1=wheel+1;
+	    lwheel2=wheel+1;
+	  }
+	  else {
+	    lwheel1=-1;
+	    lwheel2=+1;
+	  }
+	    
+	  bool phiMask=false;
+	  bool etaMask=false;
+	  if (station==1) {
+	    phiMask = msks.get_inrec_chdis_st1(lwheel1, sector) |msks.get_inrec_chdis_st1(lwheel2, sector);  
+	    etaMask = msks.get_etsoc_chdis_st1(lwheel1, sector) |msks.get_etsoc_chdis_st1(lwheel2, sector);  
+	  }
+	  if (station==2) {
+	    phiMask = msks.get_inrec_chdis_st2(lwheel1, sector) |msks.get_inrec_chdis_st2(lwheel2, sector);  
+	    etaMask = msks.get_etsoc_chdis_st2(lwheel1, sector) |msks.get_etsoc_chdis_st2(lwheel2, sector);  
+
+	  }
+	  if (station==3) {
+	    phiMask = msks.get_inrec_chdis_st3(lwheel1, sector) |msks.get_inrec_chdis_st3(lwheel2, sector);  
+	    etaMask = msks.get_etsoc_chdis_st3(lwheel1, sector) |msks.get_etsoc_chdis_st3(lwheel2, sector);  
+	  }
+	  if (station==4) {
+	    phiMask = msks.get_inrec_chdis_st4(lwheel1, sector) |msks.get_inrec_chdis_st4(lwheel2, sector);  
+	  }
+
+
+
+	  
+
+
 	  bool hasEta=false;
 	  L1MuDTChambThDigi const*  tseta   = etaContainer->chThetaSegm(wheel,station,sector,bx);
-	  if (tseta) {
+	  if (tseta && (!etaMask)) {
 	    hasEta=true;
 	  }
 
+	  //	  if (abs(wheel)==2 && station==1)
+	  //	    continue;
 	    
 
 	  L1MuDTChambPhDigi const* high = phiContainer->chPhiSegm1(wheel,station,sector,bx);
-	  if (high) {
+	  if (high && (!phiMask)) {
 	    if (high->code()>=minPhiQuality_) {
 	      const L1MuDTChambPhDigi& stubPhi = *high;
 	      if (hasEta) {
@@ -284,7 +330,7 @@ L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiCon
 	  }
 
 	  L1MuDTChambPhDigi const* low = phiContainer->chPhiSegm2(wheel,station,sector,bx-1);
-	  if (low) {
+	  if (low && ! (phiMask)) {
 	    if (low->code()>=minPhiQuality_) {
 	      const L1MuDTChambPhDigi& stubPhi = *low;
 	      if (hasEta) {

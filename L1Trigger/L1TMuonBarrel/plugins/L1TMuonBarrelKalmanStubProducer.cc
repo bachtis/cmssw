@@ -16,7 +16,13 @@
 
 #include "L1Trigger/L1TMuonBarrel/interface/L1TMuonBarrelKalmanStubProcessor.h"
 
+//For masks
 
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "CondFormats/L1TObjects/interface/L1TMuonBarrelParams.h"
+#include "CondFormats/DataRecord/interface/L1TMuonBarrelParamsRcd.h"
+#include "CondFormats/L1TObjects/interface/L1MuDTTFMasks.h"
+#include "CondFormats/DataRecord/interface/L1MuDTTFMasksRcd.h"
 
 //
 // class declaration
@@ -37,6 +43,9 @@ class L1TMuonBarrelKalmanStubProducer : public edm::stream::EDProducer<> {
   edm::EDGetTokenT<L1MuDTChambThContainer> srcTheta_;
   L1TMuonBarrelKalmanStubProcessor * proc_;
   int verbose_;
+  edm::ESHandle< L1TMuonBarrelParams > bmtfParamsHandle_;
+
+
 };
 
 //
@@ -86,11 +95,21 @@ L1TMuonBarrelKalmanStubProducer::produce(edm::Event& iEvent, const edm::EventSet
    Handle<L1MuDTChambThContainer> thetaIn;
    iEvent.getByToken(srcTheta_,thetaIn);
 
-   L1MuKBMTCombinedStubCollection stubs = proc_->makeStubs(phiIn.product(),thetaIn.product());
+   //Get parameters
+
+   const L1TMuonBarrelParamsRcd& bmtfParamsRcd = iSetup.get<L1TMuonBarrelParamsRcd>();
+   bmtfParamsRcd.get(bmtfParamsHandle_);
+   const L1TMuonBarrelParams& bmtfParams = *bmtfParamsHandle_.product();
+
+
+
+
+
+   L1MuKBMTCombinedStubCollection stubs = proc_->makeStubs(phiIn.product(),thetaIn.product(),bmtfParams);
 
    if (verbose_==2) {
      std::cout<< "NEW"<<std::endl;
-     for (uint sector=2;sector<5;++sector)
+     for (uint sector=6;sector<9;++sector)
        for (int wheel=-2;wheel<3;++wheel)
 	 proc_->printWord(phiIn.product(),thetaIn.product(),sector,wheel);
    }

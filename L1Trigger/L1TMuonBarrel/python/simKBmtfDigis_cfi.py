@@ -32,7 +32,6 @@ bmtfKalmanTrackingSettings = cms.PSet(
     combos2=cms.vint32(3),
     combos1=cms.vint32(), #for future possible usage
 
-
     useOfflineAlgo = cms.bool(False),
     
     ###Only for the offline algo -not in firmware --------------------
@@ -57,11 +56,12 @@ bmtfKalmanTrackingSettings = cms.PSet(
 
 simKBmtfDigis = cms.EDProducer("L1TMuonBarrelKalmanTrackProducer",
     src = cms.InputTag("simKBmtfStubs"),
-    bx = cms.vint32(0),
+    bx = cms.vint32(-2,-1,0,1,2),
+#    bx = cms.vint32(0),
     algoSettings = bmtfKalmanTrackingSettings,
     trackFinderSettings = cms.PSet(
         sectorsToProcess = cms.vint32(0,1,2,3,4,5,6,7,8,9,10,11),
-#       sectorsToProcess = cms.vint32(3),
+#       sectorsToProcess = cms.vint32(7),
         verbose = cms.int32(0),
         sectorSettings = cms.PSet(
 #           verbose = cms.int32(1),

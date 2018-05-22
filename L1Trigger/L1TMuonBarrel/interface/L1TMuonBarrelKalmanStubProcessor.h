@@ -21,7 +21,7 @@ class L1TMuonBarrelKalmanStubProcessor {
   ~L1TMuonBarrelKalmanStubProcessor();
 
 
-  L1MuKBMTCombinedStubCollection makeStubs(const L1MuDTChambPhContainer*,const L1MuDTChambThContainer*);
+  L1MuKBMTCombinedStubCollection makeStubs(const L1MuDTChambPhContainer*,const L1MuDTChambThContainer*,const L1TMuonBarrelParams&);
   void printWord(const L1MuDTChambPhContainer* phiContainer,const L1MuDTChambThContainer* etaContainer,int,int);
   
  private:
