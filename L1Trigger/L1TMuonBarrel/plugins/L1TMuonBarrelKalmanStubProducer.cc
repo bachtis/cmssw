@@ -109,7 +109,7 @@ L1TMuonBarrelKalmanStubProducer::produce(edm::Event& iEvent, const edm::EventSet
 
    if (verbose_==2) {
      std::cout<< "NEW"<<std::endl;
-     for (uint sector=6;sector<9;++sector)
+     for (uint sector=8;sector<11;++sector)
        for (int wheel=-2;wheel<3;++wheel)
 	 proc_->printWord(phiIn.product(),thetaIn.product(),sector,wheel);
    }

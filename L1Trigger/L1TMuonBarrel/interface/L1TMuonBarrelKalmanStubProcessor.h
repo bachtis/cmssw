@@ -54,7 +54,7 @@ class L1TMuonBarrelKalmanStubProcessor {
   std::vector<int>  etaCoarseLUT_0;
   std::vector<int>  etaCoarseLUT_plus_1;
   std::vector<int>  etaCoarseLUT_plus_2;
-
+  bool disableMasks_;
   int verbose_;
 
 

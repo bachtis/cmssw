@@ -27,6 +27,7 @@ simKBmtfStubs = cms.EDProducer("L1TMuonBarrelKalmanStubProducer",
     etaCoarseLUT_minus_1 = cms.vint32(-48,-41,-35,-34),
     etaCoarseLUT_0 = cms.vint32(0,0,0,0),
     etaCoarseLUT_plus_1= cms.vint32(48,41,35,34),
-    etaCoarseLUT_plus_2= cms.vint32(89,78,67,62)
-                           
+    etaCoarseLUT_plus_2= cms.vint32(89,78,67,62),
+    disableMasks = cms.bool(False),                               
+                               
 )

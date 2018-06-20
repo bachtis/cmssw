@@ -42,6 +42,7 @@ L1TMuonBarrelKalmanStubProcessor::L1TMuonBarrelKalmanStubProcessor(const edm::Pa
   etaCoarseLUT_0(iConfig.getParameter<std::vector<int> >("etaCoarseLUT_0")),
   etaCoarseLUT_plus_1(iConfig.getParameter<std::vector<int> >("etaCoarseLUT_plus_1")),
   etaCoarseLUT_plus_2(iConfig.getParameter<std::vector<int> >("etaCoarseLUT_plus_2")),
+  disableMasks_(iConfig.getParameter<bool>("disableMasks")),
   verbose_(iConfig.getParameter<int>("verbose"))
 {
 
@@ -286,7 +287,7 @@ L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiCon
 	  bool etaMask=false;
 	  if (station==1) {
 	    phiMask = msks.get_inrec_chdis_st1(lwheel1, sector) |msks.get_inrec_chdis_st1(lwheel2, sector);  
-	    etaMask = msks.get_etsoc_chdis_st1(lwheel1, sector) |msks.get_etsoc_chdis_st1(lwheel2, sector);  
+	    etaMask = msks.get_etsoc_chdis_st1(lwheel1, sector) |msks.get_etsoc_chdis_st1(lwheel2, sector);  	    
 	  }
 	  if (station==2) {
 	    phiMask = msks.get_inrec_chdis_st2(lwheel1, sector) |msks.get_inrec_chdis_st2(lwheel2, sector);  
@@ -302,8 +303,11 @@ L1TMuonBarrelKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer* phiCon
 	  }
 
 
-
-	  
+	  if (disableMasks_)
+	    {
+	      phiMask=false;
+	      etaMask=false;
+	    }
 
 
 	  bool hasEta=false;
