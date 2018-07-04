@@ -341,8 +341,6 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline(L1MuKBMTrack& track,const L1MuKBMTCo
 
 
 
-    //Update eta
-    track.setCoarseEta(int((track.coarseEta()+stub->coarseEta())/2.0));
 
     Vector2 residual;
     residual[0] = phi-trackPhi;
@@ -429,7 +427,7 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline1D(L1MuKBMTrack& track,const L1MuKBMT
 
 
     int phi  = correctedPhi(stub,track.sector());
-    track.setCoarseEta(int((track.coarseEta()+stub->coarseEta())/2.0));
+
 
     double residual= phi-trackPhi;
 
@@ -480,8 +478,6 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
     int trackPhi = track.positionAngle();
     int trackPhiB = track.bendingAngle();
 
-    //Update eta
-    track.setCoarseEta(int((track.coarseEta()+stub->coarseEta())/2.0));
 
     int phi  = correctedPhi(stub,track.sector());
     int phiB = correctedPhiB(stub);
@@ -548,24 +544,9 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
 
 void L1TMuonBarrelKalmanAlgo::updateEta(L1MuKBMTrack& track,const L1MuKBMTCombinedStubRef& stub) {
 
-    if (stub->qeta1()>=0) {
-      if (track.hasFineEta()) {
-	uint dist2=1000;
-	uint dist1 = abs(track.fineEta()-stub->eta1());
-	if (stub->qeta2()>=0)
-	  dist2 = abs(track.fineEta()-stub->eta2());
-	if (dist1<dist2)
-	  track.setFineEta((stub->eta1()+track.fineEta())/2);
-	else
-	  track.setFineEta((stub->eta2()+track.fineEta())/2);
-      }else {
-	if (stub->qeta2()>=0)
-	  track.setFineEta((stub->eta1()+stub->eta2())/2);
-	else
-	  track.setFineEta(stub->eta1());
-      }
 
-    }
+
+
 }
 
 
@@ -752,16 +733,16 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
 
     track.setHitPattern(hitPattern(track));
     //Set eta coarse
-    track.setCoarseEta(seed->coarseEta());
+    //    track.setCoarseEta(seed->coarseEta());
     //Set fine eta:
-    if (seed->qeta1()>=0) {
-      if (seed->qeta2()>=0) {
-	track.setFineEta((seed->eta1()+seed->eta2())/2);
-      }
-      else {
-	track.setFineEta(seed->eta1());
-      }
-    }
+    //if (seed->qeta1()>=0) {
+    //  if (seed->qeta2()>=0) {
+    //	track.setFineEta((seed->eta1()+seed->eta2())/2);
+    // }
+    // else {//
+    //	track.setFineEta(seed->eta1());
+    //  }
+    // }
 
     //set covariance
     L1MuKBMTrack::CovarianceMatrix covariance;  
@@ -801,6 +782,55 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
       if (track.step()==1) {
 	track.setCoordinatesAtMuon(track.curvature(),track.positionAngle(),track.bendingAngle());
 	setFloatingPointValues(track,false);
+	//calculate coarse eta
+	//////////////////////
+	uint pattern = track.hitPattern();
+	int wheel = track.stubs()[0]->whNum();
+	uint awheel=abs(wheel);
+	int sign=1;
+	if (wheel<0)
+	  sign=-1;
+	uint nstubs = track.stubs().size();
+	uint mask=0;
+	for (unsigned int i=0;i<track.stubs().size();++i) {
+	  //printf("Stub wheel=%d\n",track.stubs()[i]->whNum());
+	  if (abs(track.stubs()[i]->whNum())!=awheel)
+	    mask=mask|(1<<i);
+	}
+	mask=(awheel<<nstubs)|mask;
+	track.setCoarseEta(sign*lutService_->coarseEta(pattern,mask));
+	//	printf("----\n");
+	//	printf("Coarse Eta=%f\n",sign*lutService_->coarseEta(pattern,mask)*0.010875);
+	//	printf("pattern=%d wheel=%d sing=%d stubs=%d mask=%d eta=%d\n",pattern,wheel,sign,nstubs,mask,sign*lutService_->coarseEta(pattern,mask));
+	//set fine eta
+	int sumweights=0;
+	int sums=0;
+	//	printf("New eta calculation\n");
+	uint rankv=0;
+	int etaS=255;
+	for (const auto& stub : stubs) {
+	  uint rank = etaStubRank(stub);
+	  if (rank==0)
+	    continue;
+	  // printf("new rank=%d , eta=%d\n",rank,stub->eta1());
+	  if (rank>rankv) {
+	    etaS=stub->eta1();
+	    rankv=rank;
+	  }
+	  sumweights+=rank;
+	  sums+=rank*stub->eta1();
+	}
+	//	if (sumweights>0) {
+	  
+	//int eta=int(float(sums)/float(sumweights));
+	  // printf("resulting eta=%f\n",eta*0.010875);
+	//  track.setFineEta(eta);
+	//	}
+	if (rankv>0) {
+	  track.setFineEta(etaS);
+	}
+
+
 	if (verbose_) 
 	  printf ("Unconstrained PT  in Muon System: pt=%f\n",track.ptUnconstrained());
       }
@@ -1169,3 +1199,18 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanAlgo::clean(const L1MuKBMTrackCollecti
 
 
 }
+
+uint L1TMuonBarrelKalmanAlgo::etaStubRank(const L1MuKBMTCombinedStubRef& stub) {
+
+  if (stub->qeta1()!=0 && stub->qeta2()!=0) {
+    return 0;
+  }  
+  if (stub->qeta1()==0) {
+    return 0;
+  }
+  return (stub->qeta1()*4+stub->stNum());
+
+}
+
+
+

@@ -36,6 +36,22 @@ L1TMuonBarrelKalmanLUTs::L1TMuonBarrelKalmanLUTs(const std::string& filename) {
 
 
 
+  coarseEta_[3] = (TH1*)lutFile_->Get("coarseEta_3");
+  coarseEta_[5] = (TH1*)lutFile_->Get("coarseEta_5");
+  coarseEta_[6] = (TH1*)lutFile_->Get("coarseEta_6");
+  coarseEta_[7] = (TH1*)lutFile_->Get("coarseEta_7");
+  coarseEta_[9] = (TH1*)lutFile_->Get("coarseEta_9");
+
+  coarseEta_[10] = (TH1*)lutFile_->Get("coarseEta_10");
+  coarseEta_[11] = (TH1*)lutFile_->Get("coarseEta_11");
+  coarseEta_[12] = (TH1*)lutFile_->Get("coarseEta_12");
+  coarseEta_[13] = (TH1*)lutFile_->Get("coarseEta_13");
+  coarseEta_[14] = (TH1*)lutFile_->Get("coarseEta_14");
+  coarseEta_[15] = (TH1*)lutFile_->Get("coarseEta_15");
+
+
+
+
 }
 
 L1TMuonBarrelKalmanLUTs::~L1TMuonBarrelKalmanLUTs() {
@@ -73,4 +89,11 @@ std::pair<float,float> L1TMuonBarrelKalmanLUTs::vertexGain(uint bitmask,uint K) 
   const TH1* h = lut_[bitmask];
   std::pair<float,float> gain(-h->GetBinContent(K+1),-h->GetBinContent(1024+K+1) );
   return gain;
+}
+
+
+
+uint L1TMuonBarrelKalmanLUTs::coarseEta(uint pattern,uint mask) {
+  const TH1* h = coarseEta_[pattern];
+  return uint(h->GetBinContent(h->GetXaxis()->FindBin(mask)));
 }

@@ -67,6 +67,9 @@ class L1TMuonBarrelKalmanAlgo {
   uint twosCompToBits(int);
   int fp_product(float,int, uint);
 
+  uint etaStubRank(const L1MuKBMTCombinedStubRef&);
+
+
   //LUT service
   L1TMuonBarrelKalmanLUTs* lutService_;
   bool punchThroughVeto(const L1MuKBMTrack& track);
