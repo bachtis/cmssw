@@ -20,9 +20,9 @@ L1TMuonBarrelKalmanStubProcessor::L1TMuonBarrelKalmanStubProcessor(const edm::Pa
   minPhiQuality_(iConfig.getParameter<int>("minPhiQuality")),
   minBX_(iConfig.getParameter<int>("minBX")),
   maxBX_(iConfig.getParameter<int>("maxBX")),
-  eta1_(iConfig.getParameter<int>("cotTheta_1")),
-  eta2_(iConfig.getParameter<int>("cotTheta_2")),
-  eta3_(iConfig.getParameter<int>("cotTheta_3")),
+  eta1_(iConfig.getParameter<std::vector<int> >("cotTheta_1")),
+  eta2_(iConfig.getParameter<std::vector<int> >("cotTheta_2")),
+  eta3_(iConfig.getParameter<std::vector<int> >("cotTheta_3")),
   disableMasks_(iConfig.getParameter<bool>("disableMasks")),
   verbose_(iConfig.getParameter<int>("verbose"))
 {
@@ -253,11 +253,11 @@ int L1TMuonBarrelKalmanStubProcessor::calculateEta(uint i, int wheel,uint sector
 
 
   if (station==1)
-    eta=-eta1_[eta+34];
+    eta=-eta1_[eta+17];
   else if (station==2)
-    eta=-eta2_[eta+34];
+    eta=-eta2_[eta+17];
   else 
-    eta=-eta3_[eta+34];
+    eta=-eta3_[eta+17];
 
 
 

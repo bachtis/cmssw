@@ -807,14 +807,14 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
 	int sums=0;
 	//	printf("New eta calculation\n");
 	uint rankv=0;
-	int etaS=255;
+	//	int etaS=255;
 	for (const auto& stub : stubs) {
 	  uint rank = etaStubRank(stub);
 	  if (rank==0)
 	    continue;
 	  // printf("new rank=%d , eta=%d\n",rank,stub->eta1());
 	  if (rank>rankv) {
-	    etaS=stub->eta1();
+	    //	    etaS=stub->eta1();
 	    rankv=rank;
 	  }
 	  sumweights+=rank;
@@ -822,13 +822,13 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
 	}
 	//	if (sumweights>0) {
 	  
-	//int eta=int(float(sums)/float(sumweights));
+	int eta=int(float(sums)/float(sumweights));
 	  // printf("resulting eta=%f\n",eta*0.010875);
-	//  track.setFineEta(eta);
+	track.setFineEta(eta);
 	//	}
-	if (rankv>0) {
-	  track.setFineEta(etaS);
-	}
+	//	if (rankv>0) {
+	// track.setFineEta(etaS);
+	//	}
 
 
 	if (verbose_) 
