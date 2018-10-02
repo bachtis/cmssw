@@ -121,10 +121,7 @@ L1TMuonBarrelKalmanSectorProcessor::bmtf_out L1TMuonBarrelKalmanSectorProcessor:
       out.addr2_1=mu.trackSubAddress(l1t::RegionalMuonCand::kStat2);
       out.addr3_1=mu.trackSubAddress(l1t::RegionalMuonCand::kStat3);
       out.addr4_1=mu.trackSubAddress(l1t::RegionalMuonCand::kStat4);
-      if (mu.trackSubAddress(l1t::RegionalMuonCand::kWheelSide))
-	out.wheel_1=-mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
-      else
-	out.wheel_1=mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
+      out.wheel_1 = mu.trackSubAddress(l1t::RegionalMuonCand::kWheelSide)*(1<<2)+mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
       out.ptSTA_1=mu.hwPt2();
     }
 
@@ -143,10 +140,9 @@ L1TMuonBarrelKalmanSectorProcessor::bmtf_out L1TMuonBarrelKalmanSectorProcessor:
       out.addr2_2=mu.trackSubAddress(l1t::RegionalMuonCand::kStat2);
       out.addr3_2=mu.trackSubAddress(l1t::RegionalMuonCand::kStat3);
       out.addr4_2=mu.trackSubAddress(l1t::RegionalMuonCand::kStat4);
-      if (mu.trackSubAddress(l1t::RegionalMuonCand::kWheelSide))
-	out.wheel_2=-mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
-      else
-	out.wheel_2=mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
+      out.wheel_2 = mu.trackSubAddress(l1t::RegionalMuonCand::kWheelSide)*(1<<2)+mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
+
+
       out.ptSTA_2=mu.hwPt2();
     }
 
@@ -165,10 +161,7 @@ L1TMuonBarrelKalmanSectorProcessor::bmtf_out L1TMuonBarrelKalmanSectorProcessor:
       out.addr2_3=mu.trackSubAddress(l1t::RegionalMuonCand::kStat2);
       out.addr3_3=mu.trackSubAddress(l1t::RegionalMuonCand::kStat3);
       out.addr4_3=mu.trackSubAddress(l1t::RegionalMuonCand::kStat4);
-      if (mu.trackSubAddress(l1t::RegionalMuonCand::kWheelSide))
-	out.wheel_2=-mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
-      else
-	out.wheel_2=mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
+      out.wheel_3 = mu.trackSubAddress(l1t::RegionalMuonCand::kWheelSide)*(1<<2)+mu.trackSubAddress(l1t::RegionalMuonCand::kWheelNum);
       out.ptSTA_3=mu.hwPt2();
     }
     return out;

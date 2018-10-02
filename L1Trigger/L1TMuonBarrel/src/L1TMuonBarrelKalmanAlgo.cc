@@ -1164,8 +1164,20 @@ int L1TMuonBarrelKalmanAlgo::encode(bool ownwheel,int sector,bool tag) {
 
 std::map<int,int> L1TMuonBarrelKalmanAlgo::trackAddress(const L1MuKBMTrack& track,int& word) {
   std::map<int,int> out;
-  out[l1t::RegionalMuonCand::kWheelSide] = track.wheel()<0;
-  out[l1t::RegionalMuonCand::kWheelNum] = fabs(track.wheel());
+  
+  out[l1t::RegionalMuonCand::kWheelSide] = track.wheel()<=0;
+  if (track.wheel()==-2)
+    out[l1t::RegionalMuonCand::kWheelNum] = 2;
+  else if (track.wheel()==-1)
+    out[l1t::RegionalMuonCand::kWheelNum] = 1;
+  else if (track.wheel()==0)
+    out[l1t::RegionalMuonCand::kWheelNum] = 0;
+  else if (track.wheel()==1)
+    out[l1t::RegionalMuonCand::kWheelNum] = 0;
+  else if (track.wheel()==2)
+    out[l1t::RegionalMuonCand::kWheelNum] = 1;
+  else
+    out[l1t::RegionalMuonCand::kWheelNum] = 0;
   out[l1t::RegionalMuonCand::kStat1]=3;
   out[l1t::RegionalMuonCand::kStat2]=15;
   out[l1t::RegionalMuonCand::kStat3]=15;
