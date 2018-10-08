@@ -100,7 +100,12 @@ L1TMuonBarrelKalmanAlgo::convertToBMTF(const L1MuKBMTrack& track) {
   //int phi = 24+int(floor(kPhi*phi_f));
   //  if (phi >  69) phi =  69;
   //  if (phi < -8) phi = -8;
-  int   phi = (24 +fp_product(0.0895386,track.phiAtMuon()>>2,14));
+  int phi2 = track.phiAtMuon()>>2;
+  int tmp = fp_product(0.0895386,phi2,14);
+  int phi = 24+tmp;
+
+
+
 
 
   int processor=track.sector();
@@ -1165,7 +1170,7 @@ int L1TMuonBarrelKalmanAlgo::encode(bool ownwheel,int sector,bool tag) {
 std::map<int,int> L1TMuonBarrelKalmanAlgo::trackAddress(const L1MuKBMTrack& track,int& word) {
   std::map<int,int> out;
   
-  out[l1t::RegionalMuonCand::kWheelSide] = track.wheel()<=0;
+  out[l1t::RegionalMuonCand::kWheelSide] = track.wheel()<0;
   if (track.wheel()==-2)
     out[l1t::RegionalMuonCand::kWheelNum] = 2;
   else if (track.wheel()==-1)
@@ -1173,9 +1178,9 @@ std::map<int,int> L1TMuonBarrelKalmanAlgo::trackAddress(const L1MuKBMTrack& trac
   else if (track.wheel()==0)
     out[l1t::RegionalMuonCand::kWheelNum] = 0;
   else if (track.wheel()==1)
-    out[l1t::RegionalMuonCand::kWheelNum] = 0;
-  else if (track.wheel()==2)
     out[l1t::RegionalMuonCand::kWheelNum] = 1;
+  else if (track.wheel()==2)
+    out[l1t::RegionalMuonCand::kWheelNum] = 2;
   else
     out[l1t::RegionalMuonCand::kWheelNum] = 0;
   out[l1t::RegionalMuonCand::kStat1]=3;
@@ -1199,7 +1204,10 @@ std::map<int,int> L1TMuonBarrelKalmanAlgo::trackAddress(const L1MuKBMTrack& trac
     int addr = encode(ownwheel,sector,stub->tag());
    
     if (stub->stNum()==4) {
-      addr=addr & 3;
+      if (stub->tag())
+	addr=1;
+      else 
+	addr=2;
       out[l1t::RegionalMuonCand::kStat1]=addr;
     }      
     if (stub->stNum()==3) {
@@ -1238,7 +1246,8 @@ uint L1TMuonBarrelKalmanAlgo::twosCompToBits(int q) {
 
 
 int L1TMuonBarrelKalmanAlgo::fp_product(float a,int b, uint bits) {
-  return long(a*(1<<bits)*b)>>bits;
+  //  return long(a*(1<<bits)*b)>>bits;
+  return (long((a*(1<<bits))*b))>>bits;
 }
 
 
@@ -1420,7 +1429,7 @@ int L1TMuonBarrelKalmanAlgo::phiAt2(const L1MuKBMTrack& track) {
   int phiB = track.phiBAtMuon();
 
 
-  int phiNew=phi+fp_product(phiAt2_,phiB,12);
+  int phiNew=phi+fp_product(phiAt2_,phiB,10);
   if (verbose_)
     printf("Phi at second station=%d\n",phiNew);
   if (phiNew>4095)

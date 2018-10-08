@@ -432,7 +432,7 @@ void  L1TMuonBarrelKalmanStubProcessor::makeInputPattern(const L1MuDTChambPhCont
     const L1MuDTChambPhDigi* seg12 = phiContainer->chPhiSegm1(wheel,4,sector,0);
     if (seg12 ) {
       hasStub=true;
-      os<<seg12->phi()<<" "<<seg12->phiB()<<" "<<seg12->code()<<" 1 0 "  ;
+      os<<seg12->phi()<<" "<<seg12->phiB()<<" "<<seg12->code()<<" 1 2 "  ;
     }
     else {
       os<<"-2048 0 0 0 15 "; 
