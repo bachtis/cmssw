@@ -220,11 +220,14 @@ MicroGMTCancelOutUnit::getTrackAddrCancelBits(std::vector<std::shared_ptr<GMTInt
         stations_w2.push_back(trkAddr_w2[l1t::RegionalMuonCand::bmtfAddress::kStat4]);
         //std::cout << "Track address 2: wheelSide (1 == negative side): " << wheelSide_w2 << ", wheelNum: " << wheelNum_w2 << ", stations1234: 0x" << hex << stations_w2[0] << stations_w2[1] << stations_w2[2] << stations_w2[3] << dec << std::endl;
 
+
+	//Michalis: changes for Kalman 
+
         int nMatchedStations = 0;
         // search for duplicates in stations 2-4
         for (int i = 1; i < 4; ++i) {
           if (wheelSide_w1 == wheelSide_w2) { // both tracks are on the same detector side
-            if (wheelNum_w1 == wheelNum_w2) { // both tracks have the same reference wheel
+            if (wheelNum_w1 == wheelNum_w2) { // both tracks have the same reference wheel -CASE 1
               if ((stations_w1[i] == 0x0 && stations_w2[i] == 0x2) ||
                   (stations_w1[i] == 0x1 && stations_w2[i] == 0x3) ||
                   (stations_w1[i] == 0x4 && stations_w2[i] == 0x0) ||
@@ -236,7 +239,7 @@ MicroGMTCancelOutUnit::getTrackAddrCancelBits(std::vector<std::shared_ptr<GMTInt
               {
                 ++nMatchedStations;
               }
-            } else if (wheelNum_w1 == wheelNum_w2 - 1) { // track 2 is one wheel higher than track 1
+            } else if (wheelNum_w1 == wheelNum_w2 + 1) { // track 2 is one wheel lower than track 1 -> CASE 2 
               if ((stations_w1[i] == 0x0 && stations_w2[i] == 0xA) ||
                   (stations_w1[i] == 0x1 && stations_w2[i] == 0xB) ||
                   (stations_w1[i] == 0x4 && stations_w2[i] == 0x8) ||
@@ -244,7 +247,7 @@ MicroGMTCancelOutUnit::getTrackAddrCancelBits(std::vector<std::shared_ptr<GMTInt
               {
                 ++nMatchedStations;
               }
-            } else if (wheelNum_w1 == wheelNum_w2 + 1) { // track 2 is one wheel lower than track 1
+            } else if (wheelNum_w1 == wheelNum_w2 - 1) { // track 2 is one wheel higher than track 1 ->CASE 3 
               if ((stations_w1[i] == 0x8 && stations_w2[i] == 0x2) ||
                   (stations_w1[i] == 0x9 && stations_w2[i] == 0x3) ||
                   (stations_w1[i] == 0xC && stations_w2[i] == 0x0) ||
@@ -253,18 +256,29 @@ MicroGMTCancelOutUnit::getTrackAddrCancelBits(std::vector<std::shared_ptr<GMTInt
                 ++nMatchedStations;
               }
             }
-          } else {
-            if (wheelNum_w1 == 0 && wheelNum_w2 == 0) { // both tracks are on either side of the central wheel (+0 and -0)
-              if ((stations_w1[i] == 0x8 && stations_w2[i] == 0xA) ||
-                  (stations_w1[i] == 0x9 && stations_w2[i] == 0xB) ||
-                  (stations_w1[i] == 0xC && stations_w2[i] == 0x8) ||
-                  (stations_w1[i] == 0xD && stations_w2[i] == 0x9))
+          } else {  
+            if (wheelNum_w1 == 1 && wheelNum_w2 == 0) { //track 1 at -1 and track 2 at 0 same as CASE 2 
+              if ((stations_w1[i] == 0x0 && stations_w2[i] == 0xA) ||
+                  (stations_w1[i] == 0x1 && stations_w2[i] == 0xB) ||
+                  (stations_w1[i] == 0x4 && stations_w2[i] == 0x8) ||
+                  (stations_w1[i] == 0x5 && stations_w2[i] == 0x9))
               {
                 ++nMatchedStations;
               }
             }
-          }
-        }
+	    else if (wheelNum_w1 == 0 && wheelNum_w2 == 1) {//track 1 at 0 and track 2 at -1 same as CASE 3 
+              if ((stations_w1[i] == 0x8 && stations_w2[i] == 0x2) ||
+                  (stations_w1[i] == 0x9 && stations_w2[i] == 0x3) ||
+                  (stations_w1[i] == 0xC && stations_w2[i] == 0x0) ||
+                  (stations_w1[i] == 0xD && stations_w2[i] == 0x1))
+              {
+                ++nMatchedStations;
+              }
+            }
+
+	  }
+
+	}
         //std::cout << "Shared hits found: " << nMatchedStations << std::endl;
         if (nMatchedStations > 0) {
           if ((*mu_w1)->origin().hwQual() >= (*mu_w2)->origin().hwQual()) {
