@@ -50,7 +50,7 @@ class L1MuKBMTCombinedStub {
     L1MuKBMTCombinedStub();
 
     /// constructor
-    L1MuKBMTCombinedStub(int wheel,int sector,int station,int phi,int phiB,bool tag,int bx,int quality,int eta1=0,int eta2=0, int qeta1=-1,int qeta2=-1);
+    L1MuKBMTCombinedStub(int wheel,int sector,int station,int phi,int phiB,bool tag,int bx,int quality,int eta1=0,int eta2=0, int qeta1=-1,int qeta2=-1,int type=0);
     ~L1MuKBMTCombinedStub();
     /// return wheel
     inline int whNum() const { return whNum_; }
@@ -77,6 +77,8 @@ class L1MuKBMTCombinedStub {
     inline int qeta1() const { return qeta1_; }
     /// return second eta quality
     inline int qeta2() const { return qeta2_; }
+    //return type
+    inline int type() const { return type_; }
 
     /// assignment operator
     L1MuKBMTCombinedStub& operator=(const L1MuKBMTCombinedStub&);
@@ -102,6 +104,7 @@ class L1MuKBMTCombinedStub {
     int               eta2_;       //fine eta 2
     int               qeta1_;      //fine eta quality 1
     int               qeta2_;      //fine eta quality 2 
+    int               type_;       //Type: 0 TwinMux or DT, 1 RPC, 2 CSC, etc
 };
 
 #endif
