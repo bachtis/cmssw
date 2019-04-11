@@ -15,6 +15,7 @@
 #include "DataFormats/L1TMuon/interface/L1MuBMTrackSegPhi.h"
 #include "DataFormats/L1TMuon/interface/L1MuBMTrackSegEta.h"
 #include "DataFormats/L1TMuon/interface/L1MuKBMTCombinedStub.h"
+#include "DataFormats/L1TMuon/interface/L1MuCorrelatorHit.h"
 #include "DataFormats/L1TMuon/interface/L1MuKBMTrack.h"
 
 #include <vector>
@@ -77,6 +78,11 @@ namespace L1Trigger_L1TMuonBarrel {
     edm::Wrapper<L1MuKBMTCombinedStubCollection> l1mu_stub_comb_W;
     edm::Ref<L1MuKBMTCombinedStubCollection > l1mu_stub_comb_R;
     edm::Wrapper<std::vector<edm::Ref<L1MuKBMTCombinedStubCollection > > > l1mu_stub_comb_RW;
+
+    L1MuCorrelatorHitCollection l1mu_corr_comb_V;
+    edm::Wrapper<L1MuCorrelatorHitCollection> l1mu_corr_comb_W;
+    edm::Ref<L1MuCorrelatorHitCollection > l1mu_corr_comb_R;
+    edm::Wrapper<std::vector<edm::Ref<L1MuCorrelatorHitCollection > > > l1mu_corr_comb_RW;
 
 
     L1MuBMTrackSegPhiCollection l1mu_trk_ph_V;

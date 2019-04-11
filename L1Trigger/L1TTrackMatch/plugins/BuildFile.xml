@@ -5,6 +5,8 @@
 <use   name="Geometry/CommonDetUnit"/>
 <use   name="MagneticField/Records"/>
   <use   name="L1Trigger/L1TTrackMatch"/>
+  <use   name="L1Trigger/L1TTwinMux"/>
+  <use   name="DataFormats/L1TMuon"/>
   <use   name="SimGeneral/HepPDTRecord"/>
   <use   name="FastSimulation/BaseParticlePropagator"/>
   <use   name="SimDataFormats/GeneratorProducts"/>

@@ -1,5 +1,4 @@
-
-#include "L1Trigger/L1TMuonBarrel/interface/L1TMuonBarrelRPCKalmanStubProcessor.h"
+#include "L1Trigger/L1TTrackMatch/interface/L1TMuCorrelatorRPCBarrelStubProcessor.h"
 #include <cmath>
 #include "CondFormats/L1TObjects/interface/L1MuDTTFParameters.h"
 #include "CondFormats/DataRecord/interface/L1MuDTTFParametersRcd.h"
@@ -10,7 +9,7 @@
 #include <string> 
 #include <sstream> 
 
-L1TMuonBarrelRPCKalmanStubProcessor::L1TMuonBarrelRPCKalmanStubProcessor():
+L1TMuCorrelatorRPCBarrelStubProcessor::L1TMuCorrelatorRPCBarrelStubProcessor():
   minBX_(-3),
   maxBX_(3)
 {
@@ -19,7 +18,7 @@ L1TMuonBarrelRPCKalmanStubProcessor::L1TMuonBarrelRPCKalmanStubProcessor():
 
 
 
-L1TMuonBarrelRPCKalmanStubProcessor::L1TMuonBarrelRPCKalmanStubProcessor(const edm::ParameterSet& iConfig):
+L1TMuCorrelatorRPCBarrelStubProcessor::L1TMuCorrelatorRPCBarrelStubProcessor(const edm::ParameterSet& iConfig):
   minBX_(iConfig.getParameter<int>("minBX")),
   maxBX_(iConfig.getParameter<int>("maxBX")),
   verbose_(iConfig.getParameter<int>("verbose"))
@@ -29,31 +28,29 @@ L1TMuonBarrelRPCKalmanStubProcessor::L1TMuonBarrelRPCKalmanStubProcessor(const e
 
 
 
-L1TMuonBarrelRPCKalmanStubProcessor::~L1TMuonBarrelRPCKalmanStubProcessor() {}
+L1TMuCorrelatorRPCBarrelStubProcessor::~L1TMuCorrelatorRPCBarrelStubProcessor() {}
 
 
 
 
-L1MuKBMTCombinedStub 
-L1TMuonBarrelRPCKalmanStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& phiS) {
+L1MuCorrelatorHit
+L1TMuCorrelatorRPCBarrelStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& phiS) {
   int wheel = phiS.whNum();
   int sector = phiS.scNum();
   int station = phiS.stNum();
-  int phi = phiS.phi();
+  int phi = (-180+sector*30)*2048/30+phiS.phi();
   int phiB = phiS.phiB();
   bool tag = (phiS.Ts2Tag()==1);
   int bx=phiS.bxNum();
   int quality=phiS.code();
-
 
   //Now full eta
   int qeta1=0;
   int qeta2=0;
   int eta1=7;
   int eta2=7; 
-  L1MuKBMTCombinedStub stub(wheel,sector,station,phi,phiB,tag,
+  L1MuCorrelatorHit stub(wheel,sector,station,phi,phiB,tag,
 			    bx,quality,eta1,eta2,qeta1,qeta2,1);
-
   return stub;
 
 }
@@ -62,8 +59,8 @@ L1TMuonBarrelRPCKalmanStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& phi
 
 
 
-L1MuKBMTCombinedStubCollection 
-L1TMuonBarrelRPCKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer& phiContainer) {
+L1MuCorrelatorHitCollection 
+L1TMuCorrelatorRPCBarrelStubProcessor::makeStubs(const L1MuDTChambPhContainer& phiContainer) {
 
 
   //get the masks from th standard BMTF setup!
@@ -73,7 +70,7 @@ L1TMuonBarrelRPCKalmanStubProcessor::makeStubs(const L1MuDTChambPhContainer& phi
   //  masks_ =  bmtfParams.l1mudttfmasks;
 
 
-  L1MuKBMTCombinedStubCollection  out;
+  L1MuCorrelatorHitCollection  out;
   for (int bx=minBX_;bx<=maxBX_;bx++) {
     for (int wheel=-2;wheel<=2;wheel++) {
       for (uint sector=0;sector<12;sector++) {
