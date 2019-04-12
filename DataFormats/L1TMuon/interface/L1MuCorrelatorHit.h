@@ -79,10 +79,10 @@ class L1MuCorrelatorHit {
     inline int type() const { return type_; }
 
 
-    inline bool isDT()  const { return type_==0; }
-    inline bool isRPCBarrel() const { return type_==1; }
-    inline bool isCSC() const { return type_==2; }
-    inline bool isRPCEndcap() const { return type_==3; }
+    inline bool isDT()  const { return (type_==0); }
+    inline bool isRPCBarrel() const { return (type_==1); }
+    inline bool isCSC() const { return (type_==2); }
+    inline bool isRPCEndcap() const { return (type_==3); }
         
 
     /// assignment operator

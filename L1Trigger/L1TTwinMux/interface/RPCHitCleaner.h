@@ -31,7 +31,7 @@ class RPCHitCleaner  {
 public:
   RPCHitCleaner(RPCDigiCollection const& inrpcDigis);
 
-  void run(const edm::EventSetup& c);
+  void run(const edm::EventSetup& c,bool onlyBarrel=true);
 
   ///Return Output RPCCollection
   RPCDigiCollection const& getRPCCollection(){  return m_outrpcDigis;}

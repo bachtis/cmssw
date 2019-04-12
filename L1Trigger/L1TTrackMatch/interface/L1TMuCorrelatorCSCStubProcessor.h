@@ -8,10 +8,10 @@
 
 #include "DataFormats/L1TMuon/interface/L1MuCorrelatorHit.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "DataFormats/CSCDigi/interface/CSCCLCTDigi.h"
-#include "DataFormats/CSCDigi/interface/CSCALCTDigi.h"
+#include "DataFormats/CSCDigi/interface/CSCCorrelatedLCTDigi.h"
 #include "DataFormats/MuonData/interface/MuonDigiCollection.h"
 #include "DataFormats/MuonDetId/interface/CSCDetId.h"
+#include "L1Trigger/L1TMuon/interface/GeometryTranslator.h"
 
 class L1TMuCorrelatorCSCStubProcessor {
 
@@ -22,22 +22,15 @@ class L1TMuCorrelatorCSCStubProcessor {
     ~L1TMuCorrelatorCSCStubProcessor();
 
 
-  L1MuCorrelatorHitCollection makeStubs(const MuonDigiCollection<CSCDetId,CSCCLCTDigi>&,const MuonDigiCollection<CSCDetId,CSCALCTDigi>&);
+    L1MuCorrelatorHitCollection makeStubs(const MuonDigiCollection<CSCDetId,CSCCorrelatedLCTDigi>&,const L1TMuon::GeometryTranslator*);
 
     
  private:
-  L1MuCorrelatorHit buildStub(const CSCDetId& , const CSCCLCTDigi&,const MuonDigiCollection<CSCDetId,CSCALCTDigi>&);
+    L1MuCorrelatorHit buildStub(const CSCDetId& , const CSCCorrelatedLCTDigi&,const L1TMuon::GeometryTranslator*);
   int minBX_;
   int maxBX_;
 
-  std::vector<int> halfStrips_;
-  std::vector<int> chambers_;
-  std::vector<int> wires_;
-  std::vector<int> etaLUT1_;
-  std::vector<int> etaLUT2_;
-  std::vector<int> etaLUT3_;
-  std::vector<int> etaLUT4_;
-  uint getIndex(const CSCDetId& id);
+
 
 
 };
