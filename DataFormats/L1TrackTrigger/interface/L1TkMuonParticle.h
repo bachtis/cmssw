@@ -7,7 +7,7 @@
 #include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
 #include "DataFormats/L1TMuon/interface/RegionalMuonCand.h"
 #include "DataFormats/L1TMuon/interface/RegionalMuonCandFwd.h"
-#include "DataFormats/L1TMuon/interface/L1MuKBMTCombinedStub.h"
+#include "DataFormats/L1TMuon/interface/L1MuCorrelatorHit.h"
 
 namespace l1t
 {
@@ -46,7 +46,7 @@ namespace l1t
       float getTrkIsol() const { return theIsolation; }
       float getTrkzVtx() const { return TrkzVtx_ ; }
 
-      const L1MuKBMTCombinedStubRefVector getBarrelStubs() const { return barrelStubs_; }
+      const L1MuCorrelatorHitRefVector getMatchedStubs() const { return matchedStubs_; }
       float dR()  const { return dR_;}
       int nTracksMatched() const { return nTracksMatch_;}
       double trackCurvature()  const { return trackCurvature_;}
@@ -60,12 +60,11 @@ namespace l1t
       void setTrkzVtx(float TrkzVtx) { TrkzVtx_ = TrkzVtx ; }
       void setTrkIsol(float TrkIsol) { theIsolation = TrkIsol ; }
       void setQuality(unsigned int q){ quality_ = q;}
-      void addBarrelStub(const L1MuKBMTCombinedStubRef&);
+      void addStub(const L1MuCorrelatorHitRef&);
 
       void setdR(float dR) { dR_=dR;}
       void setNTracksMatched(int nTracksMatch) { nTracksMatch_=nTracksMatch;}
       void setTrackCurvature(double trackCurvature) { trackCurvature_=trackCurvature;} // this is signed
-
       void setMuonDetector(unsigned int detector) {muonDetector_=detector;}
 
     private:
@@ -75,7 +74,7 @@ namespace l1t
       edm::Ref< l1t::RegionalMuonCandBxCollection > muRef_ ;
 
       //Used for Tracker + Stubs algorithm
-      L1MuKBMTCombinedStubRefVector barrelStubs_;
+      L1MuCorrelatorHitRefVector matchedStubs_;
 
       edm::Ptr< L1TTTrackType > trkPtr_ ;
 

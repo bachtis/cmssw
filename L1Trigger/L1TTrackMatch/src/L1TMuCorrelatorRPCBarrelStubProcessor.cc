@@ -21,7 +21,9 @@ L1TMuCorrelatorRPCBarrelStubProcessor::L1TMuCorrelatorRPCBarrelStubProcessor():
 L1TMuCorrelatorRPCBarrelStubProcessor::L1TMuCorrelatorRPCBarrelStubProcessor(const edm::ParameterSet& iConfig):
   minBX_(iConfig.getParameter<int>("minBX")),
   maxBX_(iConfig.getParameter<int>("maxBX")),
-  verbose_(iConfig.getParameter<int>("verbose"))
+  verbose_(iConfig.getParameter<int>("verbose")),
+  phiLSB_(iConfig.getParameter<double>("phiLSB"))
+
 {
 
 } 
@@ -38,7 +40,13 @@ L1TMuCorrelatorRPCBarrelStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& p
   int wheel = phiS.whNum();
   int sector = phiS.scNum();
   int station = phiS.stNum();
-  int phi = (-180+sector*30)*2048/30+phiS.phi();
+  double globalPhi = (-180+sector*30)+phiS.phi()*30./2048.;
+  if (globalPhi<-180)
+    globalPhi+=360;
+  if (globalPhi>180)
+    globalPhi-=360;
+  globalPhi = globalPhi*M_PI/180.;
+  int phi = int(globalPhi/phiLSB_);
   int phiB = phiS.phiB();
   bool tag = (phiS.Ts2Tag()==1);
   int bx=phiS.bxNum();

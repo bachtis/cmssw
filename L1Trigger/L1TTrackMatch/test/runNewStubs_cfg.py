@@ -6,7 +6,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')   
 process.load("Configuration.StandardSequences.MagneticField_cff")
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -62,7 +62,7 @@ process.out = cms.OutputModule("PoolOutputModule",
   
 #Path that makes stubs and then runs Tracker+Stubs
 #print('Running tracker+stubs')
-process.p = cms.Path(process.l1NewStubs)
+process.p = cms.Path(process.l1TPSStubs)
 process.e = cms.EndPath(process.out)
 process.schedule = cms.Schedule(process.p,process.e)
 

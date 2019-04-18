@@ -18,6 +18,7 @@ class L1TMuCorrelatorRPCBarrelStubProcessor {
   int minBX_;
   int maxBX_;
   int verbose_;
+  double phiLSB_;
 
 
 };

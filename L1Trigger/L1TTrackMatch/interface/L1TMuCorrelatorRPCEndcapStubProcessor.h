@@ -29,9 +29,8 @@ class L1TMuCorrelatorRPCEndcapStubProcessor {
     L1MuCorrelatorHit buildStub(const RPCDetId& , const RPCDigi&,const L1TMuon::GeometryTranslator*);
   int minBX_;
   int maxBX_;
-
-
-
+  double phiLSB_;
+  double etaLSB_;
 
 };
 

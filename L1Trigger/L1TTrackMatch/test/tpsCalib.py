@@ -78,23 +78,39 @@ def deltaR2( e1, p1, e2, p2):
 events=Events([tag+'.root'])
 
 
-phi11=ROOT.TH3F("phi11","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
-phi12=ROOT.TH3F("phi12","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
-phi13=ROOT.TH3F("phi13","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
-phi14=ROOT.TH3F("phi14","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
-phi21=ROOT.TH3F("phi21","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
-phi22=ROOT.TH3F("phi22","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
-phi23=ROOT.TH3F("phi23","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
-phi24=ROOT.TH3F("phi24","phi1",270,140,410,512,-4096,4096,750,-1500,1500)
+histoData={}
+
+for t in [0,1,2,3]:
+    histoData[t]={}
+    for depth in [1,2,3,4]:
+        histoData[t][depth]={}
+        histoData[t][depth]['phi'] = ROOT.TH3F("propPhi_type_"+str(t)+"_depth_"+str(depth),"propPhi_type_"+str(t)+"_depth_"+str(depth),105,0,420,512,-4096,4096,750,-1500,1500)
+        if t==0:
+            histoData[t][depth]['phiB'] = ROOT.TH3F("propPhiB_type_"+str(t)+"_depth_"+str(depth),"propPhiB_type_"+str(t)+"_depth_"+str(depth),105,0,420,512,-4096,4096,128,-512,512)
+
+PHILSB  = 0.000340885
+ETALSB  = 0.00585938
+CURVLSB = 0.000122070
+
+def deltaPhi(phi1,phi2):
+    pi = int(3.14159/PHILSB)
+    delta = phi1-phi2
+    if delta>pi:
+        return delta-2*pi
+    if delta<-pi:
+        return delta+2*pi
+    return delta
+    
+
 
 
 
 counter=-1
 for event in events:
     counter=counter+1
-
     gen=fetchGEN(event)
-    stubs = fetchStubs(event,'l1NewStubs')
+    stubs = fetchStubs(event,'l1TPSStubs')
+
 
     print ('NEW EVENT------------------')
     for s in stubs:
@@ -103,44 +119,27 @@ for event in events:
 
 
     for g in gen:
-        genphi = int((g.phi()*180/3.14)*2048/30.)
-        geneta = g.eta()*512/3.0
-        genk = int(g.charge()*8192/g.pt())
-        print( 'gen muon',genphi,geneta,genk)
+        genphi = int((g.phi()/PHILSB))
+        geneta = int(g.eta()/ETALSB)
+        genk = int(g.charge()/g.pt()/CURVLSB)
+        print( 'gen muon (phi,eta,k)',genphi,geneta,genk)
 
         for s in stubs:
-             if abs(genphi-s.phi())>5000 or (not s.isCSC()):
+             if abs(deltaPhi(genphi,s.phi()))>math.pi/2./PHILSB:
                  continue
-             if s.etaRegion()>0:
-                 if s.depthRegion()==1:
-                     phi11.Fill(abs(s.eta()),genk,s.phi()-genphi)
-                 if s.depthRegion()==2:
-                     phi12.Fill(abs(s.eta()),genk,s.phi()-genphi)
-                 if s.depthRegion()==3:
-                     phi13.Fill(abs(s.eta()),genk,s.phi()-genphi)
-                 if s.depthRegion()==4:
-                     phi14.Fill(abs(s.eta()),genk,s.phi()-genphi)
-             else:
-                 if s.depthRegion()==1:
-                     phi21.Fill(abs(s.eta()),genk,s.phi()-genphi)
-                 if s.depthRegion()==2:
-                     phi22.Fill(abs(s.eta()),genk,s.phi()-genphi)
-                 if s.depthRegion()==3:
-                     phi23.Fill(abs(s.eta()),genk,s.phi()-genphi)
-                 if s.depthRegion()==4:
-                     phi24.Fill(abs(s.eta()),genk,s.phi()-genphi)
-               
+             histoData[s.type()][s.depthRegion()]['phi'].Fill(abs(geneta),genk,deltaPhi(s.phi(),genphi))
+             if (s.type()==0): #DT
+                 histoData[s.type()][s.depthRegion()]['phiB'].Fill(abs(geneta),genk,s.phiB())
+                 
                
 f=ROOT.TFile("test2.root","RECREATE")
 f.cd()
-phi11.Write()
-phi12.Write()
-phi13.Write()
-phi14.Write()
-phi21.Write()
-phi22.Write()
-phi23.Write()
-phi24.Write()
+for t,dictio in histoData.iteritems():
+    for depth,dictio2 in dictio.iteritems():
+        if t==0:
+            dictio2['phiB'].Write()
+        dictio2['phi'].Write()
+
 f.Close()
 
 

@@ -41,6 +41,7 @@ class L1TMuCorrelatorDTStubProcessor {
 
   bool disableMasks_;
   int verbose_;
+  double phiLSB_;
 
 
   //    edm::ESHandle< L1TMuonBarrelParams > bmtfParamsHandle;

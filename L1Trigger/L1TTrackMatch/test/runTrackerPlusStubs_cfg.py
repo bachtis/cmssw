@@ -5,8 +5,8 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.GeometryRecoDB_cff')   
-
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.load("Configuration.StandardSequences.MagneticField_cff")
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(2000) )
 
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring(
@@ -56,6 +56,7 @@ process.load('L1Trigger.L1TTrackMatch.L1TTrackerPlusStubs_cfi')
 #print('Configuring for phase 2')
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('test.root'),
+
 )
 
   

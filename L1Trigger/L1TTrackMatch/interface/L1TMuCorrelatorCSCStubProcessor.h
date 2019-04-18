@@ -29,7 +29,8 @@ class L1TMuCorrelatorCSCStubProcessor {
     L1MuCorrelatorHit buildStub(const CSCDetId& , const CSCCorrelatedLCTDigi&,const L1TMuon::GeometryTranslator*);
   int minBX_;
   int maxBX_;
-
+  double phiLSB_;
+  double etaLSB_;
 
 
 

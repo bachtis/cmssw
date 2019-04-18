@@ -18,7 +18,9 @@ L1TMuCorrelatorRPCEndcapStubProcessor::L1TMuCorrelatorRPCEndcapStubProcessor():
 
 L1TMuCorrelatorRPCEndcapStubProcessor::L1TMuCorrelatorRPCEndcapStubProcessor(const edm::ParameterSet& iConfig):
   minBX_(iConfig.getParameter<int>("minBX")),
-  maxBX_(iConfig.getParameter<int>("maxBX"))
+  maxBX_(iConfig.getParameter<int>("maxBX")),
+  phiLSB_(iConfig.getParameter<double>("phiLSB")),
+  etaLSB_(iConfig.getParameter<double>("etaLSB"))
 {
 
 } 
@@ -38,8 +40,8 @@ L1TMuCorrelatorRPCEndcapStubProcessor::buildStub(const RPCDetId& detid,const RPC
   const GlobalPoint& gp = translator->getGlobalPoint(primitive);
 
 
-  int phi = int(gp.phi().value()*2048/(M_PI/6.0));
-  int eta1 = int(gp.eta()*512/3.0);
+  int phi = int(gp.phi().value()/phiLSB_);
+  int eta1 = int(gp.eta()/etaLSB_);
 
   int type=3;
   int wheel=(6-detid.ring())*detid.region();
