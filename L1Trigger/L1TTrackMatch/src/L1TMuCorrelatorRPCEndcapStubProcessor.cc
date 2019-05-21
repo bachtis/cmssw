@@ -44,8 +44,8 @@ L1TMuCorrelatorRPCEndcapStubProcessor::buildStub(const RPCDetId& detid,const RPC
   int eta1 = int(gp.eta()/etaLSB_);
 
   int type=3;
-  int wheel=(6-detid.ring())*detid.region();
-  int sector =detid.sector()*6+detid.subsector();
+  int wheel=-(6-detid.ring())*detid.region();
+  int sector =(detid.sector()-1)*6+detid.subsector();
   int station=detid.station();
   int phiB =0;
   bool tag = detid.trIndex();

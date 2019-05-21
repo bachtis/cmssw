@@ -48,7 +48,7 @@ L1TMuCorrelatorCSCStubProcessor::buildStub(const CSCDetId& detid,const CSCCorrel
 
   int type=2;
   int wheel=0;;
-  int sign = endcap==1 ? +1 : -1;
+  int sign = endcap==1 ? -1 : 1;
 
   if (ring==3)
     wheel = sign*3;

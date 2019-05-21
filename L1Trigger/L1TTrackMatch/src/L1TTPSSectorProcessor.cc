@@ -20,7 +20,9 @@ L1TTPSSectorProcessor::L1TTPSSectorProcessor(const edm::ParameterSet& iConfig):
   trackCurvLSB_     = algoSettings.getParameter<double>("curvLSB");
   matchType_        = algoSettings.getParameter<std::vector<unsigned int> >("matchType");
   matchEtaRegion_   = algoSettings.getParameter<std::vector<unsigned int> >("matchEtaRegion");
+  matchEtaRegion2_  = algoSettings.getParameter<std::vector<unsigned int> >("matchEtaRegion2");
   matchDepthRegion_ = algoSettings.getParameter<std::vector<unsigned int> >("matchDepthRegion");
+  matchID_          = algoSettings.getParameter<std::vector<unsigned int> >("matchID");
 }
 
 L1TTPSSectorProcessor::~L1TTPSSectorProcessor() {}
@@ -40,7 +42,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
 	}
       }
     }
-    else if (stub->type()==2 && (stub->depthRegion()==1 || (stub->depthRegion()>1 && fabs(stub->etaRegion())==5))) {//CSC 
+    else if (stub->type()==2 && (stub->depthRegion()==1 || (stub->depthRegion()>1 && fabs(stub->etaRegion())==4))) {//CSC 10 degrees chambers in ME2/2,3/2,4/2
       for (const auto& sector : csc10DegreeChambers_) {
 	if (stub->phiRegion()==int(sector)) {
 	  stubsInSector.push_back(stub);
@@ -65,6 +67,13 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
       }
     }
   }
+  if (verbose_==1) {
+    printf("processing sector=%d - stubs to be processed=%d\n",sectorNumber_,int(stubsInSector.size()));
+  }
+
+  //For faster emulator if there are no stubs at all return
+  if(stubsInSector.size()==0)
+    return out;
 
   //Now loop on the tracks
   for (const auto& track: tracks) {
@@ -73,21 +82,30 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
 					track->getMomentum().z(),
 					track->getMomentum().mag());
     l1t::L1TkMuonParticle muon (vec,track);   
+
+    if (muon.pt()<3.0)
+      continue;
+
     //Set muon charge
     int charge=1;
     if (track->getRInv()<0)
       charge=-1;
     muon.setCharge(charge);
-
+    if(verbose_==1)
+      printf("Testing track for sector %d in [%d %d] with eta=%f and pt=%f \n",int(muon.phi()/phiLSB_),trackPhiLowerBound_,trackPhiUpperBound_,muon.eta(),muon.pt());
     //If not in nonant kill
     int globalPhi = muon.phi()/phiLSB_;
     if (deltaPhi(globalPhi,trackPhiLowerBound_)<0 || deltaPhi(globalPhi,trackPhiUpperBound_)>0)
       continue;
+    if(verbose_==1)
+      printf("Passed\n");
     processTrack(muon,stubsInSector);
     if (muon.getMatchedStubs().size()>0)
       out.push_back(muon);
   }
-  return out;
+
+  std::vector<l1t::L1TkMuonParticle> cleaned = clean(out);
+  return cleaned;
 }
 
 int L1TTPSSectorProcessor::deltaPhi(int phi1, int phi2) {
@@ -119,7 +137,8 @@ int L1TTPSSectorProcessor::trackEta(const l1t::L1TkMuonParticle& track) {
 
 int L1TTPSSectorProcessor::trackCurv(const l1t::L1TkMuonParticle& track) {
   //add offset code here 
-  return int(track.getTrkPtr()->getRInv()/trackCurvLSB_);
+
+  return int(track.charge()/track.pt()/trackCurvLSB_);
 }
 
 
@@ -129,15 +148,20 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
   //first calculate the index
   int eta = trackEta(track);
   uint absEta = uint(fabs(eta))>>trackEtaShift_;
+ 
   uint etaIndex = L1TTPS::etaIndex[absEta];
-  double slope,eLoss,resa,resb;
+
+  if (verbose_==1) {
+    printf("Calculating eta index , eta=%d |eta|=%d index=%d\n",eta,absEta,etaIndex);
+  }
+
+  double slope,resa,resb;
   uint propVar;
   bool valid;
 
   switch(propIndex) {
   case 0:
     slope=L1TTPS::slope_0[absEta];
-    eLoss=L1TTPS::eLoss_0[absEta];
     resa =L1TTPS::resa_0[absEta];
     resb =L1TTPS::resb_0[absEta];
     propVar = L1TTPS::var_0[etaIndex];
@@ -145,7 +169,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 1:
     slope=L1TTPS::slope_1[absEta];
-    eLoss=L1TTPS::eLoss_1[absEta];
     resa =L1TTPS::resa_1[absEta];
     resb =L1TTPS::resb_1[absEta];
     propVar = L1TTPS::var_1[etaIndex];
@@ -153,7 +176,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 2:
     slope=L1TTPS::slope_2[absEta];
-    eLoss=L1TTPS::eLoss_2[absEta];
     resa =L1TTPS::resa_2[absEta];
     resb =L1TTPS::resb_2[absEta];
     propVar = L1TTPS::var_2[etaIndex];
@@ -161,7 +183,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 3:
     slope=L1TTPS::slope_3[absEta];
-    eLoss=L1TTPS::eLoss_3[absEta];
     resa =L1TTPS::resa_3[absEta];
     resb =L1TTPS::resb_3[absEta];
     propVar = L1TTPS::var_3[etaIndex];
@@ -169,7 +190,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 4:
     slope=L1TTPS::slope_4[absEta];
-    eLoss=L1TTPS::eLoss_4[absEta];
     resa =L1TTPS::resa_4[absEta];
     resb =L1TTPS::resb_4[absEta];
     propVar = L1TTPS::var_4[etaIndex];
@@ -177,7 +197,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 5:
     slope=L1TTPS::slope_5[absEta];
-    eLoss=L1TTPS::eLoss_5[absEta];
     resa =L1TTPS::resa_5[absEta];
     resb =L1TTPS::resb_5[absEta];
     propVar = L1TTPS::var_5[etaIndex];
@@ -185,7 +204,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 6:
     slope=L1TTPS::slope_6[absEta];
-    eLoss=L1TTPS::eLoss_6[absEta];
     resa =L1TTPS::resa_6[absEta];
     resb =L1TTPS::resb_6[absEta];
     propVar = L1TTPS::var_6[etaIndex];
@@ -193,7 +211,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 7:
     slope=L1TTPS::slope_7[absEta];
-    eLoss=L1TTPS::eLoss_7[absEta];
     resa =L1TTPS::resa_7[absEta];
     resb =L1TTPS::resb_7[absEta];
     propVar = L1TTPS::var_7[etaIndex];
@@ -201,7 +218,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 8:
     slope=L1TTPS::slope_8[absEta];
-    eLoss=L1TTPS::eLoss_8[absEta];
     resa =L1TTPS::resa_8[absEta];
     resb =L1TTPS::resb_8[absEta];
     propVar = L1TTPS::var_8[etaIndex];
@@ -209,7 +225,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 9:
     slope=L1TTPS::slope_9[absEta];
-    eLoss=L1TTPS::eLoss_9[absEta];
     resa =L1TTPS::resa_9[absEta];
     resb =L1TTPS::resb_9[absEta];
     propVar = L1TTPS::var_9[etaIndex];
@@ -217,7 +232,6 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 10:
     slope=L1TTPS::slope_10[absEta];
-    eLoss=L1TTPS::eLoss_10[absEta];
     resa =L1TTPS::resa_10[absEta];
     resb =L1TTPS::resb_10[absEta];
     propVar = L1TTPS::var_10[etaIndex];
@@ -225,15 +239,21 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     break;
   case 11:
     slope=L1TTPS::slope_11[absEta];
-    eLoss=L1TTPS::eLoss_11[absEta];
     resa =L1TTPS::resa_11[absEta];
     resb =L1TTPS::resb_11[absEta];
     propVar = L1TTPS::var_11[etaIndex];
     valid = L1TTPS::valid_11[etaIndex];
     break;
+  case 12:
+    slope=L1TTPS::slope_12[absEta];
+    resa =L1TTPS::resa_12[absEta];
+    resb =L1TTPS::resb_12[absEta];
+    propVar = L1TTPS::var_12[etaIndex];
+    valid = L1TTPS::valid_12[etaIndex];
+    break;
+
   default:
     slope=0;
-    eLoss=0;
     resa =0;
     resb =0;
     propVar = 0;
@@ -245,16 +265,18 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
   int curv = trackCurv(track);
   if (propVar==1)
     phi=0;
-  out.propagatedValue = int(phi+slope*curv/(1+eLoss*fabs(curv)));
-  out.propagatedPhi = int(phi+slope*curv/(1+eLoss*fabs(curv)));
+  out.propagatedValue = int(phi+slope*curv);
+  out.propagatedPhi = int(phi+slope*curv);
   out.propagatorIndex = propIndex;
-  out.propagatedSigma = uint(resa+resb*abs(curv));
+  out.propagatedSigma = uint(sqrt(resa*curv*curv+resb));
+  if (out.propagatedSigma>511)
+    out.propagatedSigma=511;
   out.etaIndex=etaIndex;
   out.valid = valid;
   out.propagationVar = propVar;
 
   if (verbose_==1) {
-    printf("Propagating index=%d phi=%d curvature=%d value=%d sigma=%d eta index=%d valid=%d var=%d\n",propIndex,phi,curv,out.propagatedValue,out.propagatedSigma,out.etaIndex,out.valid,out.propagationVar);
+    printf("Propagating index=%d eta=%d phi=%d curvature=%d value=%d sigma=%d eta index=%d valid=%d var=%d\n",propIndex,trackEta(track),phi,curv,out.propagatedValue,out.propagatedSigma,out.etaIndex,out.valid,out.propagationVar);
   }
 
   return out;
@@ -265,19 +287,35 @@ void L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
   if (!prop.valid)
     return;
   //retrieve eta information for matching
-  uint index = prop.propagatorIndex*16+prop.etaIndex;
-  int sign= trackEta(muon)>=0 ? 1 : -1;
+  uint index = prop.propagatorIndex+prop.etaIndex*13;
+  int sign= trackEta(muon)>=0 ? -1 : +1;
   int etaRegion = sign*matchEtaRegion_[index];
+  int etaRegion2= sign*matchEtaRegion2_[index];
   uint depthRegion = matchDepthRegion_[index];
+  int id          = int(matchID_[index]);
   uint type = matchType_[index];
   int bestStub=-1;
   uint maxDPhi=10000;
 
+  if(verbose_==1)
+    printf("Looking for stubs: propagation index = %d eta index=%d etaRegions=%d %d depthRegion=%d type=%d\n",prop.propagatorIndex,prop.etaIndex,etaRegion,etaRegion2,depthRegion,type);
+
+
   for (uint i=0;i<stubs.size();++i) {
-    if ((stubs[i]->etaRegion()!=int(etaRegion))|| (stubs[i]->depthRegion()!=int(depthRegion)) || (stubs[i]->type()!=int(type)))
+
+    if(verbose_==1)
+      printf("Testing stub etaRegion=%d depthRegion=%d type=%d\n",stubs[i]->etaRegion(),stubs[i]->depthRegion(),stubs[i]->type());
+
+    if (((stubs[i]->etaRegion()!=int(etaRegion))&&(stubs[i]->etaRegion()!=int(etaRegion2)))|| (stubs[i]->depthRegion()!=int(depthRegion)) || (stubs[i]->type()!=int(type)))
+      continue;
+    
+    //RPC in first two barrel layers! If we are in the second or fourth RPC layer look only at tag==2
+    if ((stubs[i]->id()!=id) && id!=9)
       continue;
 
     uint deltaPhi=fabs(prop.propagatedPhi-stubPhi(stubs[i]));
+    if (verbose_==1)
+      printf("Found stub with phi =  %d phiB=%d sigma=%d and deltaPhi=%d\n ",stubPhi(stubs[i]),stubs[i]->phiB(),prop.propagatedSigma,deltaPhi);
     if (deltaPhi<maxDPhi){
       maxDPhi=deltaPhi;
       bestStub=i;
@@ -291,9 +329,14 @@ void L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
       delta=fabs(stubs[bestStub]->phiB()-prop.propagatedValue);
 
     if (delta<=prop.propagatedSigma) {
+       uint q=muon.quality();
+       muon.setQuality(q+delta);
       muon.addStub(stubs[bestStub]);
     }
+
+
   }
+
 
 }
 
@@ -301,6 +344,8 @@ void L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
 
 void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuCorrelatorHitRefVector& stubs) {
   //Propagate 12 times maximum and match
+  muon.setQuality(0);
+
   for (uint i=0;i<12;++i) {
     //propagate
     L1TTPSSectorProcessor::PropagationInfo prop = propagate(muon,i);
@@ -309,11 +354,54 @@ void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuC
       L1TTPSSectorProcessor::PropagationInfo propTmp = propagate(muon,i-1);
       prop.propagatedPhi = propTmp.propagatedPhi;
     }
+    
+
     //Now match
     match(muon,prop,stubs);    
   }
   //estimate the quality- for now just number of matches
-  muon.setQuality(muon.getMatchedStubs().size());
+  //  muon.setQuality(uint(muon.getMatchedStubs().size()*128.0-muon.getTrkPtr()->getChi2()/(2*muon.getTrkPtr()->getStubRefs().size()-4)));
+
+  //  muon.setQuality(muon.getMatchedStubs().size());
+}
+
+
+
+
+
+std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::clean(const std::vector<l1t::L1TkMuonParticle>& muons) {
+  return muons;
+
+  std::vector<l1t::L1TkMuonParticle> out;
+
+  if (muons.size()<=1)
+    return muons;
+
+
+  for (uint i=0;i<muons.size()-1;++i) {
+    bool keep=true;
+    const L1MuCorrelatorHitRefVector& stubs1 = muons[i].getMatchedStubs();
+    for (uint j=i+1;j<muons.size();++j) {
+      const L1MuCorrelatorHitRefVector& stubs2 = muons[j].getMatchedStubs();
+      bool overlap=false;
+      for (const auto& stub1 : stubs1) {
+	for (const auto& stub2 : stubs2) {
+	  if (stub1==stub2) {
+ 	    overlap=true;
+	    break;
+	  }
+	}
+      }
+
+      if (overlap && (muons[i].quality()<muons[j].quality())) {
+	keep=false;
+	break;
+      }
+    }
+    if (keep)
+      out.push_back(muons[i]);
+  }
+  return out;
 }
 
 

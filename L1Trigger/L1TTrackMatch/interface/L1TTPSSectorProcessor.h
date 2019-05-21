@@ -39,7 +39,7 @@ class L1TTPSSectorProcessor {
   PropagationInfo propagate(const l1t::L1TkMuonParticle&,uint);
   void match(l1t::L1TkMuonParticle&,const PropagationInfo&,const L1MuCorrelatorHitRefVector&);
   void processTrack(l1t::L1TkMuonParticle&,const L1MuCorrelatorHitRefVector&);
-
+  std::vector<l1t::L1TkMuonParticle> clean(const std::vector<l1t::L1TkMuonParticle>&);
   uint sectorNumber_;
   std::vector<uint> barrelSectors_;
   std::vector<uint> csc10DegreeChambers_;
@@ -57,7 +57,9 @@ class L1TTPSSectorProcessor {
   double trackCurvLSB_;
   std::vector<uint> matchType_;
   std::vector<uint> matchEtaRegion_;
+  std::vector<uint> matchEtaRegion2_;
   std::vector<uint> matchDepthRegion_;
+  std::vector<uint> matchID_;
 
 
 
