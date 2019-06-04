@@ -23,6 +23,7 @@ class L1TTPSSectorProcessor {
   typedef struct {
     int propagatedValue;
     int propagatedPhi; //only in software
+    int propagatedEta;
     uint propagationVar; //only in software
     uint propagatedSigma;
     int etaIndex;   
@@ -37,7 +38,7 @@ class L1TTPSSectorProcessor {
   int trackEta(const l1t::L1TkMuonParticle&);
   int trackCurv(const l1t::L1TkMuonParticle&);
   PropagationInfo propagate(const l1t::L1TkMuonParticle&,uint);
-  void match(l1t::L1TkMuonParticle&,const PropagationInfo&,const L1MuCorrelatorHitRefVector&);
+  bool match(l1t::L1TkMuonParticle&,const PropagationInfo&,const L1MuCorrelatorHitRefVector&);
   void processTrack(l1t::L1TkMuonParticle&,const L1MuCorrelatorHitRefVector&);
   std::vector<l1t::L1TkMuonParticle> clean(const std::vector<l1t::L1TkMuonParticle>&);
   uint sectorNumber_;

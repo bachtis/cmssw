@@ -148,6 +148,7 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
   //first calculate the index
   int eta = trackEta(track);
   uint absEta = uint(fabs(eta))>>trackEtaShift_;
+  out.propagatedEta=eta>>trackEtaShift_;
  
   uint etaIndex = L1TTPS::etaIndex[absEta];
 
@@ -283,9 +284,9 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
 }
 
 
-void L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSectorProcessor::PropagationInfo& prop,const L1MuCorrelatorHitRefVector& stubs) {
+bool L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSectorProcessor::PropagationInfo& prop,const L1MuCorrelatorHitRefVector& stubs) {
   if (!prop.valid)
-    return;
+    return false;
   //retrieve eta information for matching
   uint index = prop.propagatorIndex+prop.etaIndex*13;
   int sign= trackEta(muon)>=0 ? -1 : +1;
@@ -325,19 +326,27 @@ void L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
     uint delta=100000;
     if (prop.propagationVar==0)
       delta=maxDPhi;
-    else
+    else {
       delta=fabs(stubs[bestStub]->phiB()-prop.propagatedValue);
-
-    if (delta<=prop.propagatedSigma) {
-       uint q=muon.quality();
-       muon.setQuality(q+delta);
-      muon.addStub(stubs[bestStub]);
     }
 
+    //if we want to match eta do it 
+    bool passEta1 = (stubs[bestStub]->eta()>>4)==(prop.propagatedEta>>4) && stubs[bestStub]->etaQuality()>0;
+    bool passEta2 = (stubs[bestStub]->alternateEta()>>4)==(prop.propagatedEta>>4) && stubs[bestStub]->alternateEtaQuality()>0;
+    bool passEtaCut = passEta1||passEta2;
+    bool passEta =(stubs[bestStub]->type()==1) ||(passEtaCut && stubs[bestStub]->type()!=1) || (stubs[bestStub]->etaQuality()+stubs[bestStub]->alternateEtaQuality())>0;     
+
+
+    if (delta<=prop.propagatedSigma && passEta) {
+       uint q=muon.quality();
+       muon.setQuality(q+delta);
+       muon.addStub(stubs[bestStub]);
+       return true;
+    }
 
   }
 
-
+    return false;
 }
 
 
@@ -345,7 +354,7 @@ void L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
 void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuCorrelatorHitRefVector& stubs) {
   //Propagate 12 times maximum and match
   muon.setQuality(0);
-
+  uint pattern=0;
   for (uint i=0;i<12;++i) {
     //propagate
     L1TTPSSectorProcessor::PropagationInfo prop = propagate(muon,i);
@@ -357,11 +366,13 @@ void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuC
     
 
     //Now match
-    match(muon,prop,stubs);    
+    bool found = match(muon,prop,stubs);    
+    if (found)
+      pattern=pattern| (1<<i);
   }
   //estimate the quality- for now just number of matches
-  //  muon.setQuality(uint(muon.getMatchedStubs().size()*128.0-muon.getTrkPtr()->getChi2()/(2*muon.getTrkPtr()->getStubRefs().size()-4)));
-
+  muon.setQuality(512+muon.getMatchedStubs().size()*8-(muon.quality()>>4));
+  muon.setPattern(pattern);
   //  muon.setQuality(muon.getMatchedStubs().size());
 }
 
@@ -370,18 +381,17 @@ void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuC
 
 
 std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::clean(const std::vector<l1t::L1TkMuonParticle>& muons) {
-  return muons;
-
+  //  return muons;
   std::vector<l1t::L1TkMuonParticle> out;
-
   if (muons.size()<=1)
     return muons;
 
-
-  for (uint i=0;i<muons.size()-1;++i) {
+  for (uint i=0;i<muons.size();++i) {
     bool keep=true;
     const L1MuCorrelatorHitRefVector& stubs1 = muons[i].getMatchedStubs();
-    for (uint j=i+1;j<muons.size();++j) {
+    for (uint j=0;j<muons.size();++j) {
+      if (i==j)
+	continue;
       const L1MuCorrelatorHitRefVector& stubs2 = muons[j].getMatchedStubs();
       bool overlap=false;
       for (const auto& stub1 : stubs1) {

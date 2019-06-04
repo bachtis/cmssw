@@ -18,7 +18,7 @@ namespace l1t
     typedef TTTrack< Ref_Phase2TrackerDigi_ >  L1TTTrackType;
     typedef std::vector< L1TTTrackType > L1TTTrackCollection;
 
-      L1TkMuonParticle() : theIsolation(-999.), TrkzVtx_(999.), quality_(999) {}
+  L1TkMuonParticle() : theIsolation(-999.), TrkzVtx_(999.), quality_(999),pattern_(0) {}
 
       L1TkMuonParticle( const LorentzVector& p4,
    		        const edm::Ref< l1t::RegionalMuonCandBxCollection >& muRef,
@@ -52,6 +52,7 @@ namespace l1t
       double trackCurvature()  const { return trackCurvature_;}
 
       unsigned int quality()  const {return quality_;}
+      unsigned int pattern()  const {return pattern_;}
 
       unsigned int muonDetector() const {return muonDetector_;}  
 
@@ -60,6 +61,7 @@ namespace l1t
       void setTrkzVtx(float TrkzVtx) { TrkzVtx_ = TrkzVtx ; }
       void setTrkIsol(float TrkIsol) { theIsolation = TrkIsol ; }
       void setQuality(unsigned int q){ quality_ = q;}
+      void setPattern(unsigned int p){ pattern_ = p;}
       void addStub(const L1MuCorrelatorHitRef&);
 
       void setdR(float dR) { dR_=dR;}
@@ -85,6 +87,7 @@ namespace l1t
       double trackCurvature_;
 
       unsigned int quality_;
+      unsigned int pattern_;
  
       int muonDetector_;     
 

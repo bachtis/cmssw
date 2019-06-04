@@ -275,13 +275,11 @@ int L1TMuCorrelatorDTStubProcessor::calculateEta(uint i, int wheel,uint sector,u
 
 
   if (station==1)
-    eta=-eta1_[eta+17];
+    eta=eta1_[eta+17];
   else if (station==2)
-    eta=-eta2_[eta+17];
+    eta=eta2_[eta+17];
   else 
-    eta=-eta3_[eta+17];
-
-
+    eta=eta3_[eta+17];
 
   return eta;
 

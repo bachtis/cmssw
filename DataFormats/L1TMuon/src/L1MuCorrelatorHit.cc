@@ -46,7 +46,6 @@ bool L1MuCorrelatorHit::operator==(const L1MuCorrelatorHit& id) const {
   if ( alternateEtaQuality_   != id.alternateEtaQuality_ )     return false;
   if ( type_                  != id.type_ )                    return false;
   return true;
-
 }
 
 //

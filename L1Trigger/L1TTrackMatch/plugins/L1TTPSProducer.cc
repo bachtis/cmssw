@@ -33,6 +33,7 @@ class L1TTPSProducer : public edm::stream::EDProducer<> {
   edm::EDGetTokenT<l1t::L1TkMuonParticle::L1TTTrackCollection> srcTracks_;
   std::unique_ptr<L1TTPSCorrelator> correlator_;
   double maxchi2_;
+  unsigned int minStubs_;
   
   
   
@@ -42,7 +43,8 @@ L1TTPSProducer::L1TTPSProducer(const edm::ParameterSet& iConfig):
   srcStubs_(consumes<std::vector<L1MuCorrelatorHit> >(iConfig.getParameter<edm::InputTag>("srcStubs"))),
   srcTracks_(consumes<l1t::L1TkMuonParticle::L1TTTrackCollection>(iConfig.getParameter<edm::InputTag>("srcTracks"))),
   correlator_(new L1TTPSCorrelator(iConfig)),
-  maxchi2_(iConfig.getParameter<double>("maxChi2"))
+  maxchi2_(iConfig.getParameter<double>("maxChi2")),
+  minStubs_(iConfig.getParameter<unsigned int>("minStubs"))
 {
   produces <std::vector<l1t::L1TkMuonParticle> >();
 }
@@ -83,7 +85,7 @@ L1TTPSProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    for (uint i=0;i<trackHandle->size();++i) {
      edm::Ptr< l1t::L1TkMuonParticle::L1TTTrackType > track(trackHandle, i);
      double chi2dof=track->getChi2()/(2*track->getStubRefs().size()-4);
-     if (chi2dof>maxchi2_) 
+     if (chi2dof>maxchi2_   || track->getStubRefs().size()<4) 
 	continue;
      else
        tracks.push_back(track);
