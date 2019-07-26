@@ -7,6 +7,7 @@ L1TTPSSectorProcessor::L1TTPSSectorProcessor(const edm::ParameterSet& iConfig):
   csc10DegreeChambers_(iConfig.getParameter<std::vector<unsigned int> >("csc10DegreeChambers")),
   csc20DegreeChambers_(iConfig.getParameter<std::vector<unsigned int> >("csc20DegreeChambers")),
   rpcEndcapChambers_(iConfig.getParameter<std::vector<unsigned int> >("rpcEndcapChambers")),
+  iRpcChambers_(iConfig.getParameter<std::vector<unsigned int> >("iRpcChambers")),
   trackPhiLowerBound_(iConfig.getParameter<int>("phiLowerBound")),
   trackPhiUpperBound_(iConfig.getParameter<int>("phiUpperBound")),
   phiOffset_(iConfig.getParameter<int>("phiOffset"))
@@ -58,7 +59,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
 	}
       }
     }
-    else if (stub->type()==3) {//RPC
+    else if (stub->type()==3 &&fabs(stub->etaRegion())!=5) {//RPC
       for (const auto& sector : rpcEndcapChambers_) {
 	if (stub->phiRegion()==int(sector)) {
 	  stubsInSector.push_back(stub);
@@ -66,6 +67,16 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
 	}
       }
     }
+    else if (stub->type()==3 &&fabs(stub->etaRegion())==5) {//iRPC
+      for (const auto& sector : iRpcChambers_) {
+	if (stub->phiRegion()==int(sector)) {
+	  stubsInSector.push_back(stub);
+	  break;
+	}
+      }
+    }
+
+
   }
   if (verbose_==1) {
     printf("processing sector=%d - stubs to be processed=%d\n",sectorNumber_,int(stubsInSector.size()));
@@ -331,10 +342,10 @@ bool L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
     }
 
     //if we want to match eta do it 
-    bool passEta1 = (stubs[bestStub]->eta()>>4)==(prop.propagatedEta>>4) && stubs[bestStub]->etaQuality()>0;
-    bool passEta2 = (stubs[bestStub]->alternateEta()>>4)==(prop.propagatedEta>>4) && stubs[bestStub]->alternateEtaQuality()>0;
+    bool passEta1 = fabs(prop.propagatedEta-stubs[bestStub]->eta())<16 && stubs[bestStub]->etaQuality()>0;
+    bool passEta2 = fabs(prop.propagatedEta-stubs[bestStub]->alternateEta())<16 && stubs[bestStub]->alternateEtaQuality()>0;
     bool passEtaCut = passEta1||passEta2;
-    bool passEta =(stubs[bestStub]->type()==1) ||(passEtaCut && stubs[bestStub]->type()!=1) || (stubs[bestStub]->etaQuality()+stubs[bestStub]->alternateEtaQuality())>0;     
+    bool passEta =(stubs[bestStub]->type()==1) ||(passEtaCut && stubs[bestStub]->type()!=1) || (stubs[bestStub]->etaQuality()+stubs[bestStub]->alternateEtaQuality())==0;     
 
 
     if (delta<=prop.propagatedSigma && passEta) {
@@ -371,7 +382,7 @@ void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuC
       pattern=pattern| (1<<i);
   }
   //estimate the quality- for now just number of matches
-  muon.setQuality(512+muon.getMatchedStubs().size()*8-(muon.quality()>>4));
+  muon.setQuality(288+muon.getMatchedStubs().size()*8-(muon.quality()>>4));
   muon.setPattern(pattern);
   //  muon.setQuality(muon.getMatchedStubs().size());
 }
@@ -381,7 +392,8 @@ void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuC
 
 
 std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::clean(const std::vector<l1t::L1TkMuonParticle>& muons) {
-  //  return muons;
+  //    return muons;
+
   std::vector<l1t::L1TkMuonParticle> out;
   if (muons.size()<=1)
     return muons;

@@ -46,6 +46,7 @@ class L1TTPSSectorProcessor {
   std::vector<uint> csc10DegreeChambers_;
   std::vector<uint> csc20DegreeChambers_;
   std::vector<uint> rpcEndcapChambers_;
+  std::vector<uint> iRpcChambers_;
   int trackPhiLowerBound_;
   int trackPhiUpperBound_;
   int phiOffset_;

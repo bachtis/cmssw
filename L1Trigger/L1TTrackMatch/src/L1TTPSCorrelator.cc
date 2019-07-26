@@ -54,6 +54,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSCorrelator::process(const TrackPtrVecto
 
 std::vector<l1t::L1TkMuonParticle> L1TTPSCorrelator::clean(const std::vector<l1t::L1TkMuonParticle>& central,const std::vector<l1t::L1TkMuonParticle>& before, const std::vector<l1t::L1TkMuonParticle>& after) {
   //  return central;
+
   std::vector<l1t::L1TkMuonParticle> tmp = before;
   //merge the other two
   std::copy (after.begin(), after.end(), std::back_inserter(tmp));
