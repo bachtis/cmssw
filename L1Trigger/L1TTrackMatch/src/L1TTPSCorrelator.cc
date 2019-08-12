@@ -13,6 +13,9 @@ L1TTPSCorrelator::~L1TTPSCorrelator() {}
 
 std::vector<l1t::L1TkMuonParticle> L1TTPSCorrelator::process(const TrackPtrVector& tracks,const L1MuCorrelatorHitRefVector& stubsAll) {
   std::map<uint,std::vector<l1t::L1TkMuonParticle> > sectorData;
+  if (verbose_==1)
+    printf("--------------- NEW EVENT ---------------\n");
+
   for (auto& proc : processor_) {
     std::vector<l1t::L1TkMuonParticle> data = proc.process(tracks,stubsAll);
     sectorData[proc.sector()] = data;

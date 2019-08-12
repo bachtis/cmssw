@@ -63,7 +63,8 @@ L1TMuCorrelatorDTStubProcessor::buildStub(const L1MuDTChambPhDigi& phiS,const L1
   int phi = int(globalPhi/phiLSB_);
 
   
-  int phiB = phiS.phiB();
+  double normPhiB = 8*phiS.phiB()*M_PI/(6*2048.);
+  int phiB = int(normPhiB/phiLSB_);
   bool tag = (phiS.Ts2Tag()==1);
   int bx=phiS.bxNum();
   int quality=phiS.code();
@@ -119,7 +120,8 @@ L1TMuCorrelatorDTStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& phiS) {
     globalPhi-=360;
   globalPhi = globalPhi*M_PI/180.;
   int phi = int(globalPhi/phiLSB_);
-  int phiB = phiS.phiB();
+  double normPhiB = 8*phiS.phiB()*M_PI/(6*2048.);
+  int phiB = int(normPhiB/phiLSB_);
   bool tag = (phiS.Ts2Tag()==1);
   int bx=phiS.bxNum();
   int quality=phiS.code();

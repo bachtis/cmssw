@@ -79,7 +79,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
 
   }
   if (verbose_==1) {
-    printf("processing sector=%d - stubs to be processed=%d\n",sectorNumber_,int(stubsInSector.size()));
+    printf("---processing sector=%d - stubs to be processed=%d---\n",sectorNumber_,int(stubsInSector.size()));
   }
 
   //For faster emulator if there are no stubs at all return
@@ -102,11 +102,14 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
     if (track->getRInv()<0)
       charge=-1;
     muon.setCharge(charge);
-    if(verbose_==1)
-      printf("Testing track for sector %d in [%d %d] with eta=%f and pt=%f \n",int(muon.phi()/phiLSB_),trackPhiLowerBound_,trackPhiUpperBound_,muon.eta(),muon.pt());
     //If not in nonant kill
     int globalPhi = muon.phi()/phiLSB_;
-    if (deltaPhi(globalPhi,trackPhiLowerBound_)<0 || deltaPhi(globalPhi,trackPhiUpperBound_)>0)
+    int deltalow = deltaPhi(globalPhi,trackPhiLowerBound_);
+    int deltahigh = deltaPhi(globalPhi,trackPhiUpperBound_);
+    if(verbose_==1)
+      printf("---> Testing track for sector with phi = %d in [%d %d]  and deltaPhi = %dm%d with eta=%f and pt=%f \n",int(muon.phi()/phiLSB_),trackPhiLowerBound_,trackPhiUpperBound_,deltalow,deltahigh,muon.eta(),muon.pt());
+    
+    if (globalPhi< trackPhiLowerBound_|| globalPhi>=trackPhiUpperBound_)
       continue;
     if(verbose_==1)
       printf("Passed\n");
@@ -279,6 +282,13 @@ L1TTPSSectorProcessor::PropagationInfo L1TTPSSectorProcessor::propagate(const l1
     phi=0;
   out.propagatedValue = int(phi+slope*curv);
   out.propagatedPhi = int(phi+slope*curv);
+  //correct for boundary. Will be done automatically in firmware 
+  int pi = M_PI/phiLSB_;
+  if (out.propagatedPhi>pi)
+    out.propagatedPhi = out.propagatedPhi-2*pi;
+  if (out.propagatedPhi<-pi)
+    out.propagatedPhi = out.propagatedPhi+2*pi;
+
   out.propagatorIndex = propIndex;
   out.propagatedSigma = uint(sqrt(resa*curv*curv+resb));
   if (out.propagatedSigma>511)
@@ -325,11 +335,11 @@ bool L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
     if ((stubs[i]->id()!=id) && id!=9)
       continue;
 
-    uint deltaPhi=fabs(prop.propagatedPhi-stubPhi(stubs[i]));
+    uint dPhi=fabs(deltaPhi(prop.propagatedPhi,stubPhi(stubs[i])));
     if (verbose_==1)
-      printf("Found stub with phi =  %d phiB=%d sigma=%d and deltaPhi=%d\n ",stubPhi(stubs[i]),stubs[i]->phiB(),prop.propagatedSigma,deltaPhi);
-    if (deltaPhi<maxDPhi){
-      maxDPhi=deltaPhi;
+      printf("Found stub with phi =  %d phiB=%d sigma=%d and deltaPhi=%d\n ",stubPhi(stubs[i]),stubs[i]->phiB(),prop.propagatedSigma,dPhi);
+    if (dPhi<maxDPhi){
+      maxDPhi=dPhi;
       bestStub=i;
     } 
   }
@@ -347,8 +357,12 @@ bool L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
     bool passEtaCut = passEta1||passEta2;
     bool passEta =(stubs[bestStub]->type()==1) ||(passEtaCut && stubs[bestStub]->type()!=1) || (stubs[bestStub]->etaQuality()+stubs[bestStub]->alternateEtaQuality())==0;     
 
+    
+
 
     if (delta<=prop.propagatedSigma && passEta) {
+      if(verbose_==1)
+	printf("Stub passed requirements\n");
        uint q=muon.quality();
        muon.setQuality(q+delta);
        muon.addStub(stubs[bestStub]);
@@ -393,14 +407,20 @@ void L1TTPSSectorProcessor::processTrack(l1t::L1TkMuonParticle& muon,const L1MuC
 
 std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::clean(const std::vector<l1t::L1TkMuonParticle>& muons) {
   //    return muons;
-
+    if (verbose_==1)
+      printf("CROSS CLEANER IN SECTOR\n");
   std::vector<l1t::L1TkMuonParticle> out;
   if (muons.size()<=1)
     return muons;
 
   for (uint i=0;i<muons.size();++i) {
+    if (verbose_==1)
+      printf("->Muon with pt,eta,phi=%f %f %f\n",muons[i].pt(),muons[i].eta(),muons[i].phi());
     bool keep=true;
     const L1MuCorrelatorHitRefVector& stubs1 = muons[i].getMatchedStubs();
+    if (verbose_==1)
+      for (const auto& stub : stubs1)
+	printf("stub %d %d %d %d %d\n",stub->etaRegion(),stub->phiRegion(),stub->depthRegion(),stub->id(),stub->phi());
     for (uint j=0;j<muons.size();++j) {
       if (i==j)
 	continue;
@@ -408,7 +428,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::clean(const std::vecto
       bool overlap=false;
       for (const auto& stub1 : stubs1) {
 	for (const auto& stub2 : stubs2) {
-	  if (stub1==stub2) {
+	  if ((*stub1)==(*stub2)) {
  	    overlap=true;
 	    break;
 	  }
@@ -423,6 +443,16 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::clean(const std::vecto
     if (keep)
       out.push_back(muons[i]);
   }
+
+
+  if (verbose_==1) {
+      printf("CLEANED MUONS\n");
+      for (const auto& mu :out)
+      printf("Muon with pt,eta,phi=%f %f %f\n",mu.pt(),mu.eta(),mu.phi());
+
+  }
+
+
   return out;
 }
 
