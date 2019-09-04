@@ -22,8 +22,6 @@ class L1TMuCorrelatorDTStubProcessor {
 
 
   L1MuCorrelatorHitCollection makeStubs(const L1MuDTChambPhContainer*,const L1MuDTChambThContainer*,const L1TMuonBarrelParams&);
-  void makeInputPattern(const L1MuDTChambPhContainer* phiContainer,const L1MuDTChambThContainer* etaContainer,int sector);
-
   
  private:
   bool isGoodPhiStub(const L1MuDTChambPhDigi*); 
@@ -37,12 +35,13 @@ class L1TMuCorrelatorDTStubProcessor {
   std::vector<int> eta1_;
   std::vector<int> eta2_;
   std::vector<int> eta3_;
-
-
-  bool disableMasks_;
+  std::vector<int> coarseEta1_;
+  std::vector<int> coarseEta2_;
+  std::vector<int> coarseEta3_;
+  std::vector<int> coarseEta4_;
   int verbose_;
   double phiLSB_;
-
+  std::vector<double> bendingScale_;
 
   //    edm::ESHandle< L1TMuonBarrelParams > bmtfParamsHandle;
   //    L1MuDTTFMasks       masks_;

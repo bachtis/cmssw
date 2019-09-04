@@ -84,8 +84,9 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSCorrelator::clean(const std::vector<l1t
 	break;
       }
     }
-    if (keep)
+    if (keep) {
       out.push_back(central[i]);
+    }
   }
   return out;
 }

@@ -22,8 +22,11 @@ L1TMuCorrelatorRPCBarrelStubProcessor::L1TMuCorrelatorRPCBarrelStubProcessor(con
   minBX_(iConfig.getParameter<int>("minBX")),
   maxBX_(iConfig.getParameter<int>("maxBX")),
   verbose_(iConfig.getParameter<int>("verbose")),
-  phiLSB_(iConfig.getParameter<double>("phiLSB"))
-
+  phiLSB_(iConfig.getParameter<double>("phiLSB")),
+  coarseEta1_(iConfig.getParameter<std::vector<int> >("coarseEta_1")),
+  coarseEta2_(iConfig.getParameter<std::vector<int> >("coarseEta_2")),
+  coarseEta3_(iConfig.getParameter<std::vector<int> >("coarseEta_3")),
+  coarseEta4_(iConfig.getParameter<std::vector<int> >("coarseEta_4"))
 {
 
 } 
@@ -38,6 +41,8 @@ L1TMuCorrelatorRPCBarrelStubProcessor::~L1TMuCorrelatorRPCBarrelStubProcessor() 
 L1MuCorrelatorHit
 L1TMuCorrelatorRPCBarrelStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& phiS) {
   int wheel = phiS.whNum();
+  uint abswheel = fabs(wheel);
+  int sign=wheel>0 ? 1 : -1;
   int sector = phiS.scNum();
   int station = phiS.stNum();
   double globalPhi = (-180+sector*30)+phiS.phi()*30./2048.;
@@ -51,14 +56,37 @@ L1TMuCorrelatorRPCBarrelStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& p
   bool tag = (phiS.Ts2Tag()==1);
   int bx=phiS.bxNum();
   int quality=phiS.code();
+  uint tfLayer=0;
+  int eta=-255;
+
+  if (station==1){
+    eta=coarseEta1_[abswheel];
+    if (tag)
+      tfLayer=3;
+    else
+      tfLayer=0;
+  }
+  else if (station==2) {
+    eta=coarseEta2_[abswheel];
+    if (tag)
+      tfLayer=6;
+    else
+      tfLayer=4;
+  }
+  else if (station==3) {
+    eta=coarseEta3_[abswheel];
+    tfLayer=6;
+  }
+  else if (station==4) {
+    eta=coarseEta4_[abswheel];
+    tfLayer=9;
+  }
+  
+
 
   //Now full eta
-  int qeta1=0;
-  int qeta2=0;
-  int eta1=7;
-  int eta2=7; 
-  L1MuCorrelatorHit stub(wheel,sector,station,phi,phiB,tag,
-			    bx,quality,eta1,eta2,qeta1,qeta2,1);
+  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phiB,tag,
+			    bx,quality,eta*sign,0,1);
   return stub;
 
 }
@@ -86,7 +114,7 @@ L1TMuCorrelatorRPCBarrelStubProcessor::makeStubs(const L1MuDTChambPhContainer& p
 	  L1MuDTChambPhDigi const* high = phiContainer.chPhiSegm1(wheel,station,sector,bx);
 	  if (high) {
 	      const L1MuDTChambPhDigi& stubPhi = *high;
-		out.push_back(buildStubNoEta(stubPhi));
+	      out.push_back(buildStubNoEta(stubPhi));
 	  }
 	  L1MuDTChambPhDigi const* low = phiContainer.chPhiSegm2(wheel,station,sector,bx-1);
 	  if (low) {

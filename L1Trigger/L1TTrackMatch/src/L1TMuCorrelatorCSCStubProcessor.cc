@@ -63,15 +63,27 @@ L1TMuCorrelatorCSCStubProcessor::buildStub(const CSCDetId& detid,const CSCCorrel
   int bx=digi.getBX()-6;
   int quality=0;
 
+  uint tfLayer=0;
+  
+  if (ring==1 && station==1)
+    tfLayer=3;
+  else if (station==1)
+    tfLayer=8;
+  else if (station==2)
+    tfLayer=6;
+  else if (station==3)
+    tfLayer=7;
+  else if (station==4)
+    tfLayer=5;
 
 
-  int eta2=eta1;
+
   int qeta1=1;
-  int qeta2=0;
 
 
-  L1MuCorrelatorHit stub(wheel,sector,station,phi,phiB,tag,
-			    bx,quality,eta1,eta2,qeta1,qeta2,type); 
+
+  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phiB,tag,
+			 bx,quality,eta1,1,type); 
   return stub;
 
   }

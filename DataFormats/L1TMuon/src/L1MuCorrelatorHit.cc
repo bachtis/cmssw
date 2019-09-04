@@ -7,21 +7,20 @@
 using namespace std;
 L1MuCorrelatorHit::L1MuCorrelatorHit() :
   etaRegion_(0),phiRegion_(0),depthRegion_(0),phi_(0), phiB_(0),id_(0), quality_(-1), bxNum_(17),
-  eta_(0),alternateEta_(0),etaQuality_(-1),alternateEtaQuality_(-1),type_(0) {}
+  eta_(0),etaQuality_(-1),type_(0) {}
 
-L1MuCorrelatorHit::L1MuCorrelatorHit(int etaRegion,int phiRegion,int depthRegion,int phi,int phiB,int id,int bx,int quality,int eta,int alternateEta, int etaQuality,int alternateEtaQuality,int type):
+L1MuCorrelatorHit::L1MuCorrelatorHit(int etaRegion,int phiRegion,int depthRegion,uint tfLayer,int phi,int phiB,int id,int bx,int quality,int eta,int etaQuality,int type):
   etaRegion_(etaRegion),
   phiRegion_(phiRegion),
   depthRegion_(depthRegion),
+  tfLayer_(tfLayer),
   phi_(phi),
   phiB_(phiB),
   id_(id),
   quality_(quality),
   bxNum_(bx),
   eta_(eta),
-  alternateEta_(alternateEta),
   etaQuality_(etaQuality),
-  alternateEtaQuality_(alternateEtaQuality),
   type_(type)
 {
 
@@ -41,9 +40,7 @@ bool L1MuCorrelatorHit::operator==(const L1MuCorrelatorHit& id) const {
   if ( quality_               != id.quality_ )                 return false;
   if ( bxNum_                 != id.bxNum_ )                   return false;
   if ( eta_                   != id.eta_ )                     return false;
-  if ( alternateEta_          != id.alternateEta_ )            return false;
   if ( etaQuality_            != id.etaQuality_ )              return false;
-  if ( alternateEtaQuality_   != id.alternateEtaQuality_ )     return false;
   if ( type_                  != id.type_ )                    return false;
   return true;
 }
@@ -63,9 +60,7 @@ ostream& operator<<(ostream& s, const L1MuCorrelatorHit& id) {
   << "phiB: "              << setw(4) << id.phiB_ << " "
   << "quality: "           << setw(4) << id.quality_ << " "
   << "eta:"                << setw(4) << id.eta_ << " "
-  << "alternateEta:"       << setw(4) << id.alternateEta_ << " "
   << "qeta1:"              << setw(4) << id.etaQuality_ << " "
-  << "qeta2:"              << setw(4) << id.alternateEtaQuality_ << " "
   << "type:"               << setw(4) <<id.type_;
   return s;
 

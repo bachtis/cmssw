@@ -21,11 +21,12 @@ class L1TTPSSectorProcessor {
 
  private:
   typedef struct {
-    int propagatedValue;
-    int propagatedPhi; //only in software
+    int propagatedAngle;
+    int propagatedBend; //only in software
     int propagatedEta;
-    uint propagationVar; //only in software
-    uint propagatedSigma;
+    uint hasPhiB; //only in software
+    uint propagatedSigmaAngle;
+    uint propagatedSigmaBend;
     int etaIndex;   
     bool valid;
     uint propagatorIndex;
@@ -38,8 +39,8 @@ class L1TTPSSectorProcessor {
   int trackEta(const l1t::L1TkMuonParticle&);
   int trackCurv(const l1t::L1TkMuonParticle&);
   PropagationInfo propagate(const l1t::L1TkMuonParticle&,uint);
-  bool match(l1t::L1TkMuonParticle&,const PropagationInfo&,const L1MuCorrelatorHitRefVector&);
-  void processTrack(l1t::L1TkMuonParticle&,const L1MuCorrelatorHitRefVector&);
+  uint match(l1t::L1TkMuonParticle&,const PropagationInfo&,const L1MuCorrelatorHitRefVector&,uint& pattern);
+  bool processTrack(l1t::L1TkMuonParticle&,const L1MuCorrelatorHitRefVector&);
   std::vector<l1t::L1TkMuonParticle> clean(const std::vector<l1t::L1TkMuonParticle>&);
   uint sectorNumber_;
   std::vector<uint> barrelSectors_;
@@ -51,23 +52,13 @@ class L1TTPSSectorProcessor {
   int trackPhiUpperBound_;
   int phiOffset_;
 
-
   int verbose_;
   double phiLSB_;
   double trackEtaLSB_;
   uint trackEtaShift_;
   double trackCurvLSB_;
-  std::vector<uint> matchType_;
-  std::vector<uint> matchEtaRegion_;
-  std::vector<uint> matchEtaRegion2_;
-  std::vector<uint> matchDepthRegion_;
-  std::vector<uint> matchID_;
-
-
-
-
-
-
+  std::vector<uint> vetoIndex_;
+  std::vector<uint> vetoPattern_;
 
   
 

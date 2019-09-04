@@ -19,6 +19,10 @@ class L1TMuCorrelatorRPCBarrelStubProcessor {
   int maxBX_;
   int verbose_;
   double phiLSB_;
+  std::vector<int> coarseEta1_;
+  std::vector<int> coarseEta2_;
+  std::vector<int> coarseEta3_;
+  std::vector<int> coarseEta4_;
 
 
 };

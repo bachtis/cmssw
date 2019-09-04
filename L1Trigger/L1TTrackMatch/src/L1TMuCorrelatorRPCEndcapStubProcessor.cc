@@ -51,12 +51,23 @@ L1TMuCorrelatorRPCEndcapStubProcessor::buildStub(const RPCDetId& detid,const RPC
   bool tag = detid.trIndex();
   int bx=digi.bx();
   int quality=0;
-  int eta2=eta1;
-  int qeta1=1;
-  int qeta2=0;
+  uint tfLayer=0;
+  
+  if (station==1)
+    tfLayer=2;
+  if (station==2)
+    tfLayer=9;
+  if (station==3)
+    tfLayer=4;
+  if (station==4)
+    tfLayer=10;
 
-  L1MuCorrelatorHit stub(wheel,sector,station,phi,phiB,tag,
-			    bx,quality,eta1,eta2,qeta1,qeta2,type); 
+
+
+
+
+  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phiB,tag,
+			    bx,quality,eta1,0,type); 
   return stub;
 
   }
