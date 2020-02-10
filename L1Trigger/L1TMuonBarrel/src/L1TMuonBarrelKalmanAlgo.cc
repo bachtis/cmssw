@@ -586,6 +586,9 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline(L1MuKBMTrack& track,const L1MuKBMTCo
       printf(" K = %d + %f * %f + %f * %f = %d\n",trackK,Gain(0,0),residual(0),Gain(0,1),residual(1),KNew);
       if (updatePhi_)
 	printf(" phi = %d + %f * %f + %f * %f = %d\n",trackPhi, residual(0), Gain(1,0), residual(1), Gain(1,1),phiNew);
+      else{
+	printf(" phi = %d\n", trackPhi+residual(0));
+      }
       printf(" phiB = %d + %f * %f + %f * %f = %d\n",trackPhiB,Gain(2,0),residual(0),Gain(2,1),residual(1),phiBNew);
     }
 
@@ -669,6 +672,9 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline1D(L1MuKBMTrack& track,const L1MuKBMT
       printf("KNew = %d + int(%f*%f) = %d\n",trackK, Gain(0,0), residual, KNew);
       if (updatePhi_)
 	printf("phiNew = %d + %f * %f = %d\n", trackPhi, residual, Gain(1,0), phiNew);
+      else{
+	printf("phiNew = %d\n", trackPhi + residual);
+      }
       printf("phiBNew = %d + %f * %f = %d\n", trackPhiB, Gain(2,0), residual, phiBNew);
     }
 
