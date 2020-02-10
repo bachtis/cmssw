@@ -120,6 +120,7 @@ class L1TMuonBarrelKalmanAlgo {
   ///////////////////////////////////////////////////////
 
   bool useOfflineAlgo_;
+  bool updatePhi_;
   std::vector<double> mScatteringPhi_;
   std::vector<double> mScatteringPhiB_;
   //point resolution for phi
@@ -129,7 +130,8 @@ class L1TMuonBarrelKalmanAlgo {
   //point resolution for vertex
   double pointResolutionVertex_;
 
-  
+  int bitsPhi_;
+  int bitsPhiPrim_;
 
   //Sorter
   class StubSorter {
@@ -149,11 +151,11 @@ class L1TMuonBarrelKalmanAlgo {
     int sec_;
     int correctedPhi(const L1MuKBMTCombinedStubRef& stub) {
       if (stub->scNum()==sec_)
-	return stub->phi();
+	return (stub->phi());
       else if ((stub->scNum()==sec_-1) || (stub->scNum()==11 && sec_==0))
-	return stub->phi()-2144;
+	return (stub->phi()-2144);
       else if ((stub->scNum()==sec_+1) || (stub->scNum()==0 && sec_==11))
-	return stub->phi()+2144;
+	return (stub->phi()+2144);
       return 0;
     } 
 
