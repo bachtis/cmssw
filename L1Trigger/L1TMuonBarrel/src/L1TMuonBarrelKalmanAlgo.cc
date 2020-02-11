@@ -587,7 +587,7 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline(L1MuKBMTrack& track,const L1MuKBMTCo
       if (updatePhi_)
 	printf(" phi = %d + %f * %f + %f * %f = %d\n",trackPhi, residual(0), Gain(1,0), residual(1), Gain(1,1),phiNew);
       else{
-	printf(" phi = %d\n", trackPhi+residual(0));
+	printf(" phi = %d\n", phiNew);
       }
       printf(" phiB = %d + %f * %f + %f * %f = %d\n",trackPhiB,Gain(2,0),residual(0),Gain(2,1),residual(1),phiBNew);
     }
@@ -673,7 +673,7 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline1D(L1MuKBMTrack& track,const L1MuKBMT
       if (updatePhi_)
 	printf("phiNew = %d + %f * %f = %d\n", trackPhi, residual, Gain(1,0), phiNew);
       else{
-	printf("phiNew = %d\n", trackPhi + residual);
+	printf("phiNew = %d\n", phiNew);
       }
       printf("phiBNew = %d + %f * %f = %d\n", trackPhiB, Gain(2,0), residual, phiBNew);
     }
@@ -979,7 +979,8 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
     L1MuKBMTrack::CovarianceMatrix covariance;  
 
 
-    float DK=512*512.;
+    //    float DK=512*512.;
+    float DK = 2048*2048.;
     covariance(0,0)=DK;
     covariance(0,1)=0;
     covariance(0,2)=0;
