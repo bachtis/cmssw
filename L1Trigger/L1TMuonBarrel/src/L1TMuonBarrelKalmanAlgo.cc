@@ -756,8 +756,8 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
 
     //different products for different firmware logic
 
-    int pbdouble_0 = fp_product(fabs(GAIN[2]),residualPhi<<(bitsPhi_-bitsPhiPrim_),9);
-    int pb_0 = fp_product(GAIN[2],residualPhi<<(bitsPhi_-bitsPhiPrim_),9);
+    int pbdouble_0 = fp_product(fabs(GAIN[2]),residualPhi>>(bitsPhi_-bitsPhiPrim_),9);
+    int pb_0 = fp_product(GAIN[2],residualPhi>>(bitsPhi_-bitsPhiPrim_),9);
     int pb_1 = fp_product(GAIN[3],residualPhiB,9);
 
     if (verbose_)
