@@ -579,7 +579,7 @@ bool L1TMuonBarrelKalmanAlgo::updateOffline(L1MuKBMTrack& track,const L1MuKBMTCo
    
     int phiBNew = wrapAround(trackPhiB+int(Gain(2,0)*residual(0)+Gain(2,1)*residual(1)),4096);
     //Changed 
-    track.setResidual(stub->stNum()-1,fabs(phi-phiNew)*pow(2,bitsPhiPrim_-bitsPhi_)+fabs(phiB-phiBNew)/8);
+    track.setResidual(stub->stNum()-1,fabs(phi-phiNew)>>(bitsPhi_-bitsPhiPrim)+fabs(phiB-phiBNew)/8);
 
 
     if (verbose_) {
