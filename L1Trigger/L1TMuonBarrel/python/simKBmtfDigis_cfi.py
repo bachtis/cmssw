@@ -38,7 +38,7 @@ bmtfKalmanTrackingSettings = cms.PSet(
     combos1=cms.vint32(), #for future possible usage
 
     useOfflineAlgo = cms.bool(True),   
-    updatePhi = cms.bool(True),
+    updatePhi = cms.bool(False), # Use kalman gain to update Phi instead of taking stub value
     ###Only for the offline algo -not in firmware --------------------
 #    mScatteringPhi = cms.vdouble(2.49e-3,5.47e-5,3.49e-5,1.37e-5),
     mScatteringPhi = cms.vdouble(64*2.49e-3,64*5.47e-5,64*3.49e-5,64*1.37e-5),

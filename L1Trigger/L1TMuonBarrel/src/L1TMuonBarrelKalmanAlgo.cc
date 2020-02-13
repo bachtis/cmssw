@@ -962,11 +962,12 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
     if (track.step()==2 && (fabs(seed->phiB())>127))
       address=charge*127*8;         
     int initialK = int(initK_[seed->stNum()-1]*address/(1+initK2_[seed->stNum()-1]*charge*address));
+
     if (initialK>8191)
       initialK=8191;
     if (initialK<-8191)
       initialK=-8191;
-
+    initialK=221;
     track.setCoordinates(seed->stNum(),initialK,correctedPhi(seed,seed->scNum()),phiB);
     if (seed->quality()<4) {
       track.setCoordinates(seed->stNum(),0,correctedPhi(seed,seed->scNum()),0);     
@@ -979,8 +980,8 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
     L1MuKBMTrack::CovarianceMatrix covariance;  
 
 
-    //    float DK=512*512.;
-    float DK = 2048*2048.;
+    float DK=512*512.;
+
     covariance(0,0)=DK;
     covariance(0,1)=0;
     covariance(0,2)=0;
@@ -1069,9 +1070,16 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
       }
     }
   }
+  if (verbose_){
+    printf("\nKBMTF Tracks (uncleaned):\n");
+    for (const auto& track: pretracks){
+      printf("Pre Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA =%d stubs=%d bitmask=%d rank=%d chi=%d pts=%f %f\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),track.curvatureAtMuon(),int(track.stubs().size()),track.hitPattern(),track.rank(),track.approxChi2(),track.pt(),track.ptUnconstrained()); 
+    }
+    printf("\n");
+  }
   //Now for all the pretracks we need only one 
   L1MuKBMTrackCollection cleaned = clean(pretracks,seed->stNum());
-
+  //L1MuKBMTrackCollection cleaned = pretracks;
   if (!cleaned.empty()) {
     return std::make_pair(true,cleaned[0]);
   }
