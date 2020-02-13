@@ -714,8 +714,8 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
       phiB=trackPhiB;
 
     Vector2 residual;
-
-    int residualPhi = wrapAround(phi-trackPhi,4096);
+    // Changed
+    int residualPhi = wrapAround(phi-trackPhi,4096<<(bitsPhi_-bitsPhiPrim_));
     int residualPhiB = wrapAround(phiB-trackPhiB,8192);
 
 
@@ -745,7 +745,7 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
     track.setKalmanGain(track.step(),fabs(trackK),GAIN[0],GAIN[1],1,0,GAIN[2],GAIN[3]);
 
 
-    int k_0 = fp_product(GAIN[0],residualPhi,3);
+    int k_0 = fp_product(GAIN[0],residualPhi>>(bitsPhi_-bitsPhiPrim_),3);
     int k_1 = fp_product(GAIN[1],residualPhiB,5);
     int KNew  = trackK+k_0+k_1;
     if (fabs(KNew)>=8191)
@@ -756,8 +756,8 @@ bool L1TMuonBarrelKalmanAlgo::updateLUT(L1MuKBMTrack& track,const L1MuKBMTCombin
 
     //different products for different firmware logic
 
-    int pbdouble_0 = fp_product(fabs(GAIN[2]),residualPhi,9);
-    int pb_0 = fp_product(GAIN[2],residualPhi,9);
+    int pbdouble_0 = fp_product(fabs(GAIN[2]),residualPhi<<(bitsPhi_-bitsPhiPrim_),9);
+    int pb_0 = fp_product(GAIN[2],residualPhi<<(bitsPhi_-bitsPhiPrim_),9);
     int pb_1 = fp_product(GAIN[3],residualPhiB,9);
 
     if (verbose_)
@@ -967,7 +967,7 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
       initialK=8191;
     if (initialK<-8191)
       initialK=-8191;
-    initialK=221;
+
     track.setCoordinates(seed->stNum(),initialK,correctedPhi(seed,seed->scNum()),phiB);
     if (seed->quality()<4) {
       track.setCoordinates(seed->stNum(),0,correctedPhi(seed,seed->scNum()),0);     
@@ -1070,13 +1070,7 @@ std::pair<bool,L1MuKBMTrack> L1TMuonBarrelKalmanAlgo::chain(const L1MuKBMTCombin
       }
     }
   }
-  if (verbose_){
-    printf("\nKBMTF Tracks (uncleaned):\n");
-    for (const auto& track: pretracks){
-      printf("Pre Track charge=%d pt=%f eta=%f phi=%f curvature=%d curvature STA =%d stubs=%d bitmask=%d rank=%d chi=%d pts=%f %f\n",track.charge(),track.pt(),track.eta(),track.phi(),track.curvatureAtVertex(),track.curvatureAtMuon(),int(track.stubs().size()),track.hitPattern(),track.rank(),track.approxChi2(),track.pt(),track.ptUnconstrained()); 
-    }
-    printf("\n");
-  }
+
   //Now for all the pretracks we need only one 
   L1MuKBMTrackCollection cleaned = clean(pretracks,seed->stNum());
   //L1MuKBMTrackCollection cleaned = pretracks;
