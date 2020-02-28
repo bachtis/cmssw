@@ -11,9 +11,9 @@ ROOT.FWLiteEnabler.enable()
 #tag='singleMuonOfficial'
 #isData=False
 
-tag='zerobias'
+tag='out'
 #tag='zskim'
-isData=True
+isData=False
 
 
 
@@ -115,8 +115,8 @@ def fetchTP(event,etaMax=0.83):
 
 
 def fetchStubs(event,ontime=True):
-    phiSeg2    = Handle  ('std::vector<L1MuKBMTCombinedStub>')
-    event.getByLabel('simKBmtfStubs',phiSeg2)
+    phiSeg2    = Handle  ('std::vector<L1MuCorrelatorHit>')
+    event.getByLabel('simPhase2KBmtfStubs',phiSeg2)
     if ontime:
         filtered=filter(lambda x: x.bxNum()==0, phiSeg2.product())
         return filtered
@@ -193,7 +193,7 @@ def fetchBMTF(event,isData,etaMax=1.2):
     if isData:
         event.getByLabel('BMTFStage2Digis:BMTF',bmtfH)
     else:
-        event.getByLabel('simBmtfDigis:BMTF',bmtfH)
+        event.getByLabel('simKBmtfDigis:BMTF',bmtfH)
 
     bmtf=bmtfH.product()
     bmtfMuons=[]
@@ -305,7 +305,7 @@ def log(counter,mystubs,gen,kmtfFull,kmtf,bmtf):
     print("-----------------------------")
     print('Stubs:')
     for stub in mystubs:
-        print('wheel={w} sector={sc} station={st} high/low={ts} phi={phi} phiB={phiB} qual={qual} BX={BX} eta1={eta1} eta2={eta2}'.format(w=stub.whNum(),sc=stub.scNum(),st=stub.stNum(),ts=stub.tag(),phi=stub.phi(),phiB=stub.phiB(),qual=stub.quality(),BX=stub.bxNum(),eta1=stub.eta1(),eta2=stub.eta2()))
+        print('wheel={w} sector={sc} station={st} high/low={ts} phi={phi} phiB={phiB} qual={qual} BX={BX} eta1={eta1} eta2={eta2}'.format(w=stub.etaRegion(),sc=stub.phiRegion(),st=stub.depthRegion(),ts=stub.id(),phi=stub.phi(),phiB=stub.phiB(),qual=stub.quality(),BX=stub.bxNum(),eta1=stub.eta(),eta2=stub.eta()))
     print('Gen muons:')
     for g in gen:
         print("Generated muon charge={q} pt={pt} eta={eta} phi={phi}".format(q=g.charge(),pt=g.pt(),eta=g.eta(),phi=g.phi()))
@@ -504,7 +504,7 @@ for event in events:
 #    for k in kmtf:
 #        print('L1', k.pt(),k.eta(),k.phi() )
 
-#    log(counter,stubs,gen,kmtfFull,kmtf,bmtf)
+    log(counter,stubs,gen,kmtfFull,kmtf,bmtf)
 
     
     for track in kmtfFull:
