@@ -65,7 +65,7 @@ L1TMuCorrelatorRPCEndcapStubProcessor::buildStub(const RPCDetId& detid,const RPC
 
 
 
-  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phiB,tag,
+  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phi,phiB,phiB,tag,
 			    bx,quality,eta1,0,type); 
   return stub;
 

@@ -24,7 +24,7 @@ class L1TMuonBarrelKalmanAlgo {
   typedef ROOT::Math::SMatrix<double,3,3> Matrix33;
 
   L1TMuonBarrelKalmanAlgo (const edm::ParameterSet& settings);
-  std::pair<bool,L1MuKBMTrack> chain(const L1MuKBMTCombinedStubRef&, const L1MuKBMTCombinedStubRefVector&);
+  std::pair<bool,L1MuKBMTrack> chain(const L1MuCorrelatorHitRef&, const L1MuCorrelatorHitRefVector&);
 
   L1MuKBMTrackCollection clean(const L1MuKBMTrackCollection&,uint);
 
@@ -39,15 +39,15 @@ class L1TMuonBarrelKalmanAlgo {
  
  private:
   bool verbose_;
-  std::pair<bool,uint> match(const L1MuKBMTCombinedStubRef&, const L1MuKBMTCombinedStubRefVector&,int );
-  int correctedPhi(const L1MuKBMTCombinedStubRef&,int);
-  int correctedPhiB(const L1MuKBMTCombinedStubRef&);
+  std::pair<bool,uint> match(const L1MuCorrelatorHitRef&, const L1MuCorrelatorHitRefVector&,int );
+  int correctedPhi(const L1MuCorrelatorHitRef&,int);
+  int correctedPhiB(const L1MuCorrelatorHitRef&);
   void propagate(L1MuKBMTrack&);
-  void updateEta(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
-  bool update(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&,int);
-  bool updateOffline(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
-  bool updateOffline1D(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&);
-  bool updateLUT(L1MuKBMTrack&,const L1MuKBMTCombinedStubRef&,int);
+  void updateEta(L1MuKBMTrack&,const L1MuCorrelatorHitRef&);
+  bool update(L1MuKBMTrack&,const L1MuCorrelatorHitRef&,int);
+  bool updateOffline(L1MuKBMTrack&,const L1MuCorrelatorHitRef&);
+  bool updateOffline1D(L1MuKBMTrack&,const L1MuCorrelatorHitRef&);
+  bool updateLUT(L1MuKBMTrack&,const L1MuCorrelatorHitRef&,int);
   void vertexConstraint(L1MuKBMTrack&);
   void vertexConstraintOffline(L1MuKBMTrack&);
   void vertexConstraintLUT(L1MuKBMTrack&);
@@ -66,7 +66,7 @@ class L1TMuonBarrelKalmanAlgo {
   uint twosCompToBits(int);
   int fp_product(float,int, uint);
 
-  uint etaStubRank(const L1MuKBMTCombinedStubRef&);
+  uint etaStubRank(const L1MuCorrelatorHitRef&);
 
   void calculateEta(L1MuKBMTrack& track);
   uint matchAbs(std::map<uint,uint>&, uint, uint);
@@ -140,7 +140,7 @@ class L1TMuonBarrelKalmanAlgo {
       sec_ = sector;
     }
 
-    bool operator() (const L1MuKBMTCombinedStubRef& a ,const L1MuKBMTCombinedStubRef& b) {
+    bool operator() (const L1MuCorrelatorHitRef& a ,const L1MuCorrelatorHitRef& b) {
       if (correctedPhi(a)<correctedPhi(b))
 	return true;
       return false;
@@ -149,12 +149,12 @@ class L1TMuonBarrelKalmanAlgo {
 
   private:
     int sec_;
-    int correctedPhi(const L1MuKBMTCombinedStubRef& stub) {
-      if (stub->scNum()==sec_)
+    int correctedPhi(const L1MuCorrelatorHitRef& stub) {
+      if (stub->phiRegion()==sec_)
 	return (stub->phi());
-      else if ((stub->scNum()==sec_-1) || (stub->scNum()==11 && sec_==0))
+      else if ((stub->phiRegion()==sec_-1) || (stub->phiRegion()==11 && sec_==0))
 	return (stub->phi()-2144);
-      else if ((stub->scNum()==sec_+1) || (stub->scNum()==0 && sec_==11))
+      else if ((stub->phiRegion()==sec_+1) || (stub->phiRegion()==0 && sec_==11))
 	return (stub->phi()+2144);
       return 0;
     } 

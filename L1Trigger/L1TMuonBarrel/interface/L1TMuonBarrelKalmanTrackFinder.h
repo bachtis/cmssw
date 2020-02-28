@@ -12,7 +12,7 @@ class L1TMuonBarrelKalmanTrackFinder {
   L1TMuonBarrelKalmanTrackFinder(const edm::ParameterSet&);
   ~L1TMuonBarrelKalmanTrackFinder();
 
-  L1MuKBMTrackCollection process(L1TMuonBarrelKalmanAlgo*,const L1MuKBMTCombinedStubRefVector& stubs,int bx);
+  L1MuKBMTrackCollection process(L1TMuonBarrelKalmanAlgo*,const L1MuCorrelatorHitRefVector& stubs,int bx);
  private:
   int verbose_;
   std::vector<L1TMuonBarrelKalmanSectorProcessor> sectors_;

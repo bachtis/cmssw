@@ -9,6 +9,7 @@
 #include "FWCore/Utilities/interface/StreamID.h"
 
 #include "L1Trigger/L1TMuonTPS/interface/L1TMuCorrelatorDTStubProcessor.h"
+#include "L1Trigger/L1TMuonTPS/interface/L1TMuCorrelatorPhase2DTStubProcessor.h"
 #include "L1Trigger/L1TMuonTPS/interface/L1TMuCorrelatorRPCBarrelStubProcessor.h"
 #include "L1Trigger/L1TMuonTPS/interface/L1TMuCorrelatorRPCEndcapStubProcessor.h"
 #include "L1Trigger/L1TMuonTPS/interface/L1TMuCorrelatorCSCStubProcessor.h"
@@ -39,13 +40,16 @@ class L1TMuCorrelatorHitProducer : public edm::stream::EDProducer<> {
       void produce(edm::Event&, const edm::EventSetup&) override;
       void endStream() override;
 
+  bool useDTPhase2_;
   edm::EDGetTokenT<MuonDigiCollection<CSCDetId,CSCCorrelatedLCTDigi> > srcCSC_;
   edm::EDGetTokenT<L1MuDTChambPhContainer> srcDT_;
+  edm::EDGetTokenT<L1Phase2MuDTPhContainer> srcPhase2DT_;
   edm::EDGetTokenT<L1MuDTChambThContainer> srcDTTheta_;
   edm::EDGetTokenT<RPCDigiCollection> srcRPC_;
 
 
   L1TMuCorrelatorDTStubProcessor * procDT_;
+  L1TMuCorrelatorPhase2DTStubProcessor * procPhase2DT_;
   L1TMuCorrelatorRPCBarrelStubProcessor * procRPCBarrel_;
   L1TMuCorrelatorRPCEndcapStubProcessor * procRPCEndcap_;
   L1TMuCorrelatorCSCStubProcessor * procCSC_;
@@ -69,17 +73,27 @@ class L1TMuCorrelatorHitProducer : public edm::stream::EDProducer<> {
 // constructors and destructor
 //
 L1TMuCorrelatorHitProducer::L1TMuCorrelatorHitProducer(const edm::ParameterSet& iConfig):
+  useDTPhase2_(iConfig.getParameter<bool>("useDTPhase2")),
   srcCSC_(consumes<MuonDigiCollection<CSCDetId,CSCCorrelatedLCTDigi> > (iConfig.getParameter<edm::InputTag>("srcCSC"))),
-  srcDT_(consumes<L1MuDTChambPhContainer>(iConfig.getParameter<edm::InputTag>("srcDT"))),
   srcDTTheta_(consumes<L1MuDTChambThContainer>(iConfig.getParameter<edm::InputTag>("srcDT"))),
   srcRPC_(consumes<RPCDigiCollection>(iConfig.getParameter<edm::InputTag>("srcRPC"))),
-  procDT_(new L1TMuCorrelatorDTStubProcessor(iConfig.getParameter<edm::ParameterSet> ("DT"))),
   procRPCBarrel_(new L1TMuCorrelatorRPCBarrelStubProcessor(iConfig.getParameter<edm::ParameterSet> ("RPCBarrel"))),
   procRPCEndcap_(new L1TMuCorrelatorRPCEndcapStubProcessor(iConfig.getParameter<edm::ParameterSet> ("RPCEndcap"))),
   procCSC_(new L1TMuCorrelatorCSCStubProcessor(iConfig.getParameter<edm::ParameterSet> ("CSC"))),
   translator_(new L1TMuon::GeometryTranslator),
   verbose_(iConfig.getParameter<int>("verbose"))
 {
+
+  if (useDTPhase2_) {
+    srcPhase2DT_ = consumes<L1Phase2MuDTPhContainer>(iConfig.getParameter<edm::InputTag>("srcDT"));
+    procPhase2DT_ = (new L1TMuCorrelatorPhase2DTStubProcessor(iConfig.getParameter<edm::ParameterSet> ("DT")));
+  }
+  else {
+    srcDT_ = (consumes<L1MuDTChambPhContainer>(iConfig.getParameter<edm::InputTag>("srcDT")));
+    procDT_ = (new L1TMuCorrelatorDTStubProcessor(iConfig.getParameter<edm::ParameterSet> ("DT")));
+  }
+
+
   produces <L1MuCorrelatorHitCollection>();
 }
 
@@ -91,6 +105,8 @@ L1TMuCorrelatorHitProducer::~L1TMuCorrelatorHitProducer()
    // (e.g. close files, deallocate resources etc.)
   if (procDT_!=nullptr)
     delete procDT_;
+  if (procPhase2DT_!=nullptr)
+    delete procPhase2DT_;
   if (procRPCBarrel_!=nullptr)
     delete procRPCBarrel_;
   if (procRPCEndcap_!=nullptr)
@@ -123,7 +139,11 @@ L1TMuCorrelatorHitProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
 
 
    Handle<L1MuDTChambPhContainer> dtDigis;
-   iEvent.getByToken(srcDT_,dtDigis);
+   Handle<L1Phase2MuDTPhContainer> phase2DTDigis;
+   if (useDTPhase2_)
+     iEvent.getByToken(srcDT_,dtDigis);
+   else
+     iEvent.getByToken(srcPhase2DT_,phase2DTDigis);
 
    Handle<L1MuDTChambThContainer> dtThetaDigis;
    iEvent.getByToken(srcDTTheta_,dtThetaDigis);
@@ -151,7 +171,7 @@ L1TMuCorrelatorHitProducer::produce(edm::Event& iEvent, const edm::EventSetup& i
    L1MuCorrelatorHitCollection stubsRPCEndcap = procRPCEndcap_->makeStubs(*rpcDigis,translator_,iSetup);
    std::copy (stubsRPCEndcap.begin(), stubsRPCEndcap.end(), std::back_inserter(stubs));
 
-   L1MuCorrelatorHitCollection stubsDT = procDT_->makeStubs(dtDigis.product(),dtThetaDigis.product(),bmtfParams);
+   L1MuCorrelatorHitCollection stubsDT = useDTPhase2_ ? procPhase2DT_->makeStubs(phase2DTDigis.product(),dtThetaDigis.product(),bmtfParams) : procDT_->makeStubs(dtDigis.product(),dtThetaDigis.product(),bmtfParams);
    std::copy (stubsDT.begin(), stubsDT.end(), std::back_inserter(stubs));
    iEvent.put(std::make_unique<L1MuCorrelatorHitCollection>(stubs));
 }

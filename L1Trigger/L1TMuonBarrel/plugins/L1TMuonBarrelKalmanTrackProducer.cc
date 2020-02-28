@@ -29,7 +29,7 @@ class L1TMuonBarrelKalmanTrackProducer : public edm::stream::EDProducer<> {
       void beginStream(edm::StreamID) override;
       void produce(edm::Event&, const edm::EventSetup&) override;
       void endStream() override;
-  edm::EDGetTokenT<std::vector<L1MuKBMTCombinedStub> > src_;
+  edm::EDGetTokenT<std::vector<L1MuCorrelatorHit> > src_;
   std::vector<int> bx_;
   L1TMuonBarrelKalmanAlgo *algo_;
   L1TMuonBarrelKalmanTrackFinder *trackFinder_;
@@ -40,7 +40,7 @@ class L1TMuonBarrelKalmanTrackProducer : public edm::stream::EDProducer<> {
 
 };
 L1TMuonBarrelKalmanTrackProducer::L1TMuonBarrelKalmanTrackProducer(const edm::ParameterSet& iConfig):
-  src_(consumes<std::vector<L1MuKBMTCombinedStub> >(iConfig.getParameter<edm::InputTag>("src"))),
+  src_(consumes<std::vector<L1MuCorrelatorHit> >(iConfig.getParameter<edm::InputTag>("src"))),
   bx_(iConfig.getParameter<std::vector<int> >("bx")),
   algo_(new L1TMuonBarrelKalmanAlgo(iConfig.getParameter<edm::ParameterSet>("algoSettings"))),
   trackFinder_(new L1TMuonBarrelKalmanTrackFinder(iConfig.getParameter<edm::ParameterSet>("trackFinderSettings")))
@@ -77,12 +77,12 @@ void
 L1TMuonBarrelKalmanTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
    using namespace edm;
-   Handle<std::vector<L1MuKBMTCombinedStub> >stubHandle;
+   Handle<std::vector<L1MuCorrelatorHit> >stubHandle;
    iEvent.getByToken(src_,stubHandle);
 
-   L1MuKBMTCombinedStubRefVector stubs;
+   L1MuCorrelatorHitRefVector stubs;
    for (uint i=0;i<stubHandle->size();++i) {
-     L1MuKBMTCombinedStubRef r(stubHandle,i);
+     L1MuCorrelatorHitRef r(stubHandle,i);
      stubs.push_back(r);
    }
 

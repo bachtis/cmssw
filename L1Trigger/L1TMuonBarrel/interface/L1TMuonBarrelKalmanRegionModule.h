@@ -14,7 +14,7 @@ class L1TMuonBarrelKalmanRegionModule {
     return wheel_;
   }
 
-  L1MuKBMTrackCollection process(L1TMuonBarrelKalmanAlgo*,const L1MuKBMTCombinedStubRefVector& stubs,int bx);
+  L1MuKBMTrackCollection process(L1TMuonBarrelKalmanAlgo*,const L1MuCorrelatorHitRefVector& stubs,int bx);
  private:
   int verbose_;
   int sector_;
@@ -33,8 +33,8 @@ class L1TMuonBarrelKalmanRegionModule {
   public:
     SeedSorter() {   }
 
-    bool operator() (const L1MuKBMTCombinedStubRef& a ,const L1MuKBMTCombinedStubRef& b) {
-      return (a->tag()<b->tag());
+    bool operator() (const L1MuCorrelatorHitRef& a ,const L1MuCorrelatorHitRef& b) {
+      return (a->id()<b->id());
     }
 
   };

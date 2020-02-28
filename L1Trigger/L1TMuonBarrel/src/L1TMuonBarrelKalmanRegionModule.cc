@@ -53,9 +53,9 @@ L1TMuonBarrelKalmanRegionModule::L1TMuonBarrelKalmanRegionModule(const edm::Para
 
 L1TMuonBarrelKalmanRegionModule::~L1TMuonBarrelKalmanRegionModule() {}
 
-L1MuKBMTrackCollection L1TMuonBarrelKalmanRegionModule::process(L1TMuonBarrelKalmanAlgo* trackMaker, const L1MuKBMTCombinedStubRefVector& stubsAll,int bx) {
-  L1MuKBMTCombinedStubRefVector stubs;
-  L1MuKBMTCombinedStubRefVector seeds;
+L1MuKBMTrackCollection L1TMuonBarrelKalmanRegionModule::process(L1TMuonBarrelKalmanAlgo* trackMaker, const L1MuCorrelatorHitRefVector& stubsAll,int bx) {
+  L1MuCorrelatorHitRefVector stubs;
+  L1MuCorrelatorHitRefVector seeds;
   L1MuKBMTrackCollection pretracks2;
   L1MuKBMTrackCollection pretracks3;
   L1MuKBMTrackCollection pretracks4;
@@ -63,17 +63,17 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanRegionModule::process(L1TMuonBarrelKal
     if (stub->bxNum()!=bx)
       continue;
 
-    if ((stub->scNum()==nextSector_ && stub->phi()>=-112)||(stub->scNum()==previousSector_ && stub->phi()<=111))
+    if ((stub->phiRegion()==nextSector_ && stub->phi()>=-112)||(stub->phiRegion()==previousSector_ && stub->phi()<=111))
       continue;
     
-    if (stub->whNum()==wheel_  && stub->scNum()==sector_) {
+    if (stub->etaRegion()==wheel_  && stub->phiRegion()==sector_) {
       seeds.push_back(stub);
       stubs.push_back(stub);
     }
-    else if (stub->whNum()==wheel_  && (stub->scNum()==nextSector_||stub->scNum()==previousSector_ )) {
+    else if (stub->etaRegion()==wheel_  && (stub->phiRegion()==nextSector_||stub->phiRegion()==previousSector_ )) {
       stubs.push_back(stub);
     }
-    else if (stub->whNum()==nextWheel_  && (stub->scNum()==nextSector_||stub->scNum()==previousSector_||stub->scNum()==sector_) ) {
+    else if (stub->etaRegion()==nextWheel_  && (stub->phiRegion()==nextSector_||stub->phiRegion()==previousSector_||stub->phiRegion()==sector_) ) {
       stubs.push_back(stub);
     }
   }
@@ -90,11 +90,11 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanRegionModule::process(L1TMuonBarrelKal
   for (const auto seed : seeds) {
     std::pair<bool,L1MuKBMTrack> trackInfo = trackMaker->chain(seed,stubs);
     if (trackInfo.first) {
-      if (seed->stNum()==2)
+      if (seed->depthRegion()==2)
 	pretracks2.push_back(trackInfo.second);
-      if (seed->stNum()==3)
+      if (seed->depthRegion()==3)
 	pretracks3.push_back(trackInfo.second);
-      if (seed->stNum()==4)
+      if (seed->depthRegion()==4)
 	pretracks4.push_back(trackInfo.second);
     }
   } 
@@ -137,7 +137,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanRegionModule::selfClean(const L1MuKBMT
 	  keep=false;
 	}
 	else if (tracks[i].rank()==tracks[j].rank()) { //if same rank prefer seed that is high
-	  if (!tracks[j].stubs()[0]->tag())
+	  if (!tracks[j].stubs()[0]->id())
 	    keep=false;
 	}
       }

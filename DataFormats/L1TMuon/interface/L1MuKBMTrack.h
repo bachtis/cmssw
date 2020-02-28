@@ -9,7 +9,7 @@ Sep. 2017
 #define L1MuKBMTrack_H
 
 #include "DataFormats/Candidate/interface/LeafCandidate.h"
-#include "DataFormats/L1TMuon/interface/L1MuKBMTCombinedStub.h"
+#include "DataFormats/L1TMuon/interface/L1MuCorrelatorHit.h"
 #include "DataFormats/L1Trigger/interface/BXVector.h"
 
 class L1MuKBMTrack;
@@ -22,7 +22,7 @@ class L1MuKBMTrack : public reco::LeafCandidate
 public:
   L1MuKBMTrack();
   ~L1MuKBMTrack() override;
-  L1MuKBMTrack(const L1MuKBMTCombinedStubRef&,int,int);
+  L1MuKBMTrack(const L1MuCorrelatorHitRef&,int,int);
 
   //UnConstrained curvature at station 1
   int curvatureAtMuon() const; 
@@ -74,7 +74,7 @@ public:
   int rank() const;
 
   //Associated stubs
-  const L1MuKBMTCombinedStubRefVector& stubs() const;
+  const L1MuCorrelatorHitRefVector& stubs() const;
 
   //get Kalman gain
   const std::vector<float>& kalmanGain(unsigned int) const;
@@ -93,12 +93,12 @@ public:
     if (this->stubs().size()!=t2.stubs().size())
       return false;
     for (unsigned int i=0;i<this->stubs().size();++i)  {
-      const L1MuKBMTCombinedStubRef& s1 = this->stubs()[i];
-      const L1MuKBMTCombinedStubRef& s2 = t2.stubs()[i];
-      if (s1->scNum()!= s2->scNum() ||
-	  s1->whNum()!=s2->whNum() ||
-	  s1->stNum()!=s2->stNum() ||
-	  s1->tag()!=s2->tag())
+      const L1MuCorrelatorHitRef& s1 = this->stubs()[i];
+      const L1MuCorrelatorHitRef& s2 = t2.stubs()[i];
+      if (s1->phiRegion()!= s2->phiRegion() ||
+	  s1->etaRegion()!=s2->etaRegion() ||
+	  s1->depthRegion()!=s2->depthRegion() ||
+	  s1->id()!=s2->id())
 	return false;
     }
     return true;
@@ -130,7 +130,7 @@ public:
   void setPtUnconstrained(float);
 
   //Add a stub
-  void addStub(const L1MuKBMTCombinedStubRef&); 
+  void addStub(const L1MuCorrelatorHitRef&); 
 
   //kalman gain management
   void setKalmanGain(unsigned int step, unsigned int K,float a1 ,float a2,float a3,float a4=0 ,float a5=0,float a6=0);
@@ -153,7 +153,7 @@ public:
   //Covariance matrix for studies
   std::vector<double> covariance_;
   
-  L1MuKBMTCombinedStubRefVector stubs_;
+  L1MuCorrelatorHitRefVector stubs_;
 
   //vertex coordinates
   int curvVertex_;

@@ -9,7 +9,7 @@ L1MuKBMTrack::~L1MuKBMTrack() {
 
 }
 
-L1MuKBMTrack::L1MuKBMTrack(const L1MuKBMTCombinedStubRef& seed,int phi,int phiB):
+L1MuKBMTrack::L1MuKBMTrack(const L1MuCorrelatorHitRef& seed,int phi,int phiB):
   reco::LeafCandidate(-1,reco::LeafCandidate::PolarLorentzVector(0.1,0.0,0.0,0.105)),
   covariance_(std::vector<double>(6,0.0)),
   curvVertex_(0),
@@ -25,9 +25,9 @@ L1MuKBMTrack::L1MuKBMTrack(const L1MuKBMTCombinedStubRef& seed,int phi,int phiB)
   approxChi2_(0),
   trackCompatibility_(0),
   hitPattern_(0),
-  step_(seed->stNum()),
-  sector_(seed->scNum()),
-  wheel_(seed->whNum()),
+  step_(seed->depthRegion()),
+  sector_(seed->phiRegion()),
+  wheel_(seed->etaRegion()),
   quality_(seed->quality()),
   hasFineEta_(false),
   bx_(seed->bxNum()),
@@ -127,7 +127,7 @@ int L1MuKBMTrack::rank() const{
 
 
 
-const L1MuKBMTCombinedStubRefVector&L1MuKBMTrack::stubs() const {
+const L1MuCorrelatorHitRefVector&L1MuKBMTrack::stubs() const {
   return stubs_;
 }
 
@@ -181,7 +181,7 @@ void L1MuKBMTrack::setPtUnconstrained(float pt) {
   ptUnconstrained_ = pt;
 }
 
-void L1MuKBMTrack::addStub(const L1MuKBMTCombinedStubRef& stub) {
+void L1MuKBMTrack::addStub(const L1MuCorrelatorHitRef& stub) {
   if (stub->quality()<quality_)
     quality_ = stub->quality();
   stubs_.push_back(stub);
@@ -270,10 +270,10 @@ bool L1MuKBMTrack::overlapTrack( const L1MuKBMTrack& other) const{
  
   for (const auto& s1 : stubs_) {
     for (const auto& s2 : other.stubs()) {
-      if (s1->scNum()== s2->scNum() && 
-	  s1->whNum()==s2->whNum() &&
-	  s1->stNum()==s2->stNum() &&
-	  s1->tag()==s2->tag())
+      if (s1->phiRegion()== s2->phiRegion() && 
+	  s1->etaRegion()==s2->etaRegion() &&
+	  s1->depthRegion()==s2->depthRegion() &&
+	  s1->id()==s2->id())
 	return true;
     }
   }

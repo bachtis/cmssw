@@ -82,7 +82,7 @@ L1TMuCorrelatorCSCStubProcessor::buildStub(const CSCDetId& detid,const CSCCorrel
 
 
 
-  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phiB,tag,
+  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phi,phiB,phiB,tag,
 			 bx,quality,eta1,1,type); 
   return stub;
 

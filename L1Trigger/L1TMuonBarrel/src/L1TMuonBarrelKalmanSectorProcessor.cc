@@ -15,7 +15,7 @@ L1TMuonBarrelKalmanSectorProcessor::L1TMuonBarrelKalmanSectorProcessor(const edm
 
 L1TMuonBarrelKalmanSectorProcessor::~L1TMuonBarrelKalmanSectorProcessor() {}
 
-L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::process(L1TMuonBarrelKalmanAlgo* trackMaker, const L1MuKBMTCombinedStubRefVector& stubsAll,int bx) {
+L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::process(L1TMuonBarrelKalmanAlgo* trackMaker, const L1MuCorrelatorHitRefVector& stubsAll,int bx) {
 
 
   L1MuKBMTrackCollection tracksM2;
@@ -203,7 +203,7 @@ void L1TMuonBarrelKalmanSectorProcessor::verbose(L1TMuonBarrelKalmanAlgo* algo,c
 //       if (track1.rank()<track2.rank())
 // 	keep=false;
 
-//       if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->whNum())<fabs(track2.stubs()[0]->whNum())))
+//       if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->etaRegion())<fabs(track2.stubs()[0]->etaRegion())))
 // 	keep=false;
 //     }
 //     if (keep) 
@@ -246,7 +246,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::cleanNeighbor(const L
       if (track1.rank()<track2.rank())
 	keep=false;
 
-      if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->whNum())<fabs(track2.stubs()[0]->whNum())))
+      if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->etaRegion())<fabs(track2.stubs()[0]->etaRegion())))
 	keep=false;
     }
     if (keep) 
@@ -271,7 +271,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::cleanNeighbors(const 
       if (track1.rank()<track2.rank())
 	keep=false;
 
-      if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->whNum())<fabs(track2.stubs()[0]->whNum())))
+      if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->etaRegion())<fabs(track2.stubs()[0]->etaRegion())))
 	keep=false;
     }
 
@@ -282,7 +282,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::cleanNeighbors(const 
       if (track1.rank()<track2.rank())
 	keep=false;
 
-      if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->whNum())<fabs(track2.stubs()[0]->whNum())))
+      if ((track1.rank()==track2.rank()) && (fabs(track1.stubs()[0]->etaRegion())<fabs(track2.stubs()[0]->etaRegion())))
 	keep=false;
     }
 
@@ -345,7 +345,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::wedgeSort(const L1MuK
     trackInfo[1] = minus2[1];
   }
   else if (minus2.size()==1) {
-    if (minus2[0].stubs()[0]->tag()) {
+    if (minus2[0].stubs()[0]->id()) {
       ptInfo[1] = minus2[0].pt();
       trackInfo[1] = minus2[0];
     }
@@ -362,7 +362,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::wedgeSort(const L1MuK
     trackInfo[3] = minus1[1];
   }
   else if (minus1.size()==1) {
-    if (minus1[0].stubs()[0]->tag()) {
+    if (minus1[0].stubs()[0]->id()) {
       ptInfo[3] = minus1[0].pt();
       trackInfo[3] = minus1[0];
     }
@@ -379,7 +379,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::wedgeSort(const L1MuK
     trackInfo[5] = zero[1];
   }
   else if (zero.size()==1) {
-    if (zero[0].stubs()[0]->tag()) {
+    if (zero[0].stubs()[0]->id()) {
       ptInfo[5] = zero[0].pt();
       trackInfo[5] = zero[0];
     }
@@ -397,7 +397,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::wedgeSort(const L1MuK
     trackInfo[7] = plus1[1];
   }
   else if (plus1.size()==1) {
-    if (plus1[0].stubs()[0]->tag()) {
+    if (plus1[0].stubs()[0]->id()) {
       ptInfo[7] = plus1[0].pt();
       trackInfo[7] = plus1[0];
     }
@@ -414,7 +414,7 @@ L1MuKBMTrackCollection L1TMuonBarrelKalmanSectorProcessor::wedgeSort(const L1MuK
     trackInfo[9] = plus2[1];
   }
   else if (plus2.size()==1) {
-    if (plus2[0].stubs()[0]->tag()) {
+    if (plus2[0].stubs()[0]->id()) {
       ptInfo[9] = plus2[0].pt();
       trackInfo[9] = plus2[0];
     }

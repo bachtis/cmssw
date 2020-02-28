@@ -38,13 +38,13 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
   L1MuCorrelatorHitRefVector stubsInSector;
   for (const auto& stub : stubsAll) {
     if (verbose_==1)
-      printf("Candidate stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->phi());
+      printf("Candidate stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->globalPhi());
 
     if (stub->type()<=1) {//barrel 
       for (const auto& sector : barrelSectors_) {
 	if (stub->phiRegion()==int(sector)) {
 	  if (verbose_==1)
-	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->phi());
+	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->globalPhi());
 	  stubsInSector.push_back(stub);
 	  break;
 	}
@@ -54,7 +54,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
       for (const auto& sector : csc10DegreeChambers_) {
 	if (stub->phiRegion()==int(sector)) {
 	  if (verbose_==1)
-	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->phi());
+	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->globalPhi());
 
 	  stubsInSector.push_back(stub);
 	  break;
@@ -65,7 +65,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
       for (const auto& sector : csc20DegreeChambers_) {
 	if (stub->phiRegion()==int(sector)) {
 	  if (verbose_==1)
-	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->phi());
+	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->globalPhi());
 	  stubsInSector.push_back(stub);
 	  break;
 	}
@@ -75,7 +75,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
       for (const auto& sector : rpcEndcapChambers_) {
 	if (stub->phiRegion()==int(sector)) {
 	  if (verbose_==1)
-	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->phi());
+	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->globalPhi());
 	  stubsInSector.push_back(stub);
 	  break;
 	}
@@ -85,7 +85,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::process(const TrackPtr
       for (const auto& sector : iRpcChambers_) {
 	if (stub->phiRegion()==int(sector)) {
 	  if (verbose_==1)
-	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->phi());
+	    printf("Passed stub type=%d phiRegion=%d etaRegion=%d depthRegion=%d phi=%d\n",stub->type(),stub->phiRegion(),stub->etaRegion(),stub->depthRegion(),stub->globalPhi());
 	  stubsInSector.push_back(stub);
 	  break;
 	}
@@ -151,8 +151,11 @@ int L1TTPSSectorProcessor::deltaPhi(int phi1, int phi2) {
 
 int L1TTPSSectorProcessor::stubPhi(const L1MuCorrelatorHitRef& stub ) {
   //add offset code here 
-  return deltaPhi(stub->phi(),phiOffset_);
+  return deltaPhi(stub->globalPhi(),phiOffset_);
 }
+
+
+
 
 int L1TTPSSectorProcessor::trackPhi(const l1t::L1TkMuonParticle& track) {
   //add offset code here 
@@ -348,7 +351,7 @@ uint L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
     //Then check phi
     uint dPhi=fabs(deltaPhi(prop.propagatedAngle,stubPhi(stubs[i])));
     if (verbose_==1)
-      printf("Found stub with phi =  %d phiB=%d sigma=%d  sigmaB=%d and deltaPhi=%d\n ",stubPhi(stubs[i]),stubs[i]->phiB(),prop.propagatedSigmaAngle,prop.propagatedSigmaBend,dPhi);
+      printf("Found stub with phi =  %d phiB=%d sigma=%d  sigmaB=%d and deltaPhi=%d\n ",stubPhi(stubs[i]),stubs[i]->globalBend(),prop.propagatedSigmaAngle,prop.propagatedSigmaBend,dPhi);
     if (dPhi<maxDPhi){
       maxDPhi=dPhi;
       bestStub=i;
@@ -356,8 +359,8 @@ uint L1TTPSSectorProcessor::match(l1t::L1TkMuonParticle& muon,const L1TTPSSector
   }
 
   if (bestStub!=-1) {
-    uint deltaAngle = fabs(stubs[bestStub]->phi()-prop.propagatedAngle);
-    uint deltaBend = fabs(stubs[bestStub]->phiB()-prop.propagatedBend);
+    uint deltaAngle = fabs(stubs[bestStub]->globalPhi()-prop.propagatedAngle);
+    uint deltaBend = fabs(stubs[bestStub]->globalBend()-prop.propagatedBend);
 
     bool passAngle = deltaAngle<prop.propagatedSigmaAngle;
     bool passBend  = passAngle ? deltaBend<prop.propagatedSigmaBend : 0;
@@ -450,7 +453,7 @@ std::vector<l1t::L1TkMuonParticle> L1TTPSSectorProcessor::clean(const std::vecto
     const L1MuCorrelatorHitRefVector& stubs1 = muons[i].getMatchedStubs();
     if (verbose_==1)
       for (const auto& stub : stubs1)
-	printf("stub %d %d %d %d %d\n",stub->etaRegion(),stub->phiRegion(),stub->depthRegion(),stub->id(),stub->phi());
+	printf("stub %d %d %d %d %d\n",stub->etaRegion(),stub->phiRegion(),stub->depthRegion(),stub->id(),stub->globalPhi());
     for (uint j=0;j<muons.size();++j) {
       if (i==j)
 	continue;

@@ -4,6 +4,7 @@ from math import pi
 
 
 l1TPSStubs = cms.EDProducer("L1TMuCorrelatorHitProducer",
+    useDTPhase2   = cms.bool(False),                        
     verbose = cms.int32(0),
     srcCSC = cms.InputTag("simCscTriggerPrimitiveDigis"),
     srcDT = cms.InputTag("simDtTriggerPrimitiveDigis"),

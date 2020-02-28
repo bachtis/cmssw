@@ -48,7 +48,7 @@ class L1MuCorrelatorHit {
     L1MuCorrelatorHit();
 
     /// constructor
-    L1MuCorrelatorHit(int etaRegion,int phiRegion,int depthRegion,uint tfLayer,int phi,int phiB,int id,int bx,int quality,int eta=0,int etaQuality=-1,int type=0);
+    L1MuCorrelatorHit(int etaRegion,int phiRegion,int depthRegion,uint tfLayer,int globalPhi,int phi,int globalBend,int phiB,int id,int bx,int quality,int eta=0,int etaQuality=-1,int type=0);
     ~L1MuCorrelatorHit();
     /// return wheel
     inline int etaRegion() const { return etaRegion_; }
@@ -60,6 +60,10 @@ class L1MuCorrelatorHit {
     inline uint tfLayer() const { return tfLayer_; }
     /// return phi
     inline int phi() const { return phi_; }
+    /// return phi
+    inline int globalPhi() const { return globalPhi_; }
+    /// return globalBend
+    inline int globalBend() const { return globalBend_; }
     /// return phib
     inline int phiB() const { return phiB_; }
     /// return quality code
@@ -104,7 +108,9 @@ class L1MuCorrelatorHit {
     int               phiRegion_;           //In the barrel it is sector. In the endcap it is chamber
     int               depthRegion_;         //Station
     uint               tfLayer_;             //TF Layer
-    int               phi_;                 // global position angle in units of 30 degrees/2048
+    int               globalPhi_;           // global position angle in units of 30 degrees/2048
+    int               phi_;                 // local position angle in units of 30 degrees/2048
+    int               globalBend_;          // rescaled bending angle for prompt tracks
     int               phiB_;                // bending angle  only in barrel for now
     int               id_;                  // stub id in case of more stubs per chamber
     int               quality_;             // 

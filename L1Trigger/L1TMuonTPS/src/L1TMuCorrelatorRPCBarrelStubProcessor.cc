@@ -86,7 +86,7 @@ L1TMuCorrelatorRPCBarrelStubProcessor::buildStubNoEta(const L1MuDTChambPhDigi& p
 
 
   //Now full eta
-  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phiB,tag,
+  L1MuCorrelatorHit stub(wheel,sector,station,tfLayer,phi,phiS.phi(),phiB,tag,
 			    bx,quality,eta*sign,0,1);
   return stub;
 

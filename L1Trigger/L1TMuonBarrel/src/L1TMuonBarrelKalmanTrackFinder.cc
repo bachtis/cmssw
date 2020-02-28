@@ -14,7 +14,7 @@ L1TMuonBarrelKalmanTrackFinder::L1TMuonBarrelKalmanTrackFinder(const edm::Parame
 
 L1TMuonBarrelKalmanTrackFinder::~L1TMuonBarrelKalmanTrackFinder() {}
 
-L1MuKBMTrackCollection L1TMuonBarrelKalmanTrackFinder::process(L1TMuonBarrelKalmanAlgo* trackMaker, const L1MuKBMTCombinedStubRefVector& stubsAll,int bx) {
+L1MuKBMTrackCollection L1TMuonBarrelKalmanTrackFinder::process(L1TMuonBarrelKalmanAlgo* trackMaker, const L1MuCorrelatorHitRefVector& stubsAll,int bx) {
 
 
   L1MuKBMTrackCollection pretracks;
