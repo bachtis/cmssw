@@ -136,7 +136,7 @@ L1TMuCorrelatorPhase2DTStubProcessor::buildStubNoEta(const L1Phase2MuDTPhDigi& p
   double normPhiB = bendingScale_[phiS.stNum()-1]*phiS.phiBend()*1.4/2048.;
   int phiB = int(normPhiB/phiLSB_);
 
-  int bx=phiS.bxNum();
+  int bx=phiS.bxNum()-20;
   int quality=phiS.quality();
   uint tfLayer=0;
   int eta=-255;
@@ -181,9 +181,9 @@ L1TMuCorrelatorPhase2DTStubProcessor::makeStubs(const L1Phase2MuDTPhContainer* p
   L1MuCorrelatorHitCollection out;
 
   for (const auto & phiS : *phiContainer->getContainer()) {
-    if (phiS.bxNum()<minBX_ || phiS.bxNum()>maxBX_)
+    if ((phiS.bxNum()-20)<minBX_ || (phiS.bxNum()-20)>maxBX_)
       continue;
-
+    //  printf("Phase 2 stub %d %d\n",phiS.phi(),phiS.phiBend());
     if (phiS.quality()<minPhiQuality_)
       continue;
 

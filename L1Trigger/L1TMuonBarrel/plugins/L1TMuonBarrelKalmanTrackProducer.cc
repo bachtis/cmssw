@@ -83,7 +83,7 @@ L1TMuonBarrelKalmanTrackProducer::produce(edm::Event& iEvent, const edm::EventSe
    L1MuCorrelatorHitRefVector stubs;
    for (uint i=0;i<stubHandle->size();++i) {
      L1MuCorrelatorHitRef r(stubHandle,i);
-     if (r.isDT())
+     if (r->isDT())
        stubs.push_back(r);
    }
 

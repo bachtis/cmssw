@@ -8,6 +8,7 @@ l1TPSStubs = cms.EDProducer("L1TMuCorrelatorHitProducer",
     verbose = cms.int32(0),
     srcCSC = cms.InputTag("simCscTriggerPrimitiveDigis"),
     srcDT = cms.InputTag("simDtTriggerPrimitiveDigis"),
+    srcDTTheta = cms.InputTag("simDtTriggerPrimitiveDigis"),
     srcRPC = cms.InputTag("simMuonRPCDigis"),
     CSC =cms.PSet(                            
         verbose = cms.int32(0),
