@@ -139,29 +139,34 @@ namespace Phase2L1GMT {
       printf("preconstructed muon  charge=%d pt=%f,%d eta=%f,%d phi=%f,%d z0=%d d0=%d quality=%d isGlobal=%d stubs: %d %d %d %d %d \n",charge_,offline_pt_,pt_,offline_eta_,eta_,offline_phi_,phi_,z0_,d0_,quality_,muRef_.isNonnull(),stubID0_,stubID1_,stubID2_,stubID3_,stubID4_);
     }
 
-    ap_uint<128> word() const{
-      ap_uint<128> w=charge_&0x1;
+
+    uint64_t lsb() const {
+      uint64_t w=charge_&0x1;
       w = w |(twos_complement(pt_,BITSPT)<<1);
       w = w |(twos_complement(phi_,BITSPHI)<<(BITSPT+1));
       w = w |(twos_complement(eta_,BITSETA)<<(BITSPHI+BITSPT+1));
       w = w |(twos_complement(z0_,BITSZ0)<<(BITSETA+BITSPHI+BITSPT+1));
       w = w |(twos_complement(d0_,BITSD0)<<(BITSZ0+BITSETA+BITSPHI+BITSPT+1));
-      w = w |(twos_complement(stubID0_,BITSSTUBID)<<(BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+1));
-      w = w |(twos_complement(stubID1_,BITSSTUBID)<<(BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+1));
-      w = w |(twos_complement(stubID2_,BITSSTUBID)<<(2*BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+1));
-      w = w |(twos_complement(stubID3_,BITSSTUBID)<<(3*BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+1));
-      w = w |(twos_complement(stubID4_,BITSSTUBID)<<(4*BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+1));
-      w=  w |((isGlobal_ & 0x1)<<(5*BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+1));
-      w=  w |(twos_complement(beta_,BITSMUONBETA)<<(5*BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+2)); 
-      w=  w |(twos_complement(quality_,BITSMATCHQUALITY)<<(BITSMUONBETA+5*BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+2)); 
-      w=  w |(0x1<<(BITSMATCHQUALITY+BITSMUONBETA+5*BITSSTUBID+BITSD0+BITSZ0+BITSETA+BITSPHI+BITSPT+2));
       return w;
     }
 
+    uint64_t msb() const {
+      uint64_t w2=0;
+      w2 =twos_complement(stubID0_,BITSSTUBID);
+      w2 =w2 |(twos_complement(stubID1_,BITSSTUBID)<<BITSSTUBID);
+      w2 =w2 |(twos_complement(stubID2_,BITSSTUBID)<<(2*BITSSTUBID));
+      w2 =w2 |(twos_complement(stubID3_,BITSSTUBID)<<(3*BITSSTUBID));
+      w2 =w2 |(twos_complement(stubID4_,BITSSTUBID)<<(4*BITSSTUBID));
+      w2=  w2 |((isGlobal_ & 0x1)<<((5*BITSSTUBID)));
+      w2=  w2 |(twos_complement(beta_,BITSMUONBETA)<<(5*BITSSTUBID+1)); 
+      w2=  w2 |(twos_complement(quality_,BITSMATCHQUALITY)<<(BITSMUONBETA+5*BITSSTUBID+1)); 
+      w2=  w2 |(0x1<<(BITSMATCHQUALITY+BITSMUONBETA+5*BITSSTUBID+1));
+      return w2;
+      
+    }
+
     void printWord() const {
-      ap_uint<128> w=word();
-      ap_uint<128> wMSB = (w>>64);
-      printf("%016llx%016llx",(long long unsigned int) ((wMSB&0xffffffffffffffff).to_uint64()),(long long unsigned int)((w&0xffffffffffffffff).to_uint64()));
+      printf("%016llx%016llx",(long long unsigned int) msb()>>2,(long long unsigned int)((lsb()|(msb()<<62)) & 0xffffffffffffffff));
   }
 
     

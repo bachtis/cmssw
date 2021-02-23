@@ -253,6 +253,7 @@ namespace Phase2L1GMT {
     ap_int<BITSPROPCOORD+BITSTTCURV> c1kFull = prop_coord1*curvature;
     ap_int<BITSPROPCOORD+BITSTTCURV-10> c1k = (c1kFull)/1024;
     ap_int<BITSPHI> coord1 = phi -c1k;
+
     out.coord1=coord1/PHIDIVIDER;
 
     ap_int<BITSPROPCOORD+BITSTTCURV> c2kFull = prop_coord2*curvature;
@@ -316,7 +317,7 @@ namespace Phase2L1GMT {
     //Matching of Coord1 
     ap_uint<1> coord1Matched;
     ap_uint<BITSSIGMACOORD+1> deltaCoord1 = deltaCoord(prop.coord1,stub->coord1());
-    if (deltaCoord1<prop.sigma_coord1 && (stub->quality() & 0x1) ) {
+    if (deltaCoord1<=prop.sigma_coord1 && (stub->quality() & 0x1) ) {
       coord1Matched=1;
     }
     else {
@@ -329,7 +330,7 @@ namespace Phase2L1GMT {
     //Matching of Coord2 
     ap_uint<1> coord2Matched;
     ap_uint<BITSSIGMACOORD+1> deltaCoord2 = deltaCoord(prop.coord2,stub->coord2());
-    if (deltaCoord2<prop.sigma_coord2 && (stub->quality() & 0x2) ) {
+    if (deltaCoord2<=prop.sigma_coord2 && (stub->quality() & 0x2) ) {
       coord2Matched=1;
     }
     else {
@@ -357,8 +358,8 @@ namespace Phase2L1GMT {
 
 
     
-    ap_int<BITSSIGMAETA+1> deltaEta1 = deltaEta(prop.eta,stub->eta1());
-    if (deltaEta1<prop.sigma_eta1)
+    ap_uint<BITSSIGMAETA+1> deltaEta1 = deltaEta(prop.eta,stub->eta1());
+    if (deltaEta1<=prop_sigma_eta1)
       eta1Matched=1;
     else
       eta1Matched=0;
@@ -374,8 +375,8 @@ namespace Phase2L1GMT {
 
     ap_uint<1> eta2Matched;
 
-    ap_int<BITSSIGMAETA+1> deltaEta2 = deltaEta(prop.eta,stub->eta2());
-    if (deltaEta2<prop.sigma_eta2 && (stub->etaQuality() & 0x2))
+    ap_uint<BITSSIGMAETA+1> deltaEta2 = deltaEta(prop.eta,stub->eta2());
+    if (deltaEta2<=prop.sigma_eta2 && (stub->etaQuality() & 0x2))
       eta2Matched=1;
     else
       eta2Matched=0;    
@@ -401,14 +402,16 @@ namespace Phase2L1GMT {
     }
     //if endcap each coordinate is independent
     else {
-      out.valid=(coord1Matched==1 &&eta1Matched==1) || (coord2Matched==1&&eta2Matched==1);
+      bool match1 =(coord1Matched==1 &&eta1Matched==1);
+      bool match2 =(coord2Matched==1&&eta2Matched==1); 
+      out.valid= match1||match2; 
       if (out.valid==0) 
 	out.quality=0;
       else {
 	out.quality=0;
-	if (coord1Matched==1)
+	if (match1)
 	  out.quality+=24-deltaCoord1/2;
-	if (coord2Matched==1)
+	if (match2)
 	  out.quality+=24-deltaCoord2/2;
       } 
 

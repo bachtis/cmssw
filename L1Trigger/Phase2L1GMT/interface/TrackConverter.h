@@ -48,7 +48,7 @@ namespace Phase2L1GMT {
       word = word |(twos_complement(d0,BITSTTD0)<<(BITSTTCURV+BITSTTPHI+BITSTTTANL+BITSTTZ0));
       word=  word |(twos_complement(uint(track->chi2()),4)<<(BITSTTCURV+BITSTTPHI+BITSTTTANL+BITSTTZ0+BITSTTD0)); 
  
-      ConvertedTTTrack convertedTrack(charge,curvature,absEta,pt,eta,phi,z0,reducedD0,quality,word);
+      ConvertedTTTrack convertedTrack(charge,curvature,absEta,pt,eta,phiSec+track->phiSector()*910,z0,reducedD0,quality,word);
       convertedTrack.setOfflineQuantities(track->momentum().transverse(),track->eta(),track->phi());
       convertedTrack.setTrkPtr(track);
       return convertedTrack;
