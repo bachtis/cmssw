@@ -29,7 +29,8 @@ namespace Phase2L1GMT {
       stubID1_(511),
       stubID2_(511),
       stubID3_(511),
-      stubID4_(511)
+      stubID4_(511),
+      valid_(0)
     {
     }
 
@@ -86,8 +87,15 @@ namespace Phase2L1GMT {
     const uint stubID4() const {
       return stubID4_;
     }
+    bool valid() const {
+      return valid_;
+    }
+
     void setQuality(uint quality) {
       quality_ = quality;
+    }
+    void setValid(bool v) {
+      valid_ = v;
     }
 
     void setOfflineQuantities(float pt,float eta, float phi) {
@@ -136,7 +144,7 @@ namespace Phase2L1GMT {
 
 
     void print() const {
-      printf("preconstructed muon  charge=%d pt=%f,%d eta=%f,%d phi=%f,%d z0=%d d0=%d quality=%d isGlobal=%d stubs: %d %d %d %d %d \n",charge_,offline_pt_,pt_,offline_eta_,eta_,offline_phi_,phi_,z0_,d0_,quality_,muRef_.isNonnull(),stubID0_,stubID1_,stubID2_,stubID3_,stubID4_);
+      printf("preconstructed muon  charge=%d pt=%f,%d eta=%f,%d phi=%f,%d z0=%d d0=%d quality=%d isGlobal=%d valid=%d stubs: %d %d %d %d %d \n",charge_,offline_pt_,pt_,offline_eta_,eta_,offline_phi_,phi_,z0_,d0_,quality_,isGlobal_,valid_,stubID0_,stubID1_,stubID2_,stubID3_,stubID4_);
     }
 
 
@@ -157,12 +165,11 @@ namespace Phase2L1GMT {
       w2 =w2 |(twos_complement(stubID2_,BITSSTUBID)<<(2*BITSSTUBID));
       w2 =w2 |(twos_complement(stubID3_,BITSSTUBID)<<(3*BITSSTUBID));
       w2 =w2 |(twos_complement(stubID4_,BITSSTUBID)<<(4*BITSSTUBID));
-      w2=  w2 |((isGlobal_ & 0x1)<<((5*BITSSTUBID)));
+      w2=  w2 |(twos_complement(isGlobal_,1)<<(5*BITSSTUBID));
       w2=  w2 |(twos_complement(beta_,BITSMUONBETA)<<(5*BITSSTUBID+1)); 
       w2=  w2 |(twos_complement(quality_,BITSMATCHQUALITY)<<(BITSMUONBETA+5*BITSSTUBID+1)); 
-      w2=  w2 |(0x1<<(BITSMATCHQUALITY+BITSMUONBETA+5*BITSSTUBID+1));
+      w2=  w2 |(twos_complement(valid_,1)<<(BITSMATCHQUALITY+BITSMUONBETA+5*BITSSTUBID+1));
       return w2;
-      
     }
 
     void printWord() const {
@@ -189,6 +196,7 @@ namespace Phase2L1GMT {
     uint           stubID2_;
     uint           stubID3_;
     uint           stubID4_;
+    bool           valid_;
     l1t::MuonStubRefVector stubs_;
     l1t::RegionalMuonCandRef muRef_;
     edm::Ptr<TTTrack<Ref_Phase2TrackerDigi_> > trkPtr_;

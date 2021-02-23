@@ -58,7 +58,7 @@ namespace Phase2L1GMT {
       isGlobal_=true;
      
     }
-    bool isGlobalMuon() {
+    bool isGlobalMuon() const {
       return isGlobal_;
     }
 

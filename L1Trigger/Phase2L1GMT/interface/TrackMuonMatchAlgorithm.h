@@ -38,8 +38,10 @@ namespace Phase2L1GMT {
     ap_uint<BITSMATCHQUALITY-3> quality;
     ap_uint<BITSSTUBID> id;
     ap_uint<1> valid;
+    bool isGlobal;
     l1t::RegionalMuonCandRef muRef;
     l1t::MuonStubRef stubRef;
+    
   } match_t;
 
   class TrackMuonMatchAlgorithm {
@@ -383,7 +385,6 @@ namespace Phase2L1GMT {
     match_t out;
     out.id=stub->id();
 
-
     if (verbose_==1)
       printf("eta2 matched=%d delta=%d res=%d\n",eta2Matched.to_int(),deltaEta2.to_int(),prop.sigma_eta2.to_int());
 
@@ -442,6 +443,7 @@ namespace Phase2L1GMT {
   
 
   PreTrackMatchedMuon processTrack(const ConvertedTTTrack& track , const std::vector<MuonROI> & rois) {
+
     std::vector<match_t> matchInfo0;
     std::vector<match_t> matchInfo1;
     std::vector<match_t> matchInfo2;
@@ -472,8 +474,10 @@ namespace Phase2L1GMT {
 	  else if(stub->tfLayer()==4)
 	    matchInfo4.push_back(m);
 	  
-	  if (roi.muonRef().isNonnull())
+	  if (roi.isGlobalMuon() && roi.muonRef().isNonnull()) {
+	    m.isGlobal=true;
 	    m.muRef = roi.muonRef();
+	  }
 	}
       }
     }
@@ -486,7 +490,7 @@ namespace Phase2L1GMT {
       match_t b = getBest(matchInfo0);
       if (b.valid) {
 	muon.addStub(b.stubRef);
-	if(!muon.muonRef().isNonnull())
+	if(b.isGlobal)
 	  muon.setMuonRef(b.muRef);
 	quality+=b.quality;
       }
@@ -495,7 +499,7 @@ namespace Phase2L1GMT {
       match_t b = getBest(matchInfo1);
       if (b.valid) {
 	muon.addStub(b.stubRef);
-	if(!muon.muonRef().isNonnull())
+	if(b.isGlobal)
 	  muon.setMuonRef(b.muRef);
 	quality+=b.quality;
       }
@@ -504,7 +508,7 @@ namespace Phase2L1GMT {
       match_t b = getBest(matchInfo2);
       if (b.valid) {
 	muon.addStub(b.stubRef);
-	if(!muon.muonRef().isNonnull())
+	if(b.isGlobal)
 	  muon.setMuonRef(b.muRef);
 	quality+=b.quality;
       }
@@ -513,7 +517,7 @@ namespace Phase2L1GMT {
       match_t b = getBest(matchInfo3);
       if (b.valid) {
 	muon.addStub(b.stubRef);
-	if(!muon.muonRef().isNonnull())
+	if(b.isGlobal)
 	  muon.setMuonRef(b.muRef);
 	quality+=b.quality;
       }
@@ -523,21 +527,21 @@ namespace Phase2L1GMT {
       match_t b = getBest(matchInfo4);
       if (b.valid) {
 	muon.addStub(b.stubRef);
-	if(!muon.muonRef().isNonnull())
+	if(b.isGlobal)
 	  muon.setMuonRef(b.muRef);
 	quality+=b.quality;
       }
     }
 
-    
+    muon.setValid(quality>31);
     muon.setTrkPtr(track.trkPtr());
     muon.setQuality(quality);
     muon.setOfflineQuantities(track.offline_pt(),track.offline_eta(),track.offline_phi());
-
-
+    if (verbose_==1)
+      muon.print();
 
     if (verbose_==1 && rois.size()>0){ //patterns for HLS 
-
+      
       printf("TPS %d",track.trkPtr()->phiSector());
       track.printWord();
       
@@ -552,8 +556,6 @@ namespace Phase2L1GMT {
 	  printf ("%016lx",0x1ff000000000000);
 	  printf ("%016lx",0x1ff000000000000);
 	  printf ("%016lx",0x1ff000000000000);
-
-
 	}
       }
       muon.printWord();
