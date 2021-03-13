@@ -61,7 +61,7 @@ namespace Phase2L1GMT {
     const int quality() const {
       return quality_;
     }
-    const int offline_pt() const {
+    const float offline_pt() const {
       return offline_pt_;
     }
     const float offline_eta() const {
