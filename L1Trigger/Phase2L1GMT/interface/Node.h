@@ -111,13 +111,17 @@ namespace Phase2L1GMT {
     std::copy (muCleaned8.begin(), muCleaned8.end(), std::back_inserter(muCleaned));
 
     
-    std::vector<l1t::TrackerMuon> trackMatchedMuonsNoIso = track_mu_match_->convert(muCleaned,12);
+    std::vector<l1t::TrackerMuon> trackMatchedMuonsNoIso = track_mu_match_->convert(muCleaned,32);
 
+    
     //Isolation and tau3mu will read those muons and all 9 collections of convertedTracks* 
 
-      
+    
+    //sorter here:
+    std::vector<l1t::TrackerMuon> sortedTrackMuonsNoIso = track_mu_match_->sort(trackMatchedMuonsNoIso,12);
+    
 
-      return trackMatchedMuonsNoIso; //when we add more collections like tau3mu etc we change that 
+    return sortedTrackMuonsNoIso; //when we add more collections like tau3mu etc we change that 
     }
 
   private:
