@@ -111,7 +111,8 @@ L1TPhase2GMTBarrelStubProcessor::buildStubNoEta(const L1Phase2MuDTPhDigi& phiS) 
   int sign  = wheel>0 ? 1: -1;
   int sector = phiS.scNum();
   int station = phiS.stNum();
-  double globalPhi = (sector*30)+phiS.phi()*30./65535.;
+  double lsb = 0.8*180/(65536.*M_PI);
+  double globalPhi = (sector*30)+phiS.phi()*lsb;
   if (globalPhi<-180)
     globalPhi+=360;
   if (globalPhi>180)
@@ -144,7 +145,7 @@ L1TPhase2GMTBarrelStubProcessor::buildStubNoEta(const L1Phase2MuDTPhDigi& phiS) 
 
   eta=eta*sign;
   l1t::MuonStub stub(wheel,sector,station,tfLayer,phi,phiB,tag,
-			bx,quality,eta,0,0,1);
+		     bx,phiS.quality(),eta,0,0,1);
   stub.setOfflineQuantities(globalPhi,float(phiB),eta*etaLSB_,0.0);
   return stub;
 }
